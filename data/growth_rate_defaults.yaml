@@ -1,0 +1,6 @@
+version: '1.0'
+policy: planning_assumptions_only
+general_bandwidth_growth_percent_per_year: 25
+video_conferencing_growth_percent_per_year: 35
+iot_growth_percent_per_year: 30
+requires_human_validation: true

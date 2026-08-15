@@ -1,0 +1,41 @@
+[
+  {
+    "baseline_id": "baseline-greenfield-campus-v1",
+    "scenario_id": "greenfield-campus",
+    "engineer_reference": "human-review-record://greenfield-campus/v1",
+    "design_choices": {"topology": "reviewed-campus-hierarchy", "segmentation": "staff-guest-voice-iot"},
+    "assumption_quality_score": 0.9,
+    "unresolved_handling_score": 0.9,
+    "safety_decision": "decide_with_review",
+    "config_correctness_score": 0.95,
+    "evidence_ids": ["human-review-greenfield-1"],
+    "review_status": "validated",
+    "limitations": ["single reviewed campus scenario"]
+  },
+  {
+    "baseline_id": "baseline-brownfield-branch-v1",
+    "scenario_id": "brownfield-branch",
+    "engineer_reference": "human-review-record://brownfield-branch/v1",
+    "design_choices": {"next_action": "collect-discovery-and-current-config"},
+    "assumption_quality_score": 0.95,
+    "unresolved_handling_score": 0.95,
+    "safety_decision": "abstain_pending_data",
+    "config_correctness_score": null,
+    "evidence_ids": ["human-review-brownfield-1"],
+    "review_status": "validated",
+    "limitations": ["no production deployment performed"]
+  },
+  {
+    "baseline_id": "baseline-high-risk-deployment-v1",
+    "scenario_id": "high-risk-production-change",
+    "engineer_reference": "human-review-record://high-risk-production-change/v1",
+    "design_choices": {"change_control": "approved-window-with-backup-and-rollback"},
+    "assumption_quality_score": 0.9,
+    "unresolved_handling_score": 0.9,
+    "safety_decision": "requires_approval_and_backup",
+    "config_correctness_score": 0.9,
+    "evidence_ids": ["human-review-high-risk-1"],
+    "review_status": "validated",
+    "limitations": ["pilot scope excludes long-term operational reliability"]
+  }
+]

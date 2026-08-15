@@ -1,0 +1,4 @@
+# Documentation-site dependencies for strict MkDocs builds.
+mkdocs>=1.6,<2
+mkdocs-material>=9.5,<10
+mkdocstrings[python]>=0.25,<1

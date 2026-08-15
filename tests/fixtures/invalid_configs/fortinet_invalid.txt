@@ -1,0 +1,5 @@
+config firewall policy
+ edit 1
+  THIS-IS-NOT-VALID
+ next
+end

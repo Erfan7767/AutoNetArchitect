@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "criteria": {
+    "root_cause_confidence_below": 0.3,
+    "critical_service": true,
+    "hardware_failure": true,
+    "software_bug": true,
+    "security_incident": true,
+    "impact_exceeds_team": true,
+    "sla_hours": {
+      "critical": 1,
+      "high": 4,
+      "medium": 24,
+      "low": 72
+    }
+  },
+  "targets": [
+    "vendor_tac",
+    "security_team",
+    "management",
+    "specialized_engineering",
+    "field_support"
+  ]
+}

@@ -1,0 +1,3 @@
+same_package: merge_non_overlapping_files
+same_init: union_exports_preserving_order
+class_extension: apply_ast_method_merge

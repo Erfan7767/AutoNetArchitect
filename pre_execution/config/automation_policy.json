@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "allowed_without_approval": [
+    "parsing",
+    "schema_validation",
+    "static_analysis",
+    "design_proposal",
+    "dry_run_report"
+  ],
+  "approval_required": [
+    "save_final_configuration",
+    "connect_to_device",
+    "state_change",
+    "deployment"
+  ]
+}

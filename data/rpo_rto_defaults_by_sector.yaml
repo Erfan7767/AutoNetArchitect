@@ -1,0 +1,10 @@
+banking:
+  tier1: {rpo: 0, rto: 1h}
+  tier2: {rpo: 1h, rto: 4h}
+hospital:
+  tier1: {rpo: 0, rto: 30m}
+  tier2: {rpo: 1h, rto: 4h}
+enterprise:
+  tier1: {rpo: 1h, rto: 4h}
+university:
+  tier1: {rpo: 1h, rto: 4h}

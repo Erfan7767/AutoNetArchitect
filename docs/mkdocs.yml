@@ -1,0 +1,50 @@
+site_name: AutoNetArchitect
+site_description: Evidence-bounded, engineer-supervised network engineering automation for V1 workflows.
+docs_dir: docs
+site_dir: ../site
+use_directory_urls: true
+strict: true
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.highlight
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Layers: architecture/layers.md
+      - Dependency injection: architecture/di-container.md
+      - Event bus: architecture/event-bus.md
+  - Developer:
+      - Contributing: developer/contributing.md
+      - Coding standards: developer/coding-standards.md
+      - Testing guide: developer/testing-guide.md
+      - Module development: developer/module-development.md
+      - CI/CD policy: developer/ci-cd.md
+  - API:
+      - Reference: api/reference.md

@@ -1,0 +1,45 @@
+{
+  "runbook_id": "security_incident",
+  "incident_category": "security_incident",
+  "title": "Security Incident Response",
+  "version": "1.0",
+  "requires_incident_commander": true,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "security_incident-1",
+      "order": 1,
+      "description": "preserve evidence and logs",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "security_incident-2",
+      "order": 2,
+      "description": "coordinate security owner",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "security_incident-3",
+      "order": 3,
+      "description": "scope affected devices and services",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "security_incident-4",
+      "order": 4,
+      "description": "record human containment decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "security_incident-review"
+    }
+  ]
+}

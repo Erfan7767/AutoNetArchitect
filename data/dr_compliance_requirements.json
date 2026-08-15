@@ -1,0 +1,12 @@
+{
+  "general": [
+    "ISO 22301",
+    "ISO 27001 Annex A.17"
+  ],
+  "banking": [
+    "regulatory DR requirement"
+  ],
+  "healthcare": [
+    "continuity and availability"
+  ]
+}

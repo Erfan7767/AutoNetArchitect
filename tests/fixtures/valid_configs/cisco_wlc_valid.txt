@@ -1,0 +1,5 @@
+hostname wlc-1
+interface management
+ ip address 192.0.2.1 255.255.255.0
+ exit
+end

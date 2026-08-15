@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "status": "technical_mapping_reference",
+  "authority": "not_authoritative_until_exact_framework_edition_and_applicability_are_supplied",
+  "frameworks": {
+    "hipaa": [
+      "NET-ACCESS",
+      "NET-SEGMENT",
+      "NET-LOG",
+      "NET-CHANGE",
+      "NET-RESILIENCE"
+    ],
+    "pci_dss": [
+      "NET-ACCESS",
+      "NET-SEGMENT",
+      "NET-LOG",
+      "NET-CHANGE",
+      "NET-RESILIENCE"
+    ],
+    "iso_27001": [
+      "NET-ACCESS",
+      "NET-SEGMENT",
+      "NET-LOG",
+      "NET-CHANGE",
+      "NET-RESILIENCE"
+    ],
+    "nca": [
+      "NET-ACCESS",
+      "NET-SEGMENT",
+      "NET-LOG",
+      "NET-CHANGE",
+      "NET-RESILIENCE"
+    ],
+    "cis_benchmark": [
+      "NET-ACCESS",
+      "NET-LOG",
+      "NET-CHANGE",
+      "NET-HARDEN"
+    ]
+  }
+}

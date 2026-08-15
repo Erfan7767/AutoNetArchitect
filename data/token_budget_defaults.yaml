@@ -1,0 +1,11 @@
+models:
+  claude_sonnet_output_limit: 12000
+  claude_opus_output_limit: 16000
+  gpt4_output_limit: 12000
+ratios:
+  model: 7
+  designer: 6
+  test: 5
+  config: 3
+  template: 4
+  docs: 4

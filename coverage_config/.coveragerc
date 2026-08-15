@@ -1,0 +1,30 @@
+[run]
+source = autonetarchitect
+omit =
+    */tests/*
+    */migrations/*
+    */__init__.py
+    */__main__.py
+    */cli/completions/*
+    */ui/pages/*
+branch = True
+
+[report]
+show_missing = True
+skip_covered = False
+fail_under = 70
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == "__main__":
+    raise NotImplementedError
+    if TYPE_CHECKING
+    @overload
+    @abstractmethod
+
+[html]
+directory = htmlcov
+title = AutoNetArchitect Coverage Report
+
+[xml]
+output = coverage.xml

@@ -1,0 +1,10 @@
+set deviceconfig system hostname edge-fw
+set network interface ethernet ethernet1/1 layer3 ip 192.0.2.1/30
+set rulebase security rules approved-rule from inside
+set rulebase security rules approved-rule to outside
+set rulebase security rules approved-rule source any
+set rulebase security rules approved-rule destination any
+set rulebase security rules approved-rule application ssl
+set rulebase security rules approved-rule service service-https
+set rulebase security rules approved-rule action allow
+commit

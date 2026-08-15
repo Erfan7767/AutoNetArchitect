@@ -1,0 +1,18 @@
+schema_version: "1.0"
+styles:
+  default:
+    layout: force_directed
+    background: "#FFFFFF"
+    font_family: "Arial"
+  presentation:
+    layout: hierarchical
+    background: "#FFFFFF"
+    font_family: "Arial"
+  print:
+    layout: hierarchical
+    background: "#FFFFFF"
+    font_family: "Arial"
+  blueprint:
+    layout: grid
+    background: "#0B1F3A"
+    font_family: "Arial"

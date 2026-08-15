@@ -1,0 +1,23 @@
+{
+  "project_id": "CrossVendorLab",
+  "name": "CrossVendorLab",
+  "sector": "enterprise_corporate",
+  "scenario": "cross_vendor",
+  "description": "Deterministic interoperability fixture for supported vendor families.",
+  "requirements": {"sites": ["Lab-A"], "segments": ["staff", "guest", "management"], "routing": "ospf-baseline", "management": "ssh-read-only"},
+  "devices": [
+    {"device_id": "LAB-CISCO-01", "vendor": "cisco", "platform": "ios-xe", "model": "Catalyst-9300", "role": "access"},
+    {"device_id": "LAB-FORTI-01", "vendor": "fortinet", "platform": "fortigate", "model": "FortiGate-60F", "role": "edge"},
+    {"device_id": "LAB-ARUBA-01", "vendor": "aruba", "platform": "aoscx", "model": "CX-6100", "role": "access"},
+    {"device_id": "LAB-JUNOS-01", "vendor": "juniper", "platform": "junos", "model": "EX3400", "role": "distribution"},
+    {"device_id": "LAB-MT-01", "vendor": "mikrotik", "platform": "routeros", "model": "CHR", "role": "edge-preview"}
+  ],
+  "capability_evidence": {
+    "supported_vendors": ["cisco", "fortinet", "aruba", "juniper", "mikrotik"],
+    "production_path": ["cisco", "fortinet", "aruba", "juniper"],
+    "preview_only": ["mikrotik"],
+    "unsupported_feature_policy": "record-and-block"
+  },
+  "governance": {"supervised_mode": true, "required_review": ["capability", "cross_vendor", "lab_validation"], "production_safe_claim": false},
+  "expected_constraints": {"no_fake_asn": true, "no_fake_public_prefix": true, "no_secret_values_in_artifacts": true, "lab_is_not_production_change_control": true}
+}

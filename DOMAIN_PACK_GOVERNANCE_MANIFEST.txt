@@ -1,0 +1,10 @@
+domain_packs/__init__.py
+domain_packs/compatibility_policy.py
+domain_packs/cross_pack_governance.py
+domain_packs/domain_pack_context.py
+domain_packs/domain_pack_registry.py
+domain_packs/domain_pack_selector.py
+domain_packs/pack_activation_guard.py
+domain_packs/pack_boundary_reporter.py
+domain_packs/pack_integration_orchestrator.py
+domain_packs/sector_inference.py

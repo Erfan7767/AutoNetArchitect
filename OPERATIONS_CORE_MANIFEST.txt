@@ -1,0 +1,16 @@
+operations/__init__.py
+operations/backup_manager.py
+operations/drift_detector.py
+operations/health_checker.py
+operations/maintenance_manager.py
+operations/migration_planner.py
+operations/monitoring_manager.py
+operations/network_simulator.py
+operations/operational_governance.py
+operations/partial_rollback.py
+tests/test_monitoring_manager.py
+tests/test_drift_detector.py
+tests/test_health_checker.py
+tests/test_backup_manager.py
+tests/test_operational_governance.py
+tests/test_maintenance_manager.py

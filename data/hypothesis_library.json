@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "policy": "scores are bounded priors and never proof",
+  "entries": [
+    {
+      "hypothesis_id": "connectivity_loss:physical_link",
+      "layer": "L1",
+      "description": "physical link down or degraded"
+    },
+    {
+      "hypothesis_id": "connectivity_loss:vlan_mismatch",
+      "layer": "L2",
+      "description": "VLAN absent, pruned, or assigned incorrectly"
+    },
+    {
+      "hypothesis_id": "connectivity_loss:routing_issue",
+      "layer": "L3",
+      "description": "route or next-hop missing"
+    },
+    {
+      "hypothesis_id": "connectivity_loss:acl_blocking",
+      "layer": "L3/L4",
+      "description": "ACL or firewall blocks traffic"
+    }
+  ]
+}

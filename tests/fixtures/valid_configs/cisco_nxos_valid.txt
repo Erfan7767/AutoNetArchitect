@@ -1,0 +1,12 @@
+hostname spine-1
+feature ospf
+logging server 192.0.2.10
+ntp server 192.0.2.20
+interface Ethernet1/1
+ description uplink
+ no shutdown
+ exit
+router ospf 10
+ router-id 192.0.2.1
+ exit
+end

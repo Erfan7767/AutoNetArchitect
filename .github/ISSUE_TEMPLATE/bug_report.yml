@@ -1,0 +1,69 @@
+name: Bug report
+description: Report a reproducible defect in AutoNetArchitect.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include passwords, tokens, private keys, device secrets, or sensitive network details.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Explain the observed behavior and affected layer.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide deterministic steps using redacted or synthetic inputs.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Provide the release version or commit identifier.
+    validations:
+      required: true
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: Workflow area
+      options:
+        - requirements
+        - design
+        - equipment
+        - configuration
+        - deployment
+        - operations
+        - compliance
+        - reports
+        - API
+        - CLI
+        - UI
+        - CI/CD
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation evidence
+      description: Include commands, test names, and redacted logs that support the report.
+    validations:
+      required: true

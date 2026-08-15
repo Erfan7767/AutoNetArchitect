@@ -1,0 +1,3 @@
+default:
+  attempts: 3
+  delay_seconds: 0.1

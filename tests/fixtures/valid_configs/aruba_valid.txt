@@ -1,0 +1,10 @@
+hostname access-1
+logging 192.0.2.10
+ntp server 192.0.2.20
+interface 1/1/1
+ description uplink
+ no shutdown
+ exit
+vlan 100
+ name USERS
+ exit

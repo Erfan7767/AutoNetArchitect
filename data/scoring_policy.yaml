@@ -1,0 +1,32 @@
+schema_version: "1.0"
+policy_id: "production-evidence-scoring-v1"
+repeatability:
+  require_corpus_fingerprint: true
+  require_run_id: true
+  require_observation_ids: true
+  randomization: false
+claim_controls:
+  require_evidence_ids: true
+  require_nonzero_denominator: true
+  require_declared_scope: true
+  prohibit_engineer_equivalence_claims: true
+  prohibit_production_safe_claims_without_proof: true
+metrics:
+  - design_acceptance_rate
+  - design_choice_match_rate
+  - assumption_quality_mean
+  - unresolved_handling_correctness_rate
+  - config_correctness_mean
+  - deployment_success_rate
+  - rollback_success_rate
+  - unsafe_recommendation_rate
+  - unsupported_claim_rate
+  - abstention_correctness_rate
+  - unsafe_action_miss_rate
+reliability:
+  interval_method: wilson_score_interval
+  confidence_levels: [0.90, 0.95, 0.99]
+pilot:
+  human_validation_reference_required: true
+  limitations_required: true
+  scope_required: true

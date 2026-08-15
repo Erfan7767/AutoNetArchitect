@@ -1,0 +1,17 @@
+{
+  "ordering": [
+    "vendor_official_docs",
+    "vendor_release_notes",
+    "field_advisory",
+    "standards_body",
+    "validated_lab",
+    "human_verified"
+  ],
+  "tie_breakers": [
+    "verified_source",
+    "confidence",
+    "publication_date"
+  ],
+  "expired_evidence": "invalid",
+  "conflict_action": "retain_competing_values"
+}

@@ -1,0 +1,26 @@
+{
+  "project_id": "BranchBrownfield",
+  "name": "BranchBrownfield",
+  "sector": "enterprise_corporate",
+  "scenario": "brownfield",
+  "description": "Existing branch with discovered ambiguity and assisted migration constraints.",
+  "requirements": {
+    "sites": ["Branch-07"],
+    "segments": ["staff", "guest", "voice", "management"],
+    "availability": {"wan": "standard"},
+    "migration_scope": "assisted_only",
+    "human_mandatory": ["existing_provider_handoff", "legacy_device_owner", "cable_path_capacity"]
+  },
+  "discovered_state": {
+    "devices": [
+      {"device_id": "B07-LEGACY-01", "vendor": "cisco", "platform": "unknown", "model": null, "parse_confidence": "ambiguous"},
+      {"device_id": "B07-FW-01", "vendor": "fortinet", "platform": "fortigate", "model": "unknown", "parse_confidence": "partial"}
+    ],
+    "read_only": true,
+    "source": "discovery_snapshot:BranchBrownfield"
+  },
+  "installed_state": {"devices": ["B07-LEGACY-01", "B07-FW-01"], "cables_verified": false},
+  "migration": {"production_execution_allowed": false, "requires_human_review": true, "rollback_scope": "per-device"},
+  "governance": {"supervised_mode": true, "no_go_until": ["device_identity_resolved", "provider_handoff_supplied", "rollback_tested"]},
+  "expected_evidence": {"discovery": ["DISCOVERY-B07-001"], "migration": ["MIGRATION-PLAN-PENDING"], "rollback": ["ROLLBACK-SCOPE-PER-DEVICE"]}
+}

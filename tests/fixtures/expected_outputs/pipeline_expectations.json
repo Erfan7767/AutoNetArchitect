@@ -1,0 +1,13 @@
+{
+  "production_readiness_rules": {
+    "deployment_requires_backup": true,
+    "deployment_requires_approval": true,
+    "unresolved_human_inputs_block_execution": true,
+    "simulation_does_not_prove_production": true,
+    "formal_verification_status_must_be_explicit": true,
+    "secret_values_are_never_exported": true
+  },
+  "workflow_order": ["questionnaire", "requirements", "design", "equipment", "config_generation", "deployment_preparation", "deployment_execution", "operations", "compliance", "reports"],
+  "brownfield_expected": {"production_execution_allowed": false, "parse_confidence": "ambiguous", "requires_human_review": true},
+  "cross_vendor_expected": {"preview_only_vendors": ["mikrotik"], "unsupported_feature_policy": "record-and-block"}
+}

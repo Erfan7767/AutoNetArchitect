@@ -1,0 +1,15 @@
+data/capability_matrices.json
+data/equipment_catalog.json
+data/licensing_db.json
+data/optics_catalog.json
+equipment/__init__.py
+equipment/bom_generator.py
+equipment/capability_matrix.py
+equipment/compatibility_checker.py
+equipment/equipment_selector.py
+equipment/licensing_db.py
+tests/test_bom_generator.py
+tests/test_capability_matrix.py
+tests/test_compatibility_checker.py
+tests/test_equipment_selector.py
+tests/test_licensing_db.py

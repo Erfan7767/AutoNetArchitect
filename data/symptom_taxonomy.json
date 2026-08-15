@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "policy": "keyword and structured matches are advisory; ambiguous inputs remain low confidence",
+  "classes": [
+    {
+      "class": "connectivity_loss",
+      "subtypes": [
+        "total",
+        "partial",
+        "intermittent",
+        "one_directional"
+      ]
+    },
+    {
+      "class": "performance_degradation",
+      "subtypes": [
+        "high_latency",
+        "packet_loss",
+        "jitter",
+        "low_throughput",
+        "application_slow"
+      ]
+    },
+    {
+      "class": "authentication_failure",
+      "subtypes": [
+        "login_failure",
+        "intermittent_auth",
+        "radius_timeout",
+        "certificate_error",
+        "vlan_assignment_wrong"
+      ]
+    },
+    {
+      "class": "routing_issue",
+      "subtypes": [
+        "unreachable",
+        "suboptimal_path",
+        "routing_loop",
+        "route_flapping",
+        "asymmetric_routing"
+      ]
+    },
+    {
+      "class": "l2_issue",
+      "subtypes": [
+        "broadcast_storm",
+        "mac_flapping",
+        "stp_issue",
+        "vlan_issue",
+        "trunk_issue"
+      ]
+    },
+    {
+      "class": "wireless_issue",
+      "subtypes": [
+        "no_association",
+        "frequent_disconnection",
+        "slow_wireless",
+        "roaming_issue",
+        "interference"
+      ]
+    },
+    {
+      "class": "vpn_issue",
+      "subtypes": [
+        "tunnel_down",
+        "phase1_failure",
+        "phase2_failure",
+        "traffic_not_encrypted",
+        "split_tunnel_issue"
+      ]
+    },
+    {
+      "class": "dns_dhcp_issue",
+      "subtypes": [
+        "no_ip_address",
+        "wrong_ip",
+        "dns_resolution_failure",
+        "dns_slow"
+      ]
+    },
+    {
+      "class": "device_issue",
+      "subtypes": [
+        "high_cpu",
+        "high_memory",
+        "process_crash",
+        "hardware_failure",
+        "power_issue"
+      ]
+    }
+  ]
+}

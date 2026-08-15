@@ -1,0 +1,11 @@
+{
+  "low": {
+    "max_clients": 24
+  },
+  "medium": {
+    "max_clients": 74
+  },
+  "high": {
+    "max_clients": 9999
+  }
+}

@@ -1,0 +1,9 @@
+sysname edge-vrp
+info-center loghost 192.0.2.10
+ntp-service unicast-server 192.0.2.20
+interface GigabitEthernet0/0/0
+ ip address 192.0.2.1 255.255.255.252
+ undo shutdown
+ quit
+ospf 10 router-id 192.0.2.1
+ quit

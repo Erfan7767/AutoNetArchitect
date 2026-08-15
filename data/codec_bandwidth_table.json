@@ -1,0 +1,67 @@
+{
+  "G711_ulaw": {
+    "bitrate_kbps": 64,
+    "l2_bandwidth_kbps": 87,
+    "l3_bandwidth_kbps": 82
+  },
+  "G711_alaw": {
+    "bitrate_kbps": 64,
+    "l2_bandwidth_kbps": 87,
+    "l3_bandwidth_kbps": 82
+  },
+  "G729": {
+    "bitrate_kbps": 8,
+    "l2_bandwidth_kbps": 31,
+    "l3_bandwidth_kbps": 26
+  },
+  "G729a": {
+    "bitrate_kbps": 8,
+    "l2_bandwidth_kbps": 31,
+    "l3_bandwidth_kbps": 26
+  },
+  "G722": {
+    "bitrate_kbps": 64,
+    "l2_bandwidth_kbps": 87,
+    "l3_bandwidth_kbps": 82
+  },
+  "G722.1": {
+    "bitrate_kbps": 32,
+    "l2_bandwidth_kbps": 55,
+    "l3_bandwidth_kbps": 50
+  },
+  "iLBC": {
+    "bitrate_kbps": 15,
+    "l2_bandwidth_kbps": 35,
+    "l3_bandwidth_kbps": 30
+  },
+  "Opus_low": {
+    "bitrate_kbps": 24,
+    "l2_bandwidth_kbps": 48,
+    "l3_bandwidth_kbps": 43
+  },
+  "Opus_medium": {
+    "bitrate_kbps": 64,
+    "l2_bandwidth_kbps": 87,
+    "l3_bandwidth_kbps": 82
+  },
+  "Opus_high": {
+    "bitrate_kbps": 128,
+    "l2_bandwidth_kbps": 160,
+    "l3_bandwidth_kbps": 155
+  },
+  "SILK": {
+    "bitrate_kbps": 52,
+    "l2_bandwidth_kbps": 75,
+    "l3_bandwidth_kbps": 70
+  },
+  "Speex": {
+    "bitrate_kbps": 16,
+    "l2_bandwidth_kbps": 37,
+    "l3_bandwidth_kbps": 32
+  },
+  "AAC-LD": {
+    "bitrate_kbps": 96,
+    "l2_bandwidth_kbps": 125,
+    "l3_bandwidth_kbps": 120
+  }
+}

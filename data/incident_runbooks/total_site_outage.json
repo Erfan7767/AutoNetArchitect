@@ -1,0 +1,45 @@
+{
+  "runbook_id": "total_site_outage",
+  "incident_category": "network_outage",
+  "title": "Total Site Outage Response",
+  "version": "1.0",
+  "requires_incident_commander": true,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "total_site_outage-1",
+      "order": 1,
+      "description": "confirm site-wide impact",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "total_site_outage-2",
+      "order": 2,
+      "description": "activate human business-continuity review",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "total_site_outage-3",
+      "order": 3,
+      "description": "validate DR/BC prerequisites",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "total_site_outage-4",
+      "order": 4,
+      "description": "record human recovery decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "total_site_outage-review"
+    }
+  ]
+}

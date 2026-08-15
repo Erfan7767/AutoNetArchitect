@@ -1,0 +1,3 @@
+hostname bad
+THIS-IS-NOT-VALID
+enable password cleartext

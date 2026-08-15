@@ -1,0 +1,135 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PYTHONPATH: .
+
+jobs:
+  dependency-audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install audit tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pip-audit safety
+      - name: Run pip-audit
+        run: python -m pip_audit --requirement requirements.txt --format json --output pip-audit.json
+      - name: Run Safety scan (supplemental)
+        continue-on-error: true
+        env:
+          CI: "true"
+        run: |
+          mkdir -p .ci/safety
+          cp requirements.txt .ci/safety/requirements.txt
+          timeout 60s python -m safety scan --target .ci/safety --save-as json safety-report.json
+      - name: Upload dependency reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-audit-reports
+          path: |
+            pip-audit.json
+            safety-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  code-security:
+    name: bandit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install Bandit
+        run: python -m pip install --upgrade bandit
+      - name: Run Bandit
+        run: python -m bandit -r autonetarchitect/ -f json -o bandit-report.json -ll
+      - name: Upload Bandit report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  sast:
+    name: codeql
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: python
+          build-mode: none
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:python
+
+  security-required:
+    name: security-required
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [dependency-audit, code-security, secret-scan, sast]
+    steps:
+      - name: Enforce mandatory security outcomes
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
+      - name: All security checks succeeded
+        run: echo "All mandatory security checks succeeded."

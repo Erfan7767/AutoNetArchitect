@@ -1,0 +1,7 @@
+{
+  "status": "blocked",
+  "success": false,
+  "reason_classes": ["stage_order", "missing_backup", "missing_approval", "human_data"],
+  "secret_values_present": false,
+  "production_execution": "not_performed"
+}

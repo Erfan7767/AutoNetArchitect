@@ -1,0 +1,13 @@
+freeze_windows:
+  - freeze_id: year_end_general
+    start_time: 2026-12-20T00:00:00+00:00
+    end_time: 2027-01-05T00:00:00+00:00
+    freeze_type: full_freeze
+    reason: year-end operational freeze
+    sector: general
+  - freeze_id: month_end_banking
+    start_time: 2026-01-30T00:00:00+00:00
+    end_time: 2026-02-02T00:00:00+00:00
+    freeze_type: partial_freeze
+    reason: month-end banking control window
+    sector: banking

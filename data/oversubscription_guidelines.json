@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "policy": "planning guidelines, not a production proof",
+  "enterprise_office": {
+    "access_to_distribution": 20,
+    "distribution_to_core": 4,
+    "core_to_wan": 1,
+    "server_to_core": 4
+  },
+  "banking": {
+    "access_to_distribution": 10,
+    "distribution_to_core": 2,
+    "core_to_wan": 1
+  },
+  "hospital": {
+    "access_to_distribution": 10,
+    "distribution_to_core": 2,
+    "core_to_wan": 1
+  },
+  "university": {
+    "access_to_distribution": 20,
+    "distribution_to_core": 4,
+    "core_to_wan": 1
+  },
+  "data_center": {
+    "server_to_leaf": 3,
+    "leaf_to_spine": 3
+  }
+}

@@ -1,0 +1,3 @@
+schema_version: "1.0.0"
+levels: [schema, unit, contract, integration, lab]
+production_claim_requires_lab: true

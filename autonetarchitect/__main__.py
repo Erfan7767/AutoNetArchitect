@@ -1,0 +1,8 @@
+"""Run the AutoNetArchitect CLI with ``python -m autonetarchitect``."""
+
+from __future__ import annotations
+
+from .cli.main import cli
+
+if __name__ == "__main__":
+    cli()

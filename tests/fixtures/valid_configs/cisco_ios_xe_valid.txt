@@ -1,0 +1,23 @@
+hostname edge-xe
+service timestamps debug datetime msec
+service timestamps log datetime msec
+logging host 192.0.2.10
+ntp server 192.0.2.20
+username admin privilege 15 secret 9 secret://edge/admin
+line console 0
+ logging synchronous
+ exit
+line vty 0 4
+ transport input ssh
+ exit
+enable secret 9 secret://edge/enable
+interface GigabitEthernet0/0
+ description uplink
+ ip address 192.0.2.1 255.255.255.252
+ no shutdown
+ exit
+router ospf 10
+ router-id 192.0.2.1
+ network 192.0.2.0 0.0.0.3 area 0
+ exit
+end

@@ -1,0 +1,7 @@
+firmware/__init__.py
+firmware/firmware_manager.py
+firmware/safety_checks.py
+firmware/upgrade_planner.py
+tests/test_firmware_manager.py
+tests/test_upgrade_planner.py
+tests/test_safety_checks.py

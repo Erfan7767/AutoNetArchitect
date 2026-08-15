@@ -1,0 +1,2 @@
+hostname wlc-1
+THIS-IS-NOT-VALID

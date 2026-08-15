@@ -1,0 +1,2 @@
+hostname bad
+vlan 5000

@@ -1,0 +1,45 @@
+{
+  "runbook_id": "performance_degradation",
+  "incident_category": "network_degradation",
+  "title": "Performance Degradation Response",
+  "version": "1.0",
+  "requires_incident_commander": false,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "performance_degradation-1",
+      "order": 1,
+      "description": "confirm utilization and error evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "performance_degradation-2",
+      "order": 2,
+      "description": "validate QoS and path evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "performance_degradation-3",
+      "order": 3,
+      "description": "correlate recent changes",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "performance_degradation-4",
+      "order": 4,
+      "description": "record human remediation decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "performance_degradation-review"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "rules": [
+    {
+      "rule_id": "link-utilization-high",
+      "rule_name": "Link utilization above policy threshold",
+      "rule_type": "threshold_rule",
+      "condition": {
+        "metric": "link_utilization_percent",
+        "operator": ">",
+        "threshold": 95
+      },
+      "severity_assignment": "P3",
+      "category": "network_degradation",
+      "auto_create_incident": true,
+      "notification_targets": [
+        "on_call_engineer"
+      ],
+      "suppression_window_minutes": 30,
+      "correlation_group": "performance"
+    },
+    {
+      "rule_id": "core-interface-down",
+      "rule_name": "Core interface down",
+      "rule_type": "state_change_rule",
+      "condition": {
+        "field": "state",
+        "state": "down"
+      },
+      "severity_assignment": "P1",
+      "category": "network_outage",
+      "auto_create_incident": true,
+      "notification_targets": [
+        "on_call_engineer",
+        "management"
+      ],
+      "suppression_window_minutes": 15,
+      "correlation_group": "core-outage"
+    },
+    {
+      "rule_id": "ospf-flap-pattern",
+      "rule_name": "OSPF adjacency flap pattern",
+      "rule_type": "threshold_rule",
+      "condition": {
+        "metric": "ospf_flaps_10m",
+        "operator": ">",
+        "threshold": 3
+      },
+      "severity_assignment": "P2",
+      "category": "network_degradation",
+      "auto_create_incident": true,
+      "notification_targets": [
+        "on_call_engineer"
+      ],
+      "suppression_window_minutes": 30,
+      "correlation_group": "routing"
+    },
+    {
+      "rule_id": "device-no-response",
+      "rule_name": "Device monitoring absence",
+      "rule_type": "absence_rule",
+      "condition": {
+        "field": "snmp_response"
+      },
+      "severity_assignment": "P2",
+      "category": "network_outage",
+      "auto_create_incident": true,
+      "notification_targets": [
+        "on_call_engineer"
+      ],
+      "suppression_window_minutes": 15,
+      "correlation_group": "device-health"
+    }
+  ]
+}

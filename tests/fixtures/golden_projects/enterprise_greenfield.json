@@ -1,0 +1,35 @@
+{
+  "project_id": "EnterpriseGreenfield",
+  "name": "EnterpriseGreenfield",
+  "sector": "enterprise_corporate",
+  "scenario": "greenfield",
+  "description": "Two-site enterprise campus and branch baseline for deterministic integration testing.",
+  "requirements": {
+    "sites": ["HQ", "DR", "Branch-01"],
+    "user_populations": {"HQ": 850, "DR": 120, "Branch-01": 65},
+    "segments": ["staff", "guest", "voice", "iot", "management"],
+    "availability": {"core": "high", "internet_edge": "high", "branch": "standard"},
+    "growth_percent": 30,
+    "internet_asn": null,
+    "public_prefixes": [],
+    "human_mandatory": ["provider_asn", "public_prefixes", "site_floor_dimensions"]
+  },
+  "sites_data": [
+    {"site_id": "HQ", "site_type": "hq", "rooms": ["MDF-01", "IDF-01", "IDF-02"], "rack_units_known": false, "power_feeds_known": false},
+    {"site_id": "DR", "site_type": "dr", "rooms": ["MDF-DR"], "rack_units_known": false, "power_feeds_known": false},
+    {"site_id": "Branch-01", "site_type": "branch", "rooms": ["MDF-B01"], "rack_units_known": false, "power_feeds_known": false}
+  ],
+  "design_intent": {
+    "business": ["secure campus access", "resilient WAN", "guest isolation"],
+    "security": ["least privilege", "management separation", "default deny between segments"],
+    "connectivity": ["staff to approved services", "voice QoS", "branch to HQ applications"],
+    "resilience": ["dual core path", "backup WAN path", "rollback preservation"]
+  },
+  "equipment": [
+    {"device_id": "HQ-CORE-01", "vendor": "cisco", "platform": "ios-xe", "model": "Catalyst-9500", "role": "core"},
+    {"device_id": "HQ-EDGE-01", "vendor": "fortinet", "platform": "fortigate", "model": "FortiGate-200F", "role": "internet-edge"},
+    {"device_id": "B01-EDGE-01", "vendor": "aruba", "platform": "aoscx", "model": "CX-6300", "role": "branch-access"}
+  ],
+  "governance": {"supervised_mode": true, "required_review": ["requirements", "final_design", "pre_deployment"], "production_safe_claim": false},
+  "expected_evidence": {"design": ["EVID-DESIGN-001"], "field": ["SITE-SURVEY-PENDING"], "deployment": ["BACKUP-REFERENCE-REQUIRED"]}
+}

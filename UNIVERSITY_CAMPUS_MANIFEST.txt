@@ -1,0 +1,13 @@
+domain_packs/university_campus/__init__.py
+domain_packs/university_campus/acceptance_criteria.py
+domain_packs/university_campus/campus_core_patterns.py
+domain_packs/university_campus/common.py
+domain_packs/university_campus/compliance_mapping.py
+domain_packs/university_campus/domain_scope.py
+domain_packs/university_campus/dormitory_access_patterns.py
+domain_packs/university_campus/equipment_preferences.py
+domain_packs/university_campus/identity_access_profile.py
+domain_packs/university_campus/multicast_video_profile.py
+domain_packs/university_campus/requirements_profile.py
+domain_packs/university_campus/research_network_patterns.py
+domain_packs/university_campus/wireless_density_profile.py

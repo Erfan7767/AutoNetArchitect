@@ -1,0 +1,5 @@
+from designers.access_control.common import NACDesigner
+class Dot1XWiredDesigner(NACDesigner):
+ def design(self,r):
+  roles={"user":{"methods":["dot1x","mab"],"host_mode":"single-host"},"phone":{"methods":["dot1x","mab"],"host_mode":"multi-domain"},"printer":{"methods":["mab"],"host_mode":"single-host"},"ap":{"methods":["mab"],"host_mode":"multi-host"},"camera":{"methods":["mab"],"host_mode":"single-host"},"iot":{"methods":["mab"],"host_mode":"single-host"},"server":{"methods":["dot1x"],"host_mode":"single-host"}};configs={k:roles.get(k,roles["user"]) for k in r.get("roles",["user"])};self.record_decision("wired_dot1x",configs,"role-specific dot1x and MAB policy with server-dead behavior")
+  return {"roles":configs,"server_dead_action":r.get("server_dead_action","critical_vlan"),"no_response_action":r.get("no_response_action","mab"),"auth_fail_vlan":r.get("auth_fail_vlan"),"vendor_commands":{"cisco":"authentication port-control auto; dot1x pae authenticator","huawei":"dot1x enable","aruba":"aaa authentication port-access","juniper":"dot1x authenticator interface"},"evidence_status":self.evidence(r),"decisions":self.decisions}

@@ -1,0 +1,149 @@
+[build-system]
+requires = ["setuptools>=68", "wheel>=0.44"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autonetarchitect"
+version = "0.1.0"
+description = "Governed network design, validation, deployment preparation, operations, and evidence management for supervised V1 workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "AutoNetArchitect Contributors" }]
+keywords = ["network-automation", "network-design", "governance", "configuration-generation"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Networking",
+]
+dependencies = [
+  "click>=8.1,<9",
+  "fastapi>=0.100,<1",
+  "uvicorn>=0.20,<1",
+  "pydantic>=2.13,<3",
+  "jinja2>=3.1,<4",
+  "PyYAML>=6,<7",
+  "reportlab>=4,<5",
+  "openpyxl>=3.1,<4",
+  "Pillow>=12.3,<13",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<7",
+  "pytest-asyncio>=0.23,<1",
+  "pytest-timeout>=2.3,<3",
+  "pytest-xdist>=3.6,<4",
+  "httpx>=0.27,<1",
+  "ruff>=0.6,<1",
+  "mypy>=1.11,<2",
+  "types-PyYAML>=6.0,<7",
+  "pre-commit>=3.7,<5",
+  "tox>=4.18,<5",
+  "nox>=2024.4,<2027",
+  "bandit>=1.7,<2",
+  "pip-audit>=2.7,<3",
+  "safety>=3,<4",
+  "build>=1.2,<2",
+  "twine>=5,<7",
+  "wheel>=0.44,<1",
+]
+docs = [
+  "mkdocs>=1.6,<2",
+  "mkdocs-material>=9.5,<10",
+  "mkdocstrings[python]>=0.25,<1",
+]
+optional = [
+  "arabic-reshaper>=3,<4",
+  "python-bidi>=0.4,<1",
+  "streamlit>=1.35,<2",
+  "weasyprint>=60,<70",
+  "matplotlib>=3.8,<4",
+  "pandas>=2.0,<3",
+  "numpy>=1.26,<3",
+]
+all = [
+  "autonetarchitect[dev,docs,optional]",
+]
+
+[project.scripts]
+autonet = "autonetarchitect.cli.main:cli"
+autonet-api = "api.server:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*", "*.*"]
+exclude = ["tests*", "data*", "*.tests*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml", "*.j2", "*.mmd", "*.d2", "*.puml", "*.ttf", "*.md"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+exclude = [".git", ".venv", "build", "dist"]
+include = ["autonetarchitect/**/*.py", "scripts/**/*.py", "tests/ci/**/*.py", "conftest.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["F401"]
+"scripts/**/*.py" = ["T201"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+  "unit: fast isolated tests",
+  "integration: cross-layer tests",
+  "e2e: end-to-end workflow tests",
+  "chaos: controlled failure-path tests",
+  "release: packaging and release checks",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["autonetarchitect"]
+omit = [
+  "*/tests/*",
+  "*/migrations/*",
+  "*/__init__.py",
+  "*/__main__.py",
+  "*/cli/completions/*",
+  "*/ui/pages/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 70
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "if __name__ == \"__main__\":",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING",
+  "@overload",
+  "@abstractmethod",
+]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "AutoNetArchitect Coverage Report"

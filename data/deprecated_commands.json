@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "entries": [
+    {
+      "vendor": "Cisco",
+      "platform": "IOS XE",
+      "pattern": "^crypto\\s+map\\s+",
+      "deprecated_since_version": "model/version dependent",
+      "replacement_command": "Use an evidence-backed VTI/IPsec design where supported.",
+      "severity": "warning"
+    },
+    {
+      "vendor": "Cisco",
+      "platform": "IOS XE",
+      "pattern": "^ip\\s+cef$",
+      "deprecated_since_version": "modern releases",
+      "replacement_command": "No replacement required; confirm platform defaults and remove redundant command.",
+      "severity": "info"
+    },
+    {
+      "vendor": "Cisco",
+      "platform": "IOS XE",
+      "pattern": "^snmp-server\\s+community\\s+",
+      "deprecated_since_version": "security policy dependent",
+      "replacement_command": "Prefer SNMPv3 where supported and approved.",
+      "severity": "warning"
+    },
+    {
+      "vendor": "Fortinet",
+      "platform": "FortiOS",
+      "pattern": "^set\\s+legacy-",
+      "deprecated_since_version": "version dependent",
+      "replacement_command": "Consult the scoped FortiOS CLI reference.",
+      "severity": "warning"
+    }
+  ]
+}

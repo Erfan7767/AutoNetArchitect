@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "policy": "classification is evidence-bounded and human override is allowed",
+  "thresholds": {
+    "P1": {
+      "users_over": 1000,
+      "critical_service": true
+    },
+    "P2": {
+      "users_over": 100,
+      "important_service": true
+    },
+    "P3": {
+      "users_over": 10,
+      "standard_service": true
+    },
+    "P4": {
+      "users_under": 10,
+      "non_critical": true
+    }
+  },
+  "sector_overrides": {
+    "banking": "core_banking_service_is_P1",
+    "hospital": "clinical_critical_service_is_P1"
+  }
+}

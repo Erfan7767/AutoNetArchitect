@@ -1,0 +1,3 @@
+schema_version: "1.0.0"
+required: [contracts, tests, audit, backup_restore, rollback, owner_approval]
+critical_findings_allowed: false

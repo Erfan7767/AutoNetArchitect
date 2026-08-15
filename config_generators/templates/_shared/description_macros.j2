@@ -1,0 +1,13 @@
+{# ============================================================
+   Template: _shared.description_macros
+   Vendor: shared
+   Platform: cross-platform macro library
+   Feature: operations.descriptions
+   Description: Shared text macros with no device command semantics.
+   Required Variables: none
+   Optional Variables: text: string - approved description text (default: "")
+   Min Version: not applicable
+   Evidence: shared formatting only; no vendor command claim
+   Last Validated: registry scope only
+   ============================================================ #}
+{% macro description(text) -%}{{ text | default("") }}{%- endmacro %}

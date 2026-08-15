@@ -1,0 +1,2 @@
+hostname edge-asa
+THIS-IS-NOT-VALID

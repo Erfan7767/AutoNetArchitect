@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "policy": "records require vendor/platform/version scope before matching",
+  "issues": [
+    {
+      "issue_id": "example-ospf-mtu",
+      "vendor": "",
+      "platform": "",
+      "affected_versions": [],
+      "symptom_patterns": [
+        "exstart",
+        "ospf"
+      ],
+      "root_cause": "possible MTU mismatch",
+      "workaround": "validate MTU on both peers",
+      "fix_version": "",
+      "reference": "human_or_vendor_evidence_required"
+    },
+    {
+      "issue_id": "example-interface-errors",
+      "vendor": "",
+      "platform": "",
+      "affected_versions": [],
+      "symptom_patterns": [
+        "crc",
+        "physical"
+      ],
+      "root_cause": "possible physical path impairment",
+      "workaround": "inspect cable and optics",
+      "fix_version": "",
+      "reference": "human_or_field_evidence_required"
+    }
+  ]
+}

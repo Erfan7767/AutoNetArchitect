@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "category": "vendor",
+      "key": "unknown_vendor",
+      "status": "unsupported",
+      "fallback": "preview_only"
+    },
+    {
+      "category": "protocol",
+      "key": "mixed_unsupported_overlay",
+      "status": "unsupported",
+      "fallback": "safe_refusal"
+    },
+    {
+      "category": "ha",
+      "key": "multi_active_unvalidated",
+      "status": "unsupported",
+      "fallback": "preview_only"
+    },
+    {
+      "category": "scale",
+      "key": "over_500_devices",
+      "status": "unsupported",
+      "fallback": "preview_only"
+    },
+    {
+      "category": "site",
+      "key": "high_complexity_brownfield",
+      "status": "insufficient_evidence",
+      "fallback": "human_review"
+    },
+    {
+      "category": "wireless",
+      "key": "outdoor_mobility",
+      "status": "preview_only",
+      "fallback": "preview_only"
+    },
+    {
+      "category": "multicast",
+      "key": "inter_domain_multicast",
+      "status": "unsupported",
+      "fallback": "safe_refusal"
+    },
+    {
+      "category": "regulatory",
+      "key": "regulated_environment",
+      "status": "production_blocked",
+      "fallback": "human_review"
+    }
+  ]
+}

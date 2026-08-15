@@ -1,0 +1,92 @@
+{
+  "generic": {
+    "router": "generic/router.svg",
+    "switch": "generic/switch.svg",
+    "switch_l3": "generic/switch_l3.svg",
+    "firewall": "generic/firewall.svg",
+    "access_point": "generic/access_point.svg",
+    "server": "generic/server.svg",
+    "cloud": "generic/cloud.svg",
+    "internet": "generic/internet.svg",
+    "unknown": "generic/unknown.svg"
+  },
+  "vendors": {
+    "cisco": {
+      "router": "cisco/router.svg",
+      "switch": "cisco/switch.svg",
+      "switch_l3": "cisco/switch_l3.svg",
+      "firewall": "cisco/firewall.svg",
+      "access_point": "cisco/access_point.svg",
+      "server": "cisco/server.svg",
+      "cloud": "cisco/cloud.svg",
+      "internet": "cisco/internet.svg",
+      "unknown": "cisco/unknown.svg"
+    },
+    "fortinet": {
+      "router": "fortinet/router.svg",
+      "switch": "fortinet/switch.svg",
+      "switch_l3": "fortinet/switch_l3.svg",
+      "firewall": "fortinet/firewall.svg",
+      "access_point": "fortinet/access_point.svg",
+      "server": "fortinet/server.svg",
+      "cloud": "fortinet/cloud.svg",
+      "internet": "fortinet/internet.svg",
+      "unknown": "fortinet/unknown.svg"
+    },
+    "paloalto": {
+      "router": "paloalto/router.svg",
+      "switch": "paloalto/switch.svg",
+      "switch_l3": "paloalto/switch_l3.svg",
+      "firewall": "paloalto/firewall.svg",
+      "access_point": "paloalto/access_point.svg",
+      "server": "paloalto/server.svg",
+      "cloud": "paloalto/cloud.svg",
+      "internet": "paloalto/internet.svg",
+      "unknown": "paloalto/unknown.svg"
+    },
+    "huawei": {
+      "router": "huawei/router.svg",
+      "switch": "huawei/switch.svg",
+      "switch_l3": "huawei/switch_l3.svg",
+      "firewall": "huawei/firewall.svg",
+      "access_point": "huawei/access_point.svg",
+      "server": "huawei/server.svg",
+      "cloud": "huawei/cloud.svg",
+      "internet": "huawei/internet.svg",
+      "unknown": "huawei/unknown.svg"
+    },
+    "aruba": {
+      "router": "aruba/router.svg",
+      "switch": "aruba/switch.svg",
+      "switch_l3": "aruba/switch_l3.svg",
+      "firewall": "aruba/firewall.svg",
+      "access_point": "aruba/access_point.svg",
+      "server": "aruba/server.svg",
+      "cloud": "aruba/cloud.svg",
+      "internet": "aruba/internet.svg",
+      "unknown": "aruba/unknown.svg"
+    },
+    "juniper": {
+      "router": "juniper/router.svg",
+      "switch": "juniper/switch.svg",
+      "switch_l3": "juniper/switch_l3.svg",
+      "firewall": "juniper/firewall.svg",
+      "access_point": "juniper/access_point.svg",
+      "server": "juniper/server.svg",
+      "cloud": "juniper/cloud.svg",
+      "internet": "juniper/internet.svg",
+      "unknown": "juniper/unknown.svg"
+    },
+    "mikrotik": {
+      "router": "mikrotik/router.svg",
+      "switch": "mikrotik/switch.svg",
+      "switch_l3": "mikrotik/switch_l3.svg",
+      "firewall": "mikrotik/firewall.svg",
+      "access_point": "mikrotik/access_point.svg",
+      "server": "mikrotik/server.svg",
+      "cloud": "mikrotik/cloud.svg",
+      "internet": "mikrotik/internet.svg",
+      "unknown": "mikrotik/unknown.svg"
+    }
+  }
+}

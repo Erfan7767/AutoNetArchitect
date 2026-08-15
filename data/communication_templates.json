@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "types": [
+    "initial_notification",
+    "status_update",
+    "escalation_notification",
+    "resolution_notification",
+    "closure_notification"
+  ],
+  "audiences": [
+    "technical_team",
+    "management",
+    "affected_users",
+    "external_stakeholders"
+  ],
+  "channels": [
+    "email",
+    "sms",
+    "chat",
+    "status_page"
+  ],
+  "policy": "templates are generated artifacts; external sending requires a human-controlled integration"
+}

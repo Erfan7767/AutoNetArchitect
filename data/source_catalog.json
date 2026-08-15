@@ -1,0 +1,28 @@
+{
+  "source_types": [
+    {
+      "id": "vendor_official_docs",
+      "authority_rank": 100
+    },
+    {
+      "id": "vendor_release_notes",
+      "authority_rank": 95
+    },
+    {
+      "id": "field_advisory",
+      "authority_rank": 90
+    },
+    {
+      "id": "standards_body",
+      "authority_rank": 85
+    },
+    {
+      "id": "validated_lab",
+      "authority_rank": 80
+    },
+    {
+      "id": "human_verified",
+      "authority_rank": 70
+    }
+  ]
+}

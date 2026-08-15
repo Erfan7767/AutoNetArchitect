@@ -1,0 +1,14 @@
+{
+  "tabletop": {
+    "frequency": "quarterly"
+  },
+  "component": {
+    "frequency": "monthly"
+  },
+  "partial_failover": {
+    "frequency": "semi_annually"
+  },
+  "full_failover": {
+    "frequency": "annually"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "levels": {
+    "1": {
+      "targets": [
+        "on_call_engineer"
+      ],
+      "response_minutes": 30,
+      "authority": "observe_and_collect"
+    },
+    "2": {
+      "targets": [
+        "senior_engineer",
+        "team_lead"
+      ],
+      "response_minutes": 30,
+      "authority": "coordinate_and_approve_standard_governance"
+    },
+    "3": {
+      "targets": [
+        "architecture_team",
+        "vendor_tac"
+      ],
+      "response_minutes": 15,
+      "authority": "authorize_specialist_or_vendor_review"
+    },
+    "4": {
+      "targets": [
+        "management",
+        "cto"
+      ],
+      "response_minutes": 15,
+      "authority": "authorize_business_continuity_and_major_risk_decisions"
+    }
+  },
+  "war_room": "P1_requires_human_incident_commander"
+}

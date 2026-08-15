@@ -1,0 +1,11 @@
+hostname edge-ios
+service timestamps debug datetime msec
+logging host 192.0.2.10
+ntp server 192.0.2.20
+line console 0
+ exit
+line vty 0 4
+ transport input ssh
+ exit
+enable secret 9 secret://edge/enable
+end

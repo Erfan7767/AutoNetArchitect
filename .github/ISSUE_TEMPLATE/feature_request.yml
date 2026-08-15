@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a bounded, evidence-aware improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature proposals must preserve supervised execution, human-mandatory inputs, auditability, and V1 scope boundaries.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: Describe the engineering problem and who needs the outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+      description: Explain the smallest bounded behavior that addresses the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Safety and scope boundaries
+      description: State unsupported cases, required human inputs, review gates, and evidence limitations.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Provide observable tests or artifacts that demonstrate the requested behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe simpler approaches and why they do not meet the bounded need.
+    validations:
+      required: true

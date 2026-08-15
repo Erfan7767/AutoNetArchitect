@@ -1,0 +1,40 @@
+# AutoNetArchitect ownership policy.
+# Configure these GitHub teams before enabling required-review branch protection.
+# CODEOWNERS paths are repository-relative. The team handles below must exist.
+
+# Global ownership
+* @autonet-core-team
+
+# Foundation
+/constants.py @autonet-core-team
+/exceptions.py @autonet-core-team
+/infrastructure/ @autonet-core-team
+
+# Design
+/designers/ @autonet-design-team
+
+# Configuration and capability validation
+/config_generators/ @autonet-config-team
+/config_validators/ @autonet-config-team
+
+# Security, identity, audit, redaction, and PKI
+/secrets/ @autonet-security-team
+/auth/ @autonet-security-team
+/pki/ @autonet-security-team
+/log_redaction/ @autonet-security-team
+/audit/ @autonet-security-team
+
+# Deployment and operations
+/deployment/ @autonet-ops-team
+/operations/ @autonet-ops-team
+/firmware/ @autonet-ops-team
+
+# CI/CD, packaging, containers, and release automation
+/.github/ @autonet-devops-team
+/Dockerfile* @autonet-devops-team
+/docker-compose* @autonet-devops-team
+/Makefile @autonet-devops-team
+/tox.ini @autonet-devops-team
+/noxfile.py @autonet-devops-team
+/pyproject.toml @autonet-devops-team
+/requirements*.txt @autonet-devops-team

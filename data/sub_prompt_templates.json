@@ -1,0 +1,3 @@
+{
+  "default": "Implement {files} for phase {phase_id}. Preserve contracts and include tests."
+}

@@ -1,0 +1,22 @@
+{
+  "grammar_version": "1.0",
+  "vendor_platform": "paloalto",
+  "coverage_policy": "v1 covers common/template-used commands; unknown commands remain not_covered unless explicitly forbidden.",
+  "rules": [
+    {
+      "pattern": "^(?:set|delete|edit|move|clone|rename)\\\\s+.+$",
+      "description": "PAN-OS set hierarchy"
+    },
+    {
+      "pattern": "^(?:configure|commit|exit|quit|show)(?:\\\\s+.*)?$",
+      "description": "PAN-OS operational/config mode"
+    }
+  ],
+  "total_known_commands": 2,
+  "uncovered_commands": [
+    "vendor commands outside this grammar"
+  ],
+  "partially_covered": [
+    "commands matched by syntax only when no semantic rule exists"
+  ]
+}

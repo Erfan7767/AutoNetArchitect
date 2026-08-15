@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "required_checks": [
+    "preflight",
+    "inventory_match",
+    "backup",
+    "diff",
+    "approval",
+    "timeout",
+    "audit",
+    "rollback"
+  ],
+  "fail_closed_on": [
+    "target_mismatch",
+    "missing_credentials",
+    "unsupported_vendor"
+  ]
+}

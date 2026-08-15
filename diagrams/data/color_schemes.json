@@ -1,0 +1,110 @@
+{
+  "default": {
+    "background": "#FFFFFF",
+    "text": "#101828",
+    "node_colors": {
+      "router": "#D1E9FF",
+      "switch_l2": "#D1FADF",
+      "switch_l3": "#B2DDFF",
+      "firewall": "#FDEAD7",
+      "access_point": "#E9D7FE",
+      "server": "#EAECF0",
+      "cloud": "#F2F4F7",
+      "internet": "#FECDCA",
+      "unknown": "#F2F4F7"
+    },
+    "edge_colors": {
+      "physical": "#2E90FA",
+      "logical": "#667085",
+      "trunk": "#12B76A",
+      "port_channel": "#027A48",
+      "wan": "#F04438",
+      "vpn": "#7F56D9",
+      "wireless": "#9E77ED",
+      "routing": "#175CD3",
+      "security_flow": "#B42318",
+      "dependency": "#667085"
+    }
+  },
+  "presentation": {
+    "background": "#FFFFFF",
+    "text": "#101828",
+    "node_colors": {
+      "router": "#B2DDFF",
+      "switch_l2": "#ABEFC6",
+      "switch_l3": "#84CAFF",
+      "firewall": "#FEC84B",
+      "access_point": "#D6BBFB",
+      "server": "#D0D5DD",
+      "cloud": "#EAECF0",
+      "internet": "#FDA29B",
+      "unknown": "#EAECF0"
+    },
+    "edge_colors": {
+      "physical": "#1570EF",
+      "logical": "#475467",
+      "trunk": "#039855",
+      "port_channel": "#027A48",
+      "wan": "#D92D20",
+      "vpn": "#6941C6",
+      "wireless": "#7F56D9",
+      "routing": "#175CD3",
+      "security_flow": "#B42318",
+      "dependency": "#475467"
+    }
+  },
+  "print": {
+    "background": "#FFFFFF",
+    "text": "#000000",
+    "node_colors": {
+      "router": "#E5E7EB",
+      "switch_l2": "#D1D5DB",
+      "switch_l3": "#CBD5E1",
+      "firewall": "#FDE68A",
+      "access_point": "#E9D5FF",
+      "server": "#E5E7EB",
+      "cloud": "#F3F4F6",
+      "internet": "#FECACA",
+      "unknown": "#F3F4F6"
+    },
+    "edge_colors": {
+      "physical": "#1D4ED8",
+      "logical": "#374151",
+      "trunk": "#047857",
+      "port_channel": "#065F46",
+      "wan": "#B91C1C",
+      "vpn": "#6D28D9",
+      "wireless": "#7C3AED",
+      "routing": "#1E40AF",
+      "security_flow": "#991B1B",
+      "dependency": "#374151"
+    }
+  },
+  "blueprint": {
+    "background": "#0B1F3A",
+    "text": "#FFFFFF",
+    "node_colors": {
+      "router": "#153E75",
+      "switch_l2": "#14532D",
+      "switch_l3": "#164E63",
+      "firewall": "#78350F",
+      "access_point": "#581C87",
+      "server": "#334155",
+      "cloud": "#1E293B",
+      "internet": "#7F1D1D",
+      "unknown": "#1E293B"
+    },
+    "edge_colors": {
+      "physical": "#60A5FA",
+      "logical": "#CBD5E1",
+      "trunk": "#4ADE80",
+      "port_channel": "#22C55E",
+      "wan": "#F87171",
+      "vpn": "#C4B5FD",
+      "wireless": "#A78BFA",
+      "routing": "#93C5FD",
+      "security_flow": "#FCA5A5",
+      "dependency": "#CBD5E1"
+    }
+  }
+}

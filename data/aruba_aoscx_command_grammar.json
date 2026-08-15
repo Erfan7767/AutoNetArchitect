@@ -1,0 +1,121 @@
+{
+  "grammar_version": "1.0",
+  "vendor_platform": "aruba_aoscx",
+  "coverage_policy": "v1 covers common/template-used commands; unknown commands remain not_covered unless explicitly forbidden.",
+  "rules": [
+    {
+      "pattern": "^hostname\\\\s+\\\\S+$",
+      "description": "Hostname declaration"
+    },
+    {
+      "pattern": "^service\\\\s+timestamps\\\\s+(?:debug|log)\\\\s+datetime(?:\\\\s+msec)?$",
+      "description": "Service timestamps"
+    },
+    {
+      "pattern": "^logging\\\\s+(?:host\\\\s+)?\\\\S+.*$",
+      "description": "Logging configuration"
+    },
+    {
+      "pattern": "^ntp\\\\s+server\\\\s+\\\\S+.*$",
+      "description": "NTP server"
+    },
+    {
+      "pattern": "^enable\\\\s+secret(?:\\\\s+[589])?\\\\s+\\\\S+$",
+      "description": "Hashed enable secret"
+    },
+    {
+      "pattern": "^username\\\\s+\\\\S+.*$",
+      "description": "Local username"
+    },
+    {
+      "pattern": "^aaa\\\\s+.*$",
+      "description": "AAA configuration"
+    },
+    {
+      "pattern": "^snmp-server\\\\s+.*$",
+      "description": "SNMP configuration"
+    },
+    {
+      "pattern": "^banner\\\\s+.*$",
+      "description": "Banner configuration"
+    },
+    {
+      "pattern": "^interface\\\\s+\\\\S+$",
+      "description": "Interface mode"
+    },
+    {
+      "pattern": "^\\\\s+(?:description|no\\\\s+shutdown|shutdown|speed|duplex|mtu|switchport|channel-group|ip\\\\s+address|ipv6\\\\s+address|standby|vrrp|hsrp|service-policy|spanning-tree|switchport\\\\s+access|switchport\\\\s+trunk|ip\\\\s+ospf|ip\\\\s+router|dot1x|authentication|storm-control|ip\\\\s+dhcp|ip\\\\s+verify|vrf\\\\s+forwarding|vrf\\\\s+member)\\\\b.*$",
+      "description": "Interface subcommand",
+      "valid_modes": [
+        "interface",
+        "global",
+        "parent"
+      ]
+    },
+    {
+      "pattern": "^router\\\\s+(?:ospf|eigrp|bgp)\\\\s+\\\\d+$",
+      "description": "Routing process"
+    },
+    {
+      "pattern": "^\\\\s+(?:router-id|network|passive-interface|no\\\\s+passive-interface|redistribute|default-information|maximum-paths|neighbor|distance|timers|area|auto-cost|log-adjacency|maximum-paths)\\\\b.*$",
+      "description": "Routing subcommand",
+      "valid_modes": [
+        "routing",
+        "global",
+        "parent"
+      ]
+    },
+    {
+      "pattern": "^line\\\\s+.*$",
+      "description": "Line mode"
+    },
+    {
+      "pattern": "^\\\\s+(?:login|transport\\\\s+input|exec-timeout|logging\\\\s+synchronous|password|authorization)\\\\b.*$",
+      "description": "Line subcommand",
+      "valid_modes": [
+        "line",
+        "global",
+        "parent"
+      ]
+    },
+    {
+      "pattern": "^ip\\\\s+(?:route|access-list|prefix-list|sla|nat|vrf|radius|ssh|domain)\\\\b.*$",
+      "description": "IP feature"
+    },
+    {
+      "pattern": "^(?:access-list|route-map|ip\\\\s+prefix-list)\\\\s+.*$",
+      "description": "Policy object"
+    },
+    {
+      "pattern": "^vlan\\\\s+\\\\d+$",
+      "description": "VLAN declaration"
+    },
+    {
+      "pattern": "^\\\\s+(?:name|state|description)\\\\s+.*$",
+      "description": "VLAN subcommand",
+      "valid_modes": [
+        "global",
+        "parent"
+      ]
+    },
+    {
+      "pattern": "^(?:spanning-tree|feature|vrf\\\\s+context|vpc|class-map|policy-map|service-policy)\\\\s+.*$",
+      "description": "Platform feature"
+    },
+    {
+      "pattern": "^(?:exit|end|quit|return)$",
+      "description": "Mode transition"
+    },
+    {
+      "pattern": "^(?:vsx|spanning-tree|aaa\\\\s+authentication)\\\\s+.*$",
+      "description": "AOS-CX feature"
+    }
+  ],
+  "total_known_commands": 22,
+  "uncovered_commands": [
+    "vendor commands outside this grammar"
+  ],
+  "partially_covered": [
+    "commands matched by syntax only when no semantic rule exists"
+  ]
+}

@@ -1,0 +1,20 @@
+# AutoNetArchitect development image. It is not the release runtime image.
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/workspace \
+    AUTONET_RUNTIME_MODE=test
+
+RUN groupadd --system --gid 10001 autonet && \
+    useradd --system --uid 10001 --gid 10001 --create-home --home-dir /home/autonet autonet
+
+WORKDIR /workspace
+COPY requirements.txt requirements-dev.txt pyproject.toml setup.py MANIFEST.in README.md LICENSE ./
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r requirements-dev.txt
+COPY . .
+RUN chown -R autonet:autonet /workspace /home/autonet
+USER autonet
+
+CMD ["python", "-m", "pytest", "tests/unit", "tests/integration", "tests/e2e", "tests/chaos", "-v", "--tb=short"]

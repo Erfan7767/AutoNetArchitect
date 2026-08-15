@@ -1,0 +1,45 @@
+{
+  "runbook_id": "link_failure",
+  "incident_category": "network_outage",
+  "title": "Link Failure Response",
+  "version": "1.0",
+  "requires_incident_commander": true,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "link_failure-1",
+      "order": 1,
+      "description": "confirm interface and optical evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "link_failure-2",
+      "order": 2,
+      "description": "validate alternate path availability",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "link_failure-3",
+      "order": 3,
+      "description": "preserve logs and counters",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "link_failure-4",
+      "order": 4,
+      "description": "record human decision before any failover",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "link_failure-review"
+    }
+  ]
+}

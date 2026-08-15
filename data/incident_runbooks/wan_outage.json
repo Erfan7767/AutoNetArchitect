@@ -1,0 +1,45 @@
+{
+  "runbook_id": "wan_outage",
+  "incident_category": "external_dependency",
+  "title": "WAN Outage Response",
+  "version": "1.0",
+  "requires_incident_commander": false,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "wan_outage-1",
+      "order": 1,
+      "description": "confirm provider and edge evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "wan_outage-2",
+      "order": 2,
+      "description": "validate alternate circuit evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "wan_outage-3",
+      "order": 3,
+      "description": "notify provider or business owner",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "wan_outage-4",
+      "order": 4,
+      "description": "record human failover decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "wan_outage-review"
+    }
+  ]
+}

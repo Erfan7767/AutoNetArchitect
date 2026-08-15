@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "profiles": {
+    "P1": {
+      "response_minutes": 15,
+      "update_minutes": 30,
+      "resolution_minutes": 240,
+      "escalation_after_minutes": 0
+    },
+    "P2": {
+      "response_minutes": 30,
+      "update_minutes": 60,
+      "resolution_minutes": 480,
+      "escalation_after_minutes": 60
+    },
+    "P3": {
+      "response_minutes": 120,
+      "update_minutes": 240,
+      "resolution_minutes": 1440,
+      "escalation_after_minutes": 240
+    },
+    "P4": {
+      "response_minutes": 480,
+      "update_minutes": 1440,
+      "resolution_minutes": 2880,
+      "escalation_after_minutes": 1440
+    }
+  }
+}

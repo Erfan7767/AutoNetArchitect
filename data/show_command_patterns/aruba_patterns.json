@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "vendor": "aruba",
+  "platform": "aoscx",
+  "commands": [
+    "show interface",
+    "show vlan",
+    "show ip route",
+    "show spanning-tree",
+    "show logging"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "vendors": [
+    {
+      "name": "Huawei",
+      "status": "supported",
+      "scope": "registered device models only"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "vendor": "mikrotik",
+  "platform": "routeros",
+  "commands": [
+    "/interface print",
+    "/ip route print",
+    "/ip firewall connection print",
+    "/log print"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

@@ -1,0 +1,23 @@
+{# ============================================================
+   Template: aruba_aoscx.port_security
+   Vendor: Aruba
+   Platform: AOS-CX
+   Feature: interfaces
+   Description: Guarded configuration fragment; it emits only declared variables or exact approved commands.
+   Required Variables:
+       - none: no fixed variables; guarded exact commands may be supplied.
+   Optional Variables:
+       - commands: list[string] - Exact commands supplied by a validated feature guard. (default: [])
+       - model: string - Equipment model scope. (default: not emitted)
+       - os_version: string - Operating system version scope. (default: not emitted)
+       - decision_ids: list[string] - Design decision references. (default: [])
+       - feature_guard_id: string - Feature guard reference. (default: not emitted)
+       - secret_references: list[string] - SecretManager references only. (default: [])
+   Min Version: model/version scope must be supplied by registry or source of truth
+   Evidence: https://support.hpe.com/hpesc/public/docDisplay?docId=sd00007465en_us&docLocale=en_US
+   Last Validated: registry scope only; authoritative model/version validation required
+   ============================================================ #}
+{% if commands is defined and commands %}
+{% for command in commands %}{{ command }}
+{% endfor %}
+{% endif %}

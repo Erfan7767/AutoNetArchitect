@@ -1,0 +1,7 @@
+schema_version: "1.0.0"
+precedence:
+  - approved_configuration
+  - versioned_data_contract
+  - documented_user_input
+  - ai_proposal
+unknown_values: HumanSuppliedMandatory

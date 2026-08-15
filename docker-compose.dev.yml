@@ -1,0 +1,20 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: autonetarchitect:dev
+    env_file:
+      - .env.test
+    environment:
+      PYTHONPATH: /workspace
+      AUTONET_RUNTIME_MODE: test
+    volumes:
+      - .:/workspace
+      - autonet_dev_cache:/home/autonet/.cache
+    working_dir: /workspace
+    command: ["python", "-m", "pytest", "tests/unit", "tests/integration", "tests/e2e", "tests/chaos", "-v", "--tb=short"]
+
+volumes:
+  autonet_dev_cache:
+    name: autonetarchitect_dev_cache

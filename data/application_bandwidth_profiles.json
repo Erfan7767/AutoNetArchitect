@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "scope": "planning defaults only; not collected traffic evidence",
+  "profiles": {
+    "web": {
+      "protocol": "tcp",
+      "port": 443,
+      "avg_session_bandwidth_mbps": 0.5,
+      "peak_session_bandwidth_mbps": 2.0,
+      "latency_sensitivity": "latency_sensitive",
+      "loss_sensitivity": "loss_tolerant",
+      "jitter_sensitivity": "jitter_tolerant",
+      "qos_class_mapping": "default"
+    },
+    "voice": {
+      "protocol": "udp",
+      "port": 5060,
+      "avg_session_bandwidth_mbps": 0.08,
+      "peak_session_bandwidth_mbps": 0.12,
+      "latency_sensitivity": "latency_critical",
+      "loss_sensitivity": "loss_sensitive",
+      "jitter_sensitivity": "jitter_sensitive",
+      "qos_class_mapping": "real_time"
+    },
+    "video": {
+      "protocol": "udp",
+      "port": 5004,
+      "avg_session_bandwidth_mbps": 2.0,
+      "peak_session_bandwidth_mbps": 8.0,
+      "latency_sensitivity": "latency_critical",
+      "loss_sensitivity": "loss_sensitive",
+      "jitter_sensitivity": "jitter_sensitive",
+      "qos_class_mapping": "real_time"
+    },
+    "database": {
+      "protocol": "tcp",
+      "port": 3306,
+      "avg_session_bandwidth_mbps": 1.0,
+      "peak_session_bandwidth_mbps": 5.0,
+      "latency_sensitivity": "latency_sensitive",
+      "loss_sensitivity": "loss_tolerant",
+      "jitter_sensitivity": "jitter_tolerant",
+      "qos_class_mapping": "business_critical"
+    },
+    "backup": {
+      "protocol": "tcp",
+      "port": 443,
+      "avg_session_bandwidth_mbps": 5.0,
+      "peak_session_bandwidth_mbps": 20.0,
+      "latency_sensitivity": "latency_tolerant",
+      "loss_sensitivity": "loss_tolerant",
+      "jitter_sensitivity": "jitter_tolerant",
+      "qos_class_mapping": "scavenger"
+    }
+  }
+}

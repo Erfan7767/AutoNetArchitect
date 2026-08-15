@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "assessment_type": "technical_compliance_assessment",
+  "certification_claim_allowed": false,
+  "full_readiness_claim_allowed": false,
+  "required_report_fields": [
+    "scope",
+    "limitations",
+    "evidence_basis",
+    "sot_basis",
+    "human_review_required",
+    "certification_statement"
+  ],
+  "evidence_domains": [
+    "design",
+    "configuration",
+    "operational",
+    "human_supplied",
+    "external_authority"
+  ],
+  "production_gate_default": "blocked_pending_review",
+  "disclaimer": "Technical network assessment only; not a certification, audit opinion, legal opinion, or complete regulatory readiness determination."
+}

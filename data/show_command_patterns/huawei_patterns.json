@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "vendor": "huawei",
+  "platform": "vrp",
+  "commands": [
+    "display interface",
+    "display ip routing-table",
+    "display ospf peer",
+    "display acl",
+    "display logbuffer"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

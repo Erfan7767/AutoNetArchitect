@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "trees": [
+    {
+      "tree_id": "connectivity",
+      "direction": "divide_and_conquer",
+      "nodes": [
+        "interface state",
+        "address allocation",
+        "gateway reachability",
+        "destination reachability",
+        "application evidence"
+      ]
+    },
+    {
+      "tree_id": "routing",
+      "direction": "top_down",
+      "nodes": [
+        "route presence",
+        "next hop",
+        "adjacency",
+        "policy filtering",
+        "return path"
+      ]
+    },
+    {
+      "tree_id": "physical",
+      "direction": "bottom_up",
+      "nodes": [
+        "admin/link state",
+        "errors",
+        "optics",
+        "cable test",
+        "power/environment"
+      ]
+    }
+  ]
+}

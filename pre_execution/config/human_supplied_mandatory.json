@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "fields": [
+    "management_addresses",
+    "credentials",
+    "topology",
+    "firmware_versions",
+    "security_policy",
+    "change_window",
+    "access_paths",
+    "compliance_requirements",
+    "deployment_approval"
+  ]
+}

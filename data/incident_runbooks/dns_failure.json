@@ -1,0 +1,45 @@
+{
+  "runbook_id": "dns_failure",
+  "incident_category": "network_degradation",
+  "title": "DNS Failure Response",
+  "version": "1.0",
+  "requires_incident_commander": false,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "dns_failure-1",
+      "order": 1,
+      "description": "confirm resolver and forwarding evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "dns_failure-2",
+      "order": 2,
+      "description": "validate service dependencies",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "dns_failure-3",
+      "order": 3,
+      "description": "preserve query and log evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "dns_failure-4",
+      "order": 4,
+      "description": "record human recovery decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "dns_failure-review"
+    }
+  ]
+}

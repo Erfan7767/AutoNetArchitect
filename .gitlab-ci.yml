@@ -1,0 +1,155 @@
+# Secondary GitLab CI mapping. GitHub Actions remains the primary supported CI provider.
+# Protect the default branch by requiring the complete pipeline to succeed.
+
+stages:
+  - lint
+  - typecheck
+  - test-unit
+  - test-integration
+  - test-e2e
+  - test-chaos
+  - security
+  - build
+  - docs
+  - container
+  - gate
+
+variables:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHONPATH: "$CI_PROJECT_DIR"
+  AUTONET_RUNTIME_MODE: "test"
+
+cache:
+  key:
+    files:
+      - requirements.txt
+      - requirements-dev.txt
+      - pyproject.toml
+  paths:
+    - .cache/pip
+
+.python_setup:
+  image: python:3.11-slim
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install -r requirements-dev.txt
+
+lint:
+  extends: .python_setup
+  stage: lint
+  script:
+    - python -m ruff check . --config pyproject.toml
+    - python -m ruff format --check . --config pyproject.toml
+
+typecheck:
+  extends: .python_setup
+  stage: typecheck
+  script:
+    - python -m mypy autonetarchitect/ --config-file mypy.ini
+
+unit:
+  extends: .python_setup
+  stage: test-unit
+  script:
+    - mkdir -p coverage-data
+    - python -m pytest tests/unit/ tests/ci/ -v --tb=short --cov=autonetarchitect --cov-config=coverage_config/.coveragerc --cov-report=xml --cov-report=html -x
+    - python -m coverage report
+    - python -m coverage html
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+      - htmlcov/
+    expire_in: 30 days
+
+integration:
+  extends: .python_setup
+  stage: test-integration
+  script:
+    - python -m pytest tests/integration/ -v --tb=short -x
+
+e2e:
+  extends: .python_setup
+  stage: test-e2e
+  script:
+    - python -m pip install -e ".[all]"
+    - python -m pytest tests/e2e/ -v --tb=short --timeout=300 -x
+
+chaos:
+  extends: .python_setup
+  stage: test-chaos
+  script:
+    - python -m pytest tests/chaos/ -v --tb=short -x
+
+security-mandatory:
+  extends: .python_setup
+  stage: security
+  script:
+    - python -m bandit -r autonetarchitect/ -f json -o bandit-report.json -ll
+    - python -m pip_audit --requirement requirements.txt
+  artifacts:
+    when: always
+    paths:
+      - bandit-report.json
+    expire_in: 30 days
+
+safety-supplemental:
+  extends: .python_setup
+  stage: security
+  allow_failure: true
+  script:
+    - mkdir -p .ci/safety
+    - cp requirements.txt .ci/safety/requirements.txt
+    - timeout 60s python -m safety scan --target .ci/safety --save-as json safety-report.json
+  artifacts:
+    when: always
+    paths:
+      - safety-report.json
+    expire_in: 30 days
+
+build:
+  extends: .python_setup
+  stage: build
+  script:
+    - python -m build
+    - python -m twine check dist/*
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 90 days
+
+docs:
+  extends: .python_setup
+  stage: docs
+  script:
+    - python -m pip install -r docs/requirements-docs.txt
+    - python scripts/check_docs_links.py
+    - python -m mkdocs build --strict --config-file docs/mkdocs.yml
+  artifacts:
+    paths:
+      - site/
+    expire_in: 30 days
+
+container:
+  image: docker:27-cli
+  services:
+    - name: docker:27-dind
+      command: ["--tls=false"]
+  stage: container
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker build --tag autonetarchitect:gitlab-ci .
+    - docker run --rm autonetarchitect:gitlab-ci autonet --help
+
+gate:
+  image: alpine:3.22
+  stage: gate
+  script:
+    - echo "All GitLab CI stages completed successfully."

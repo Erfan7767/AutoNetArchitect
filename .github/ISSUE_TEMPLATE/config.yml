@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure guidance
+    url: https://github.com/autonetarchitect/AutoNetArchitect/security/policy
+    about: Report suspected vulnerabilities privately and do not include credentials or raw secrets in public issues.
+  - name: Documentation and scope questions
+    url: https://github.com/autonetarchitect/AutoNetArchitect/discussions
+    about: Use discussions for documentation clarification, bounded scope questions, and evidence interpretation.

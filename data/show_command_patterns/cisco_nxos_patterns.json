@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "vendor": "cisco",
+  "platform": "nxos",
+  "commands": [
+    "show interface",
+    "show ip route",
+    "show ip ospf neighbors",
+    "show bgp sessions",
+    "show spanning-tree",
+    "show logging"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

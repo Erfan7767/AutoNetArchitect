@@ -1,0 +1,14 @@
+domain_packs/enterprise_corporate/__init__.py
+domain_packs/enterprise_corporate/acceptance_criteria.py
+domain_packs/enterprise_corporate/branch_patterns.py
+domain_packs/enterprise_corporate/campus_patterns.py
+domain_packs/enterprise_corporate/common.py
+domain_packs/enterprise_corporate/compliance_mapping.py
+domain_packs/enterprise_corporate/domain_scope.py
+domain_packs/enterprise_corporate/equipment_preferences.py
+domain_packs/enterprise_corporate/internet_edge_patterns.py
+domain_packs/enterprise_corporate/remote_work_profile.py
+domain_packs/enterprise_corporate/requirements_profile.py
+domain_packs/enterprise_corporate/security_baselines.py
+domain_packs/enterprise_corporate/services_profile.py
+domain_packs/enterprise_corporate/topology_patterns.py

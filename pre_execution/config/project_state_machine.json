@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "states": [
+    "draft",
+    "specified",
+    "designed",
+    "validated",
+    "approved",
+    "deployed",
+    "blocked"
+  ],
+  "transitions": {
+    "draft": [
+      "specified",
+      "blocked"
+    ],
+    "specified": [
+      "designed",
+      "blocked"
+    ],
+    "designed": [
+      "validated",
+      "blocked"
+    ],
+    "validated": [
+      "approved",
+      "blocked"
+    ],
+    "approved": [
+      "deployed",
+      "blocked"
+    ],
+    "deployed": [],
+    "blocked": [
+      "draft"
+    ]
+  }
+}

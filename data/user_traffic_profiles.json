@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "scope": "estimation assumptions; replace with human-supplied or monitoring-derived data",
+  "profiles": {
+    "office_worker": {
+      "avg_bandwidth_mbps": 0.5,
+      "peak_bandwidth_mbps": 2.0,
+      "data_percent": 60,
+      "voice_percent": 15,
+      "video_percent": 20,
+      "other_percent": 5
+    },
+    "developer": {
+      "avg_bandwidth_mbps": 1.0,
+      "peak_bandwidth_mbps": 5.0,
+      "data_percent": 70,
+      "voice_percent": 10,
+      "video_percent": 15,
+      "other_percent": 5
+    },
+    "executive": {
+      "avg_bandwidth_mbps": 1.5,
+      "peak_bandwidth_mbps": 8.0,
+      "data_percent": 50,
+      "voice_percent": 10,
+      "video_percent": 35,
+      "other_percent": 5
+    },
+    "student": {
+      "avg_bandwidth_mbps": 0.8,
+      "peak_bandwidth_mbps": 4.0,
+      "data_percent": 55,
+      "voice_percent": 10,
+      "video_percent": 30,
+      "other_percent": 5
+    },
+    "medical_staff": {
+      "avg_bandwidth_mbps": 1.0,
+      "peak_bandwidth_mbps": 10.0,
+      "data_percent": 45,
+      "voice_percent": 10,
+      "video_percent": 35,
+      "other_percent": 10
+    },
+    "iot_device": {
+      "avg_bandwidth_mbps": 0.01,
+      "peak_bandwidth_mbps": 0.1,
+      "data_percent": 85,
+      "voice_percent": 0,
+      "video_percent": 0,
+      "other_percent": 15
+    },
+    "camera": {
+      "avg_bandwidth_mbps": 4.0,
+      "peak_bandwidth_mbps": 8.0,
+      "data_percent": 0,
+      "voice_percent": 0,
+      "video_percent": 95,
+      "other_percent": 5
+    }
+  }
+}

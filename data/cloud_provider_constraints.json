@@ -1,0 +1,14 @@
+{
+  "aws": {
+    "direct_connect": true,
+    "vpn": true
+  },
+  "azure": {
+    "expressroute": true,
+    "vpn": true
+  },
+  "gcp": {
+    "interconnect": true,
+    "ha_vpn": true
+  }
+}

@@ -1,0 +1,5 @@
+/system identity set name=edge-router
+/system ntp client set enabled=yes servers=192.0.2.20
+/ip address add address=192.0.2.1/30 interface=ether1
+/ip route add dst-address=0.0.0.0/0 gateway=192.0.2.2
+/routing ospf instance add name=default router-id=192.0.2.1

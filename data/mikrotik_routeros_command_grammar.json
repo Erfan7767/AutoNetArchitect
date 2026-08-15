@@ -1,0 +1,22 @@
+{
+  "grammar_version": "1.0",
+  "vendor_platform": "mikrotik_routeros",
+  "coverage_policy": "v1 covers common/template-used commands; unknown commands remain not_covered unless explicitly forbidden.",
+  "rules": [
+    {
+      "pattern": "^/[^\\\\s]+(?:/[^\\\\s]+)*\\\\s+(?:add|set|remove|print|export)(?:\\\\s+.*)?$",
+      "description": "RouterOS path command"
+    },
+    {
+      "pattern": "^/[^\\\\s]+(?:/[^\\\\s]+)*$",
+      "description": "RouterOS path"
+    }
+  ],
+  "total_known_commands": 2,
+  "uncovered_commands": [
+    "vendor commands outside this grammar"
+  ],
+  "partially_covered": [
+    "commands matched by syntax only when no semantic rule exists"
+  ]
+}

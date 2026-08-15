@@ -1,0 +1,45 @@
+{
+  "runbook_id": "routing_failure",
+  "incident_category": "network_outage",
+  "title": "Routing Failure Response",
+  "version": "1.0",
+  "requires_incident_commander": true,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "routing_failure-1",
+      "order": 1,
+      "description": "inspect route and adjacency evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "routing_failure-2",
+      "order": 2,
+      "description": "validate route safety and loop risk",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "routing_failure-3",
+      "order": 3,
+      "description": "preserve route history",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "routing_failure-4",
+      "order": 4,
+      "description": "record governed recovery decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "routing_failure-review"
+    }
+  ]
+}

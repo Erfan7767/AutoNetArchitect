@@ -1,0 +1,4 @@
+schema_version: "1.0.0"
+mode: local_first
+user_model: single_user
+multi_user_supported: false

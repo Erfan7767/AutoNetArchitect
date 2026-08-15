@@ -1,0 +1,42 @@
+{# ============================================================
+   Template: paloalto.security_policy
+   Vendor: Palo Alto Networks
+   Platform: PAN-OS
+   Feature: security.policy
+   Description: Guarded configuration fragment; it emits only declared variables or exact approved commands.
+   Required Variables:
+       - rule_name: string - PAN-OS security rule name.
+       - source_zone: string - Source zone.
+       - destination_zone: string - Destination zone.
+       - source_address: string - Source address object or group.
+       - destination_address: string - Destination address object or group.
+       - application: string - Application object or group.
+       - service: string - Service object or group.
+       - action: string - Approved policy action.
+       - log_start: bool - Whether session-start logging is enabled.
+       - log_end: bool - Whether session-end logging is enabled.
+       - log_forwarding_profile: string - Logging profile name.
+   Optional Variables:
+       - commands: list[string] - Exact commands supplied by a validated feature guard. (default: [])
+       - model: string - Equipment model scope. (default: not emitted)
+       - os_version: string - Operating system version scope. (default: not emitted)
+       - decision_ids: list[string] - Design decision references. (default: [])
+       - feature_guard_id: string - Feature guard reference. (default: not emitted)
+       - secret_references: list[string] - SecretManager references only. (default: [])
+   Min Version: model/version scope must be supplied by registry or source of truth
+   Evidence: https://docs.paloaltonetworks.com/ngfw/pan-os-cli-quick-start/cli-command-hierarchy
+   Last Validated: registry scope only; authoritative model/version validation required
+   ============================================================ #}
+{% if rule_name is defined and source_zone is defined %}
+set rulebase security rules "{{ rule_name }}" from {{ source_zone }}
+set rulebase security rules "{{ rule_name }}" to {{ destination_zone }}
+set rulebase security rules "{{ rule_name }}" source {{ source_address }}
+set rulebase security rules "{{ rule_name }}" destination {{ destination_address }}
+set rulebase security rules "{{ rule_name }}" application {{ application }}
+set rulebase security rules "{{ rule_name }}" service {{ service }}
+set rulebase security rules "{{ rule_name }}" action {{ action }}
+set rulebase security rules "{{ rule_name }}" log-start {{ log_start | lower }}
+set rulebase security rules "{{ rule_name }}" log-end {{ log_end | lower }}
+set rulebase security rules "{{ rule_name }}" log-setting {{ log_forwarding_profile }}
+{% else %}{% for command in commands | default([]) %}{{ command }}
+{% endfor %}{% endif %}

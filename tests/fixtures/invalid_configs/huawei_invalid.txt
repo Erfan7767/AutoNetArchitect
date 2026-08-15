@@ -1,0 +1,4 @@
+sysname bad
+interface GigabitEthernet0/0/0
+ ip address 999.999.999.999 255.0.255.0
+ quit

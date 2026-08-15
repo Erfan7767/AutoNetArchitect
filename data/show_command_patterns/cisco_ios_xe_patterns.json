@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "vendor": "cisco",
+  "platform": "ios_xe",
+  "commands": [
+    "show interfaces",
+    "show ip interface brief",
+    "show ip route",
+    "show ip ospf neighbor",
+    "show ip bgp summary",
+    "show spanning-tree",
+    "show access-lists",
+    "show environment"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

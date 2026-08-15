@@ -1,0 +1,310 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PYTHONPATH: .
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  lint:
+    name: lint-and-format
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            pyproject.toml
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+          python -m pip install -e .
+      - name: Ruff lint
+        run: python -m ruff check . --config pyproject.toml
+      - name: Ruff format check
+        run: python -m ruff format --check . --config pyproject.toml
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Mypy
+        run: python -m mypy autonetarchitect/ --config-file mypy.ini
+
+  test-unit:
+    name: test-unit-${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Run unit tests with coverage
+        env:
+          COVERAGE_FILE: ${{ github.workspace }}/coverage-data/.coverage.${{ matrix.python-version }}
+        run: |
+          mkdir -p coverage-data
+          python -m pytest tests/unit/ tests/ci/ -v --tb=short --cov=autonetarchitect --cov-config=coverage_config/.coveragerc --cov-report=xml:coverage-${{ matrix.python-version }}.xml --cov-report=html:htmlcov-${{ matrix.python-version }} -x
+      - name: Upload unit coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: |
+            coverage-data/.coverage.*
+            coverage-${{ matrix.python-version }}.xml
+            htmlcov-${{ matrix.python-version }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  test-ci-contracts:
+    name: test-ci-contracts
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Run CI self-tests
+        run: python -m pytest tests/ci/ -v --tb=short -x
+
+  test-integration:
+    name: test-integration
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-ci-contracts]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development and optional dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,optional]"
+      - name: Run integration tests
+        run: python -m pytest tests/integration/ -v --tb=short -x
+
+  test-e2e:
+    name: test-e2e
+    runs-on: ubuntu-latest
+    needs: test-integration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install all declared dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[all]"
+      - name: Run end-to-end tests
+        run: python -m pytest tests/e2e/ -v --tb=short -x --timeout=300
+
+  test-chaos:
+    name: test-chaos
+    runs-on: ubuntu-latest
+    needs: test-integration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Run controlled chaos tests
+        run: python -m pytest tests/chaos/ -v --tb=short -x
+
+  build-check:
+    name: build-check
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Build source distribution and wheel
+        run: python -m build
+      - name: Validate package metadata
+        run: python -m twine check dist/*
+      - name: Install built wheel in isolated target
+        run: python -m pip install --force-reinstall dist/*.whl
+      - name: Verify installed import and version
+        run: python -c "import autonetarchitect; assert autonetarchitect.__version__ == '0.1.0'; print(autonetarchitect.__version__)"
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-package
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  docker-build:
+    name: docker-build
+    runs-on: ubuntu-latest
+    needs: [test-unit, build-check]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build release container
+        run: docker build --tag autonetarchitect:test .
+      - name: Run container CLI smoke check
+        run: docker run --rm autonetarchitect:test autonet --help
+
+  coverage-report:
+    name: coverage-report
+    runs-on: ubuntu-latest
+    needs: test-unit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-3.*
+          path: coverage-artifacts
+          merge-multiple: true
+      - name: Combine and enforce coverage threshold
+        run: |
+          mkdir -p coverage-data
+          find coverage-artifacts -name '.coverage.*' -exec cp {} coverage-data/ \;
+          python -m coverage combine coverage-data
+          python -m coverage report
+          python -m coverage html
+          python -m coverage xml
+      - name: Upload combined coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-combined
+          path: |
+            coverage.xml
+            htmlcov/
+          if-no-files-found: error
+          retention-days: 30
+
+  required-checks:
+    name: required-checks
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [lint, typecheck, test-unit, test-ci-contracts, test-integration, test-e2e, test-chaos, build-check, docker-build, coverage-report]
+    steps:
+      - name: Enforce mandatory job outcomes
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
+      - name: All mandatory checks succeeded
+        run: echo "All CI checks required by branch protection succeeded."

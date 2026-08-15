@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "required_for": [
+    "P1",
+    "P2"
+  ],
+  "recommended_for": [
+    "P3_recurring"
+  ],
+  "sections": [
+    "incident_summary",
+    "timeline_review",
+    "root_cause_analysis",
+    "what_went_well",
+    "what_could_be_improved",
+    "detection_effectiveness",
+    "response_effectiveness",
+    "communication_effectiveness",
+    "tool_effectiveness",
+    "process_gaps",
+    "action_items",
+    "knowledge_base_updates"
+  ],
+  "policy": "blame_free_process_review"
+}

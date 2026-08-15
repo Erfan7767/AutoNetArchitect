@@ -1,0 +1,28 @@
+{
+  "catalog_version": "1.0",
+  "catalog_status": "requires_authoritative_population",
+  "vendors": [
+    {
+      "vendor_id": "Cisco",
+      "vendor_status": "catalogued_not_production_approved",
+      "production_eligible": false,
+      "source_ids": [],
+      "notes": "Vendor identity is catalogued; model-level production selection requires authoritative capability and commercial evidence."
+    },
+    {
+      "vendor_id": "Arista",
+      "vendor_status": "catalogued_not_production_approved",
+      "production_eligible": false,
+      "source_ids": [],
+      "notes": "Vendor identity is catalogued; model-level production selection requires authoritative capability and commercial evidence."
+    },
+    {
+      "vendor_id": "Juniper",
+      "vendor_status": "catalogued_not_production_approved",
+      "production_eligible": false,
+      "source_ids": [],
+      "notes": "Vendor identity is catalogued; model-level production selection requires authoritative capability and commercial evidence."
+    }
+  ],
+  "equipment": []
+}

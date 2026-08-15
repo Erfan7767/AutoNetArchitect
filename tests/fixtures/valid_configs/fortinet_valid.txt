@@ -1,0 +1,16 @@
+config system global
+ set hostname "branch-fw"
+end
+config system interface
+ edit "port1"
+  set ip 192.0.2.1/30
+  set allowaccess ping https ssh
+ next
+end
+config router static
+ edit 1
+  set dst 0.0.0.0/0
+  set gateway 192.0.2.2
+  set device "port1"
+ next
+end

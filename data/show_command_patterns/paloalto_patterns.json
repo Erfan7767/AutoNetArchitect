@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "vendor": "paloalto",
+  "platform": "panos",
+  "commands": [
+    "show system info",
+    "show routing route",
+    "show session all",
+    "show vpn ike-sa",
+    "show vpn ipsec-sa"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

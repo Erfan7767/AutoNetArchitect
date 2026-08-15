@@ -1,0 +1,14 @@
+{# ============================================================
+   Template: _shared.banner_templates
+   Vendor: shared
+   Platform: cross-platform macro library
+   Feature: operations.banner
+   Description: Shared formatting macros; vendor command syntax remains in vendor templates.
+   Required Variables: none
+   Optional Variables: lines: list[string] - approved text lines (default: [])
+   Min Version: not applicable
+   Evidence: shared formatting only; no vendor command claim
+   Last Validated: registry scope only
+   ============================================================ #}
+{% macro text_lines(lines) -%}{% for line in lines | default([]) %}{{ line }}{% if not loop.last %}
+{% endif %}{% endfor %}{%- endmacro %}

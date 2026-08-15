@@ -1,0 +1,1744 @@
+{
+  "phases": {
+    "0": {
+      "phase_id": 0,
+      "phase_name": "Phase 00",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 220
+      },
+      "estimated_total_lines": 330,
+      "estimated_token_count": 1320,
+      "dependencies": [],
+      "packages_affected": [
+        "package_00"
+      ],
+      "new_packages": [
+        "package_00"
+      ],
+      "modified_packages": [
+        "package_00"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "1": {
+      "phase_id": 1,
+      "phase_name": "Phase 01",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 240
+      },
+      "estimated_total_lines": 520,
+      "estimated_token_count": 2080,
+      "dependencies": [
+        0
+      ],
+      "packages_affected": [
+        "package_01"
+      ],
+      "new_packages": [
+        "package_01"
+      ],
+      "modified_packages": [
+        "package_01"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "2": {
+      "phase_id": 2,
+      "phase_name": "Phase 02",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 260
+      },
+      "estimated_total_lines": 750,
+      "estimated_token_count": 3000,
+      "dependencies": [
+        1
+      ],
+      "packages_affected": [
+        "package_02"
+      ],
+      "new_packages": [
+        "package_02"
+      ],
+      "modified_packages": [
+        "package_02"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "3": {
+      "phase_id": 3,
+      "phase_name": "Phase 03",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 280
+      },
+      "estimated_total_lines": 1020,
+      "estimated_token_count": 4080,
+      "dependencies": [
+        2
+      ],
+      "packages_affected": [
+        "package_03"
+      ],
+      "new_packages": [
+        "package_03"
+      ],
+      "modified_packages": [
+        "package_03"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "4": {
+      "phase_id": 4,
+      "phase_name": "Phase 04",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 300
+      },
+      "estimated_total_lines": 1330,
+      "estimated_token_count": 5320,
+      "dependencies": [
+        3
+      ],
+      "packages_affected": [
+        "package_04"
+      ],
+      "new_packages": [
+        "package_04"
+      ],
+      "modified_packages": [
+        "package_04"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "5": {
+      "phase_id": 5,
+      "phase_name": "Phase 05",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 320
+      },
+      "estimated_total_lines": 880,
+      "estimated_token_count": 3520,
+      "dependencies": [
+        4
+      ],
+      "packages_affected": [
+        "package_05"
+      ],
+      "new_packages": [
+        "package_05"
+      ],
+      "modified_packages": [
+        "package_05"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "6": {
+      "phase_id": 6,
+      "phase_name": "Phase 06",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 340
+      },
+      "estimated_total_lines": 390,
+      "estimated_token_count": 1560,
+      "dependencies": [
+        5
+      ],
+      "packages_affected": [
+        "package_06"
+      ],
+      "new_packages": [
+        "package_06"
+      ],
+      "modified_packages": [
+        "package_06"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    },
+    "7": {
+      "phase_id": 7,
+      "phase_name": "Phase 07",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 220
+      },
+      "estimated_total_lines": 600,
+      "estimated_token_count": 2400,
+      "dependencies": [
+        6
+      ],
+      "packages_affected": [
+        "package_07"
+      ],
+      "new_packages": [
+        "package_07"
+      ],
+      "modified_packages": [
+        "package_07"
+      ],
+      "priority": "low",
+      "category": "design"
+    },
+    "8": {
+      "phase_id": 8,
+      "phase_name": "Phase 08",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 240
+      },
+      "estimated_total_lines": 850,
+      "estimated_token_count": 3400,
+      "dependencies": [
+        7
+      ],
+      "packages_affected": [
+        "package_08"
+      ],
+      "new_packages": [
+        "package_08"
+      ],
+      "modified_packages": [
+        "package_08"
+      ],
+      "priority": "critical",
+      "category": "domain"
+    },
+    "9": {
+      "phase_id": 9,
+      "phase_name": "Phase 09",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 260
+      },
+      "estimated_total_lines": 1140,
+      "estimated_token_count": 4560,
+      "dependencies": [
+        8
+      ],
+      "packages_affected": [
+        "package_09"
+      ],
+      "new_packages": [
+        "package_09"
+      ],
+      "modified_packages": [
+        "package_09"
+      ],
+      "priority": "high",
+      "category": "governance"
+    },
+    "10": {
+      "phase_id": 10,
+      "phase_name": "Phase 10",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 280
+      },
+      "estimated_total_lines": 770,
+      "estimated_token_count": 3080,
+      "dependencies": [
+        9
+      ],
+      "packages_affected": [
+        "package_10"
+      ],
+      "new_packages": [
+        "package_10"
+      ],
+      "modified_packages": [
+        "package_10"
+      ],
+      "priority": "medium",
+      "category": "deployment"
+    },
+    "11": {
+      "phase_id": 11,
+      "phase_name": "Phase 11",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 300
+      },
+      "estimated_total_lines": 1040,
+      "estimated_token_count": 4160,
+      "dependencies": [
+        10
+      ],
+      "packages_affected": [
+        "package_11"
+      ],
+      "new_packages": [
+        "package_11"
+      ],
+      "modified_packages": [
+        "package_11"
+      ],
+      "priority": "low",
+      "category": "operations"
+    },
+    "12": {
+      "phase_id": 12,
+      "phase_name": "Phase 12",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 320
+      },
+      "estimated_total_lines": 450,
+      "estimated_token_count": 1800,
+      "dependencies": [
+        11
+      ],
+      "packages_affected": [
+        "package_12"
+      ],
+      "new_packages": [
+        "package_12"
+      ],
+      "modified_packages": [
+        "package_12"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "13": {
+      "phase_id": 13,
+      "phase_name": "Phase 13",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 340
+      },
+      "estimated_total_lines": 680,
+      "estimated_token_count": 2720,
+      "dependencies": [
+        12
+      ],
+      "packages_affected": [
+        "package_13"
+      ],
+      "new_packages": [
+        "package_13"
+      ],
+      "modified_packages": [
+        "package_13"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "14": {
+      "phase_id": 14,
+      "phase_name": "Phase 14",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 220
+      },
+      "estimated_total_lines": 950,
+      "estimated_token_count": 3800,
+      "dependencies": [
+        13
+      ],
+      "packages_affected": [
+        "package_14"
+      ],
+      "new_packages": [
+        "package_14"
+      ],
+      "modified_packages": [
+        "package_14"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "15": {
+      "phase_id": 15,
+      "phase_name": "Phase 15",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 240
+      },
+      "estimated_total_lines": 660,
+      "estimated_token_count": 2640,
+      "dependencies": [
+        14
+      ],
+      "packages_affected": [
+        "package_15"
+      ],
+      "new_packages": [
+        "package_15"
+      ],
+      "modified_packages": [
+        "package_15"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "16": {
+      "phase_id": 16,
+      "phase_name": "Phase 16",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 260
+      },
+      "estimated_total_lines": 910,
+      "estimated_token_count": 3640,
+      "dependencies": [
+        15
+      ],
+      "packages_affected": [
+        "package_16"
+      ],
+      "new_packages": [
+        "package_16"
+      ],
+      "modified_packages": [
+        "package_16"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "17": {
+      "phase_id": 17,
+      "phase_name": "Phase 17",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 280
+      },
+      "estimated_total_lines": 1200,
+      "estimated_token_count": 4800,
+      "dependencies": [
+        16
+      ],
+      "packages_affected": [
+        "package_17"
+      ],
+      "new_packages": [
+        "package_17"
+      ],
+      "modified_packages": [
+        "package_17"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "18": {
+      "phase_id": 18,
+      "phase_name": "Phase 18",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 300
+      },
+      "estimated_total_lines": 510,
+      "estimated_token_count": 2040,
+      "dependencies": [
+        17
+      ],
+      "packages_affected": [
+        "package_18"
+      ],
+      "new_packages": [
+        "package_18"
+      ],
+      "modified_packages": [
+        "package_18"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    },
+    "19": {
+      "phase_id": 19,
+      "phase_name": "Phase 19",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 320
+      },
+      "estimated_total_lines": 760,
+      "estimated_token_count": 3040,
+      "dependencies": [
+        18
+      ],
+      "packages_affected": [
+        "package_19"
+      ],
+      "new_packages": [
+        "package_19"
+      ],
+      "modified_packages": [
+        "package_19"
+      ],
+      "priority": "low",
+      "category": "design"
+    },
+    "20": {
+      "phase_id": 20,
+      "phase_name": "Phase 20",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 340
+      },
+      "estimated_total_lines": 550,
+      "estimated_token_count": 2200,
+      "dependencies": [
+        19
+      ],
+      "packages_affected": [
+        "package_20"
+      ],
+      "new_packages": [
+        "package_20"
+      ],
+      "modified_packages": [
+        "package_20"
+      ],
+      "priority": "critical",
+      "category": "domain"
+    },
+    "21": {
+      "phase_id": 21,
+      "phase_name": "Phase 21",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 220
+      },
+      "estimated_total_lines": 780,
+      "estimated_token_count": 3120,
+      "dependencies": [
+        20
+      ],
+      "packages_affected": [
+        "package_21"
+      ],
+      "new_packages": [
+        "package_21"
+      ],
+      "modified_packages": [
+        "package_21"
+      ],
+      "priority": "high",
+      "category": "governance"
+    },
+    "22": {
+      "phase_id": 22,
+      "phase_name": "Phase 22",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 240
+      },
+      "estimated_total_lines": 1050,
+      "estimated_token_count": 4200,
+      "dependencies": [
+        21
+      ],
+      "packages_affected": [
+        "package_22"
+      ],
+      "new_packages": [
+        "package_22"
+      ],
+      "modified_packages": [
+        "package_22"
+      ],
+      "priority": "medium",
+      "category": "deployment"
+    },
+    "23": {
+      "phase_id": 23,
+      "phase_name": "Phase 23",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 260
+      },
+      "estimated_total_lines": 1360,
+      "estimated_token_count": 5440,
+      "dependencies": [
+        22
+      ],
+      "packages_affected": [
+        "package_23"
+      ],
+      "new_packages": [
+        "package_23"
+      ],
+      "modified_packages": [
+        "package_23"
+      ],
+      "priority": "low",
+      "category": "operations"
+    },
+    "24": {
+      "phase_id": 24,
+      "phase_name": "Phase 24",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 280
+      },
+      "estimated_total_lines": 570,
+      "estimated_token_count": 2280,
+      "dependencies": [
+        23
+      ],
+      "packages_affected": [
+        "package_24"
+      ],
+      "new_packages": [
+        "package_24"
+      ],
+      "modified_packages": [
+        "package_24"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "25": {
+      "phase_id": 25,
+      "phase_name": "Phase 25",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 300
+      },
+      "estimated_total_lines": 440,
+      "estimated_token_count": 1760,
+      "dependencies": [
+        24
+      ],
+      "packages_affected": [
+        "package_25"
+      ],
+      "new_packages": [
+        "package_25"
+      ],
+      "modified_packages": [
+        "package_25"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "26": {
+      "phase_id": 26,
+      "phase_name": "Phase 26",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 320
+      },
+      "estimated_total_lines": 650,
+      "estimated_token_count": 2600,
+      "dependencies": [
+        25
+      ],
+      "packages_affected": [
+        "package_26"
+      ],
+      "new_packages": [
+        "package_26"
+      ],
+      "modified_packages": [
+        "package_26"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "27": {
+      "phase_id": 27,
+      "phase_name": "Phase 27",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 340
+      },
+      "estimated_total_lines": 900,
+      "estimated_token_count": 3600,
+      "dependencies": [
+        26
+      ],
+      "packages_affected": [
+        "package_27"
+      ],
+      "new_packages": [
+        "package_27"
+      ],
+      "modified_packages": [
+        "package_27"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "28": {
+      "phase_id": 28,
+      "phase_name": "Phase 28",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 220
+      },
+      "estimated_total_lines": 1190,
+      "estimated_token_count": 4760,
+      "dependencies": [
+        27
+      ],
+      "packages_affected": [
+        "package_28"
+      ],
+      "new_packages": [
+        "package_28"
+      ],
+      "modified_packages": [
+        "package_28"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "29": {
+      "phase_id": 29,
+      "phase_name": "Phase 29",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 240
+      },
+      "estimated_total_lines": 1520,
+      "estimated_token_count": 6080,
+      "dependencies": [
+        28
+      ],
+      "packages_affected": [
+        "package_29"
+      ],
+      "new_packages": [
+        "package_29"
+      ],
+      "modified_packages": [
+        "package_29"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "30": {
+      "phase_id": 30,
+      "phase_name": "Phase 30",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 260
+      },
+      "estimated_total_lines": 330,
+      "estimated_token_count": 1320,
+      "dependencies": [
+        29
+      ],
+      "packages_affected": [
+        "package_30"
+      ],
+      "new_packages": [
+        "package_30"
+      ],
+      "modified_packages": [
+        "package_30"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    },
+    "31": {
+      "phase_id": 31,
+      "phase_name": "Phase 31",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 280
+      },
+      "estimated_total_lines": 520,
+      "estimated_token_count": 2080,
+      "dependencies": [
+        30
+      ],
+      "packages_affected": [
+        "package_31"
+      ],
+      "new_packages": [
+        "package_31"
+      ],
+      "modified_packages": [
+        "package_31"
+      ],
+      "priority": "low",
+      "category": "design"
+    },
+    "32": {
+      "phase_id": 32,
+      "phase_name": "Phase 32",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 300
+      },
+      "estimated_total_lines": 750,
+      "estimated_token_count": 3000,
+      "dependencies": [
+        31
+      ],
+      "packages_affected": [
+        "package_32"
+      ],
+      "new_packages": [
+        "package_32"
+      ],
+      "modified_packages": [
+        "package_32"
+      ],
+      "priority": "critical",
+      "category": "domain"
+    },
+    "33": {
+      "phase_id": 33,
+      "phase_name": "Phase 33",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 320
+      },
+      "estimated_total_lines": 1020,
+      "estimated_token_count": 4080,
+      "dependencies": [
+        32
+      ],
+      "packages_affected": [
+        "package_33"
+      ],
+      "new_packages": [
+        "package_33"
+      ],
+      "modified_packages": [
+        "package_33"
+      ],
+      "priority": "high",
+      "category": "governance"
+    },
+    "34": {
+      "phase_id": 34,
+      "phase_name": "Phase 34",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 340
+      },
+      "estimated_total_lines": 1330,
+      "estimated_token_count": 5320,
+      "dependencies": [
+        33
+      ],
+      "packages_affected": [
+        "package_34"
+      ],
+      "new_packages": [
+        "package_34"
+      ],
+      "modified_packages": [
+        "package_34"
+      ],
+      "priority": "medium",
+      "category": "deployment"
+    },
+    "35": {
+      "phase_id": 35,
+      "phase_name": "Phase 35",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 220
+      },
+      "estimated_total_lines": 880,
+      "estimated_token_count": 3520,
+      "dependencies": [
+        34
+      ],
+      "packages_affected": [
+        "package_35"
+      ],
+      "new_packages": [
+        "package_35"
+      ],
+      "modified_packages": [
+        "package_35"
+      ],
+      "priority": "low",
+      "category": "operations"
+    },
+    "36": {
+      "phase_id": 36,
+      "phase_name": "Phase 36",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 240
+      },
+      "estimated_total_lines": 390,
+      "estimated_token_count": 1560,
+      "dependencies": [
+        35
+      ],
+      "packages_affected": [
+        "package_36"
+      ],
+      "new_packages": [
+        "package_36"
+      ],
+      "modified_packages": [
+        "package_36"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "37": {
+      "phase_id": 37,
+      "phase_name": "Phase 37",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 260
+      },
+      "estimated_total_lines": 600,
+      "estimated_token_count": 2400,
+      "dependencies": [
+        36
+      ],
+      "packages_affected": [
+        "package_37"
+      ],
+      "new_packages": [
+        "package_37"
+      ],
+      "modified_packages": [
+        "package_37"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "38": {
+      "phase_id": 38,
+      "phase_name": "Phase 38",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 280
+      },
+      "estimated_total_lines": 850,
+      "estimated_token_count": 3400,
+      "dependencies": [
+        37
+      ],
+      "packages_affected": [
+        "package_38"
+      ],
+      "new_packages": [
+        "package_38"
+      ],
+      "modified_packages": [
+        "package_38"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "39": {
+      "phase_id": 39,
+      "phase_name": "Phase 39",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 300
+      },
+      "estimated_total_lines": 1140,
+      "estimated_token_count": 4560,
+      "dependencies": [
+        38
+      ],
+      "packages_affected": [
+        "package_39"
+      ],
+      "new_packages": [
+        "package_39"
+      ],
+      "modified_packages": [
+        "package_39"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "40": {
+      "phase_id": 40,
+      "phase_name": "Phase 40",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 320
+      },
+      "estimated_total_lines": 770,
+      "estimated_token_count": 3080,
+      "dependencies": [
+        39
+      ],
+      "packages_affected": [
+        "package_40"
+      ],
+      "new_packages": [
+        "package_40"
+      ],
+      "modified_packages": [
+        "package_40"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "41": {
+      "phase_id": 41,
+      "phase_name": "Phase 41",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 340
+      },
+      "estimated_total_lines": 1040,
+      "estimated_token_count": 4160,
+      "dependencies": [
+        40
+      ],
+      "packages_affected": [
+        "package_41"
+      ],
+      "new_packages": [
+        "package_41"
+      ],
+      "modified_packages": [
+        "package_41"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "42": {
+      "phase_id": 42,
+      "phase_name": "Phase 42",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 220
+      },
+      "estimated_total_lines": 450,
+      "estimated_token_count": 1800,
+      "dependencies": [
+        41
+      ],
+      "packages_affected": [
+        "package_42"
+      ],
+      "new_packages": [
+        "package_42"
+      ],
+      "modified_packages": [
+        "package_42"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    },
+    "43": {
+      "phase_id": 43,
+      "phase_name": "Phase 43",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 240
+      },
+      "estimated_total_lines": 680,
+      "estimated_token_count": 2720,
+      "dependencies": [
+        42
+      ],
+      "packages_affected": [
+        "package_43"
+      ],
+      "new_packages": [
+        "package_43"
+      ],
+      "modified_packages": [
+        "package_43"
+      ],
+      "priority": "low",
+      "category": "design"
+    },
+    "44": {
+      "phase_id": 44,
+      "phase_name": "Phase 44",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 260
+      },
+      "estimated_total_lines": 950,
+      "estimated_token_count": 3800,
+      "dependencies": [
+        43
+      ],
+      "packages_affected": [
+        "package_44"
+      ],
+      "new_packages": [
+        "package_44"
+      ],
+      "modified_packages": [
+        "package_44"
+      ],
+      "priority": "critical",
+      "category": "domain"
+    },
+    "45": {
+      "phase_id": 45,
+      "phase_name": "Phase 45",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 280
+      },
+      "estimated_total_lines": 660,
+      "estimated_token_count": 2640,
+      "dependencies": [
+        44
+      ],
+      "packages_affected": [
+        "package_45"
+      ],
+      "new_packages": [
+        "package_45"
+      ],
+      "modified_packages": [
+        "package_45"
+      ],
+      "priority": "high",
+      "category": "governance"
+    },
+    "46": {
+      "phase_id": 46,
+      "phase_name": "Phase 46",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 300
+      },
+      "estimated_total_lines": 910,
+      "estimated_token_count": 3640,
+      "dependencies": [
+        45
+      ],
+      "packages_affected": [
+        "package_46"
+      ],
+      "new_packages": [
+        "package_46"
+      ],
+      "modified_packages": [
+        "package_46"
+      ],
+      "priority": "medium",
+      "category": "deployment"
+    },
+    "47": {
+      "phase_id": 47,
+      "phase_name": "Phase 47",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 320
+      },
+      "estimated_total_lines": 1200,
+      "estimated_token_count": 4800,
+      "dependencies": [
+        46
+      ],
+      "packages_affected": [
+        "package_47"
+      ],
+      "new_packages": [
+        "package_47"
+      ],
+      "modified_packages": [
+        "package_47"
+      ],
+      "priority": "low",
+      "category": "operations"
+    },
+    "48": {
+      "phase_id": 48,
+      "phase_name": "Phase 48",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 340
+      },
+      "estimated_total_lines": 510,
+      "estimated_token_count": 2040,
+      "dependencies": [
+        47
+      ],
+      "packages_affected": [
+        "package_48"
+      ],
+      "new_packages": [
+        "package_48"
+      ],
+      "modified_packages": [
+        "package_48"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "49": {
+      "phase_id": 49,
+      "phase_name": "Phase 49",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 220
+      },
+      "estimated_total_lines": 760,
+      "estimated_token_count": 3040,
+      "dependencies": [
+        48
+      ],
+      "packages_affected": [
+        "package_49"
+      ],
+      "new_packages": [
+        "package_49"
+      ],
+      "modified_packages": [
+        "package_49"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "50": {
+      "phase_id": 50,
+      "phase_name": "Phase 50",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 240
+      },
+      "estimated_total_lines": 550,
+      "estimated_token_count": 2200,
+      "dependencies": [
+        49
+      ],
+      "packages_affected": [
+        "package_50"
+      ],
+      "new_packages": [
+        "package_50"
+      ],
+      "modified_packages": [
+        "package_50"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "51": {
+      "phase_id": 51,
+      "phase_name": "Phase 51",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 260
+      },
+      "estimated_total_lines": 780,
+      "estimated_token_count": 3120,
+      "dependencies": [
+        50
+      ],
+      "packages_affected": [
+        "package_51"
+      ],
+      "new_packages": [
+        "package_51"
+      ],
+      "modified_packages": [
+        "package_51"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "52": {
+      "phase_id": 52,
+      "phase_name": "Phase 52",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 280
+      },
+      "estimated_total_lines": 1050,
+      "estimated_token_count": 4200,
+      "dependencies": [
+        51
+      ],
+      "packages_affected": [
+        "package_52"
+      ],
+      "new_packages": [
+        "package_52"
+      ],
+      "modified_packages": [
+        "package_52"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "53": {
+      "phase_id": 53,
+      "phase_name": "Phase 53",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 300
+      },
+      "estimated_total_lines": 1360,
+      "estimated_token_count": 5440,
+      "dependencies": [
+        52
+      ],
+      "packages_affected": [
+        "package_53"
+      ],
+      "new_packages": [
+        "package_53"
+      ],
+      "modified_packages": [
+        "package_53"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "54": {
+      "phase_id": 54,
+      "phase_name": "Phase 54",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 320
+      },
+      "estimated_total_lines": 570,
+      "estimated_token_count": 2280,
+      "dependencies": [
+        53
+      ],
+      "packages_affected": [
+        "package_54"
+      ],
+      "new_packages": [
+        "package_54"
+      ],
+      "modified_packages": [
+        "package_54"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    },
+    "55": {
+      "phase_id": 55,
+      "phase_name": "Phase 55",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 340
+      },
+      "estimated_total_lines": 440,
+      "estimated_token_count": 1760,
+      "dependencies": [
+        54
+      ],
+      "packages_affected": [
+        "package_55"
+      ],
+      "new_packages": [
+        "package_55"
+      ],
+      "modified_packages": [
+        "package_55"
+      ],
+      "priority": "low",
+      "category": "design"
+    },
+    "56": {
+      "phase_id": 56,
+      "phase_name": "Phase 56",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 220
+      },
+      "estimated_total_lines": 650,
+      "estimated_token_count": 2600,
+      "dependencies": [
+        55
+      ],
+      "packages_affected": [
+        "package_56"
+      ],
+      "new_packages": [
+        "package_56"
+      ],
+      "modified_packages": [
+        "package_56"
+      ],
+      "priority": "critical",
+      "category": "domain"
+    },
+    "57": {
+      "phase_id": 57,
+      "phase_name": "Phase 57",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 240
+      },
+      "estimated_total_lines": 900,
+      "estimated_token_count": 3600,
+      "dependencies": [
+        56
+      ],
+      "packages_affected": [
+        "package_57"
+      ],
+      "new_packages": [
+        "package_57"
+      ],
+      "modified_packages": [
+        "package_57"
+      ],
+      "priority": "high",
+      "category": "governance"
+    },
+    "58": {
+      "phase_id": 58,
+      "phase_name": "Phase 58",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 260
+      },
+      "estimated_total_lines": 1190,
+      "estimated_token_count": 4760,
+      "dependencies": [
+        57
+      ],
+      "packages_affected": [
+        "package_58"
+      ],
+      "new_packages": [
+        "package_58"
+      ],
+      "modified_packages": [
+        "package_58"
+      ],
+      "priority": "medium",
+      "category": "deployment"
+    },
+    "59": {
+      "phase_id": 59,
+      "phase_name": "Phase 59",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 280
+      },
+      "estimated_total_lines": 1520,
+      "estimated_token_count": 6080,
+      "dependencies": [
+        58
+      ],
+      "packages_affected": [
+        "package_59"
+      ],
+      "new_packages": [
+        "package_59"
+      ],
+      "modified_packages": [
+        "package_59"
+      ],
+      "priority": "low",
+      "category": "operations"
+    },
+    "60": {
+      "phase_id": 60,
+      "phase_name": "Phase 60",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 300
+      },
+      "estimated_total_lines": 330,
+      "estimated_token_count": 1320,
+      "dependencies": [
+        59
+      ],
+      "packages_affected": [
+        "package_60"
+      ],
+      "new_packages": [
+        "package_60"
+      ],
+      "modified_packages": [
+        "package_60"
+      ],
+      "priority": "critical",
+      "category": "foundation"
+    },
+    "61": {
+      "phase_id": 61,
+      "phase_name": "Phase 61",
+      "estimated_files_count": 4,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 320
+      },
+      "estimated_total_lines": 520,
+      "estimated_token_count": 2080,
+      "dependencies": [
+        60
+      ],
+      "packages_affected": [
+        "package_61"
+      ],
+      "new_packages": [
+        "package_61"
+      ],
+      "modified_packages": [
+        "package_61"
+      ],
+      "priority": "high",
+      "category": "design"
+    },
+    "62": {
+      "phase_id": 62,
+      "phase_name": "Phase 62",
+      "estimated_files_count": 5,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 150,
+        "max": 340
+      },
+      "estimated_total_lines": 750,
+      "estimated_token_count": 3000,
+      "dependencies": [
+        61
+      ],
+      "packages_affected": [
+        "package_62"
+      ],
+      "new_packages": [
+        "package_62"
+      ],
+      "modified_packages": [
+        "package_62"
+      ],
+      "priority": "medium",
+      "category": "domain"
+    },
+    "63": {
+      "phase_id": 63,
+      "phase_name": "Phase 63",
+      "estimated_files_count": 6,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 170,
+        "max": 220
+      },
+      "estimated_total_lines": 1020,
+      "estimated_token_count": 4080,
+      "dependencies": [
+        62
+      ],
+      "packages_affected": [
+        "package_63"
+      ],
+      "new_packages": [
+        "package_63"
+      ],
+      "modified_packages": [
+        "package_63"
+      ],
+      "priority": "low",
+      "category": "governance"
+    },
+    "64": {
+      "phase_id": 64,
+      "phase_name": "Phase 64",
+      "estimated_files_count": 7,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 190,
+        "max": 240
+      },
+      "estimated_total_lines": 1330,
+      "estimated_token_count": 5320,
+      "dependencies": [
+        63
+      ],
+      "packages_affected": [
+        "package_64"
+      ],
+      "new_packages": [
+        "package_64"
+      ],
+      "modified_packages": [
+        "package_64"
+      ],
+      "priority": "critical",
+      "category": "deployment"
+    },
+    "65": {
+      "phase_id": 65,
+      "phase_name": "Phase 65",
+      "estimated_files_count": 8,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 110,
+        "max": 260
+      },
+      "estimated_total_lines": 880,
+      "estimated_token_count": 3520,
+      "dependencies": [
+        64
+      ],
+      "packages_affected": [
+        "package_65"
+      ],
+      "new_packages": [
+        "package_65"
+      ],
+      "modified_packages": [
+        "package_65"
+      ],
+      "priority": "high",
+      "category": "operations"
+    },
+    "66": {
+      "phase_id": 66,
+      "phase_name": "Phase 66",
+      "estimated_files_count": 3,
+      "estimated_lines_per_file": {
+        "min": 40,
+        "avg": 130,
+        "max": 280
+      },
+      "estimated_total_lines": 390,
+      "estimated_token_count": 1560,
+      "dependencies": [
+        65
+      ],
+      "packages_affected": [
+        "package_66"
+      ],
+      "new_packages": [
+        "package_66"
+      ],
+      "modified_packages": [
+        "package_66"
+      ],
+      "priority": "medium",
+      "category": "foundation"
+    }
+  }
+}

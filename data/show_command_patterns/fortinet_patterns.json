@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "vendor": "fortinet",
+  "platform": "fortigate",
+  "commands": [
+    "get system status",
+    "get router info routing-table all",
+    "diagnose firewall iprope show",
+    "diagnose vpn tunnel list",
+    "get system performance status"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

@@ -1,0 +1,14 @@
+include README.md
+include CHANGELOG.md
+include LICENSE
+include requirements.txt
+recursive-include docs *.md
+recursive-include data *.json *.yaml *.yml
+recursive-include config_generators *.j2 *.json *.yaml *.yml
+recursive-include templates *.j2 *.json *.yaml *.yml
+recursive-exclude .git *
+recursive-exclude .venv *
+recursive-exclude tests *
+recursive-exclude __pycache__ *
+global-exclude *.py[cod]
+global-exclude api_jwt_secret

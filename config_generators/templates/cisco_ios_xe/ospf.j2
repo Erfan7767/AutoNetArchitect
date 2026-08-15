@@ -1,0 +1,48 @@
+{# ============================================================
+   Template: cisco_ios_xe.ospf
+   Vendor: Cisco
+   Platform: IOS XE
+   Feature: routing.ospf
+   Description: Guarded configuration fragment; it emits only declared variables or exact approved commands.
+   Required Variables:
+       - ospf_process_id: int - OSPF process identifier supplied by the design.
+       - router_id: ipv4 - Router ID supplied by the design or human source of truth.
+   Optional Variables:
+       - commands: list[string] - Exact commands supplied by a validated feature guard. (default: [])
+       - model: string - Equipment model scope. (default: not emitted)
+       - os_version: string - Operating system version scope. (default: not emitted)
+       - decision_ids: list[string] - Design decision references. (default: [])
+       - feature_guard_id: string - Feature guard reference. (default: not emitted)
+       - secret_references: list[string] - SecretManager references only. (default: [])
+       - reference_bandwidth: int - Reference bandwidth supplied by design. (default: not emitted)
+       - passive_interface_default: bool - Policy-controlled passive default. (default: false)
+       - no_passive_interfaces: list[string] - Interfaces explicitly enabled for adjacency. (default: [])
+       - networks: list[object] - Network statements with prefix, wildcard, and area. (default: [])
+       - areas: list[object] - Area type declarations. (default: [])
+       - area_ranges: list[object] - Summarization ranges. (default: [])
+       - default_information_originate: bool - Policy-controlled default route advertisement. (default: false)
+       - log_adjacency_changes: bool - Adjacency logging policy. (default: false)
+       - max_lsa: int - Optional LSA ceiling. (default: not emitted)
+       - timers_throttle_spf: object - Optional SPF throttle tuple. (default: not emitted)
+       - timers_throttle_lsa: object - Optional LSA throttle tuple. (default: not emitted)
+   Min Version: model/version scope must be supplied by registry or source of truth
+   Evidence: https://www.cisco.com/c/en/us/support/ios-nx-os-software/ios-xe-17/products-command-reference-list.html
+   Last Validated: registry scope only; authoritative model/version validation required
+   ============================================================ #}
+{% if ospf_process_id is defined and router_id is defined %}
+router ospf {{ ospf_process_id }}
+ router-id {{ router_id }}
+{% if reference_bandwidth is defined %} auto-cost reference-bandwidth {{ reference_bandwidth }}
+{% endif %}{% if passive_interface_default | default(false) %} passive-interface default
+{% endif %}{% for interface in no_passive_interfaces | default([]) %} no passive-interface {{ interface }}
+{% endfor %}{% for network in networks | default([]) %} network {{ network.prefix }} {{ network.wildcard }} area {{ network.area }}
+{% endfor %}{% for area in areas | default([]) %} area {{ area.id }} {{ area.type }}
+{% endfor %}{% for summary in area_ranges | default([]) %} area {{ summary.area }} range {{ summary.prefix }} {{ summary.mask }}
+{% endfor %}{% if default_information_originate | default(false) %} default-information originate
+{% endif %}{% if log_adjacency_changes | default(false) %} log-adjacency-changes detail
+{% endif %}{% if max_lsa is defined %} max-lsa {{ max_lsa }}
+{% endif %}{% if timers_throttle_spf is defined %} timers throttle spf {{ timers_throttle_spf.start }} {{ timers_throttle_spf.hold }} {{ timers_throttle_spf.max }}
+{% endif %}{% if timers_throttle_lsa is defined %} timers throttle lsa all {{ timers_throttle_lsa.start }} {{ timers_throttle_lsa.hold }} {{ timers_throttle_lsa.max }}
+{% endif %}!
+{% else %}{% for command in commands | default([]) %}{{ command }}
+{% endfor %}{% endif %}

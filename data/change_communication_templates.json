@@ -1,0 +1,8 @@
+{
+  "templates": {
+    "pre_change": {"en_subject": "Network change notification {change_id}", "ar_subject": "إشعار تغيير الشبكة {change_id}", "en_body": "The change {title} is planned for {window}. Expected impact: {impact}. Duration: {duration}.", "ar_body": "تم التخطيط للتغيير {title} في {window}. الأثر المتوقع: {impact}. المدة: {duration}."},
+    "start": {"en_subject": "Change started {change_id}", "ar_subject": "بدء التغيير {change_id}", "en_body": "Change {change_id} has started. The expected completion is {window}.", "ar_body": "بدأ التغيير {change_id}. وقت الإكمال المتوقع هو {window}."},
+    "completion": {"en_subject": "Change completed {change_id}", "ar_subject": "اكتمال التغيير {change_id}", "en_body": "Change {change_id} completed with verification state {verification_status}.", "ar_body": "اكتمل التغيير {change_id} بحالة تحقق {verification_status}."},
+    "failure": {"en_subject": "Change failure {change_id}", "ar_subject": "فشل التغيير {change_id}", "en_body": "Change {change_id} failed. Review verification and rollback evidence.", "ar_body": "فشل التغيير {change_id}. يجب مراجعة أدلة التحقق والتراجع."}
+  }
+}

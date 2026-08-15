@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "source": "bounded_zero_counter_baseline",
+  "policy": "non-zero counters are flags requiring corroborating evidence",
+  "thresholds": {
+    "crc": 0,
+    "input_errors": 0,
+    "output_errors": 0,
+    "collisions": 0,
+    "late_collisions": 0,
+    "runts": 0,
+    "giants": 0,
+    "output_drops": 0
+  }
+}

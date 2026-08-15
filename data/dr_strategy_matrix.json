@@ -1,0 +1,17 @@
+{
+  "tier1": [
+    "active_active",
+    "hot_standby"
+  ],
+  "tier2": [
+    "hot_standby",
+    "warm_standby"
+  ],
+  "tier3": [
+    "warm_standby"
+  ],
+  "tier4": [
+    "cold_standby",
+    "pilot_light"
+  ]
+}

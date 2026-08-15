@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "vendor": "cisco",
+  "platform": "asa",
+  "commands": [
+    "show interface",
+    "show route",
+    "show access-list",
+    "show conn",
+    "show crypto ikev2 sa",
+    "show crypto ipsec sa"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

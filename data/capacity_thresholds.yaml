@@ -1,0 +1,6 @@
+version: '1.0'
+utilization_warning_percent: 70
+utilization_critical_percent: 90
+headroom_recommended_percent: 30
+headroom_high_percent: 40
+access_to_distribution_ratio_warning_fraction: 0.8

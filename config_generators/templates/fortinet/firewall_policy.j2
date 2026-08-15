@@ -1,0 +1,48 @@
+{# ============================================================
+   Template: fortinet.firewall_policy
+   Vendor: Fortinet
+   Platform: FortiOS
+   Feature: security.firewall
+   Description: Guarded configuration fragment; it emits only declared variables or exact approved commands.
+   Required Variables:
+       - policy_id: int - FortiGate firewall policy identifier.
+       - policy_name: string - Human-approved policy name.
+       - source_zone: string - Source interface or zone object.
+       - destination_zone: string - Destination interface or zone object.
+       - source_address: string - Source address object.
+       - destination_address: string - Destination address object.
+       - service: string - Service object.
+       - action: string - Approved policy action.
+       - schedule: string - Approved schedule object.
+       - log_traffic: string - Approved logging setting.
+   Optional Variables:
+       - commands: list[string] - Exact commands supplied by a validated feature guard. (default: [])
+       - model: string - Equipment model scope. (default: not emitted)
+       - os_version: string - Operating system version scope. (default: not emitted)
+       - decision_ids: list[string] - Design decision references. (default: [])
+       - feature_guard_id: string - Feature guard reference. (default: not emitted)
+       - secret_references: list[string] - SecretManager references only. (default: [])
+       - utm_status: bool - Policy-controlled UTM switch. (default: false)
+       - ssl_ssh_profile: string - Approved SSL inspection profile. (default: not emitted)
+   Min Version: model/version scope must be supplied by registry or source of truth
+   Evidence: https://docs.fortinet.com/document/fortigate/8.0.0/cli-reference/84566/fortios-cli-reference
+   Last Validated: registry scope only; authoritative model/version validation required
+   ============================================================ #}
+{% if policy_id is defined and policy_name is defined %}
+config firewall policy
+    edit {{ policy_id }}
+        set name "{{ policy_name }}"
+        set srcintf "{{ source_zone }}"
+        set dstintf "{{ destination_zone }}"
+        set srcaddr "{{ source_address }}"
+        set dstaddr "{{ destination_address }}"
+        set service "{{ service }}"
+        set action {{ action }}
+        set schedule "{{ schedule }}"
+        set logtraffic {{ log_traffic }}
+{% if utm_status | default(false) %}        set utm-status enable
+{% endif %}{% if ssl_ssh_profile is defined %}        set ssl-ssh-profile "{{ ssl_ssh_profile }}"
+{% endif %}    next
+end
+{% else %}{% for command in commands | default([]) %}{{ command }}
+{% endfor %}{% endif %}

@@ -1,0 +1,5 @@
+AutoNetArchitect unified source archive
+Generated after import and compilation verification.
+Python files: 453
+Test files: 198
+No bytecode or cache directories are included in the archive.

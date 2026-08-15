@@ -1,0 +1,45 @@
+{
+  "runbook_id": "power_outage",
+  "incident_category": "environmental",
+  "title": "Power Outage Response",
+  "version": "1.0",
+  "requires_incident_commander": false,
+  "evidence_preservation_notes": [
+    "do not discard raw evidence",
+    "record evidence IDs in the incident timeline"
+  ],
+  "steps": [
+    {
+      "step_id": "power_outage-1",
+      "order": 1,
+      "description": "confirm power and environmental evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "power_outage-2",
+      "order": 2,
+      "description": "coordinate facilities and OOB status",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "power_outage-3",
+      "order": 3,
+      "description": "validate redundancy and UPS evidence",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": null
+    },
+    {
+      "step_id": "power_outage-4",
+      "order": 4,
+      "description": "record human recovery decision",
+      "commands": [],
+      "expected_result": "human confirms the evidence or outcome",
+      "failure_branch": "power_outage-review"
+    }
+  ]
+}

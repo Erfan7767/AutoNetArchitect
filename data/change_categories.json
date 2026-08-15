@@ -1,0 +1,13 @@
+{
+  "categories": [
+    {"category_id": "configuration", "category_name": "Configuration", "description": "Change to an existing device configuration.", "typical_risk_level": "medium", "typical_approval_requirements": ["technical_reviewer", "change_manager"], "examples": ["VLAN", "NTP", "interface"]},
+    {"category_id": "hardware", "category_name": "Hardware", "description": "Physical equipment or component change.", "typical_risk_level": "high", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner"], "examples": ["device replacement", "PSU replacement"]},
+    {"category_id": "software", "category_name": "Software", "description": "Firmware or operating system change.", "typical_risk_level": "high", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner"], "examples": ["firmware upgrade", "patch"]},
+    {"category_id": "connectivity", "category_name": "Connectivity", "description": "Link, circuit, route, or tunnel change.", "typical_risk_level": "high", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner"], "examples": ["static route", "VPN tunnel"]},
+    {"category_id": "security", "category_name": "Security", "description": "Security policy, ACL, identity, or management control change.", "typical_risk_level": "high", "typical_approval_requirements": ["technical_reviewer", "change_manager", "security_reviewer"], "examples": ["ACL", "AAA", "SNMP"]},
+    {"category_id": "topology", "category_name": "Topology", "description": "Logical or physical topology change.", "typical_risk_level": "high", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner"], "examples": ["routing domain", "core link"]},
+    {"category_id": "migration", "category_name": "Migration", "description": "Brownfield or platform migration activity.", "typical_risk_level": "critical", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner", "cto_or_it_director"], "examples": ["device migration", "address migration"]},
+    {"category_id": "decommission", "category_name": "Decommission", "description": "Removal of equipment or service.", "typical_risk_level": "critical", "typical_approval_requirements": ["technical_reviewer", "change_manager", "service_owner"], "examples": ["device removal", "service retirement"]},
+    {"category_id": "new_deployment", "category_name": "New Deployment", "description": "New equipment or service deployment.", "typical_risk_level": "medium", "typical_approval_requirements": ["technical_reviewer", "change_manager"], "examples": ["new switch", "new service"]}
+  ]
+}

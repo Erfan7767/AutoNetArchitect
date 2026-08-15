@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: autonetarchitect:test
+    env_file:
+      - .env.test
+    environment:
+      PYTHONPATH: /workspace
+      AUTONET_RUNTIME_MODE: test
+      AUTONET_LOG_LEVEL: WARNING
+      COVERAGE_FILE: /tmp/.coverage
+    volumes:
+      - .:/workspace:ro
+      - test_cache:/workspace/.pytest_cache
+      - test_tmp:/tmp
+    working_dir: /workspace
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    command: ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--cov=autonetarchitect", "--cov-config=coverage_config/.coveragerc", "--cov-report=xml:/tmp/coverage.xml", "-x"]
+    restart: "no"
+
+volumes:
+  test_cache:
+    name: autonetarchitect_test_cache
+  test_tmp:
+    name: autonetarchitect_test_tmp

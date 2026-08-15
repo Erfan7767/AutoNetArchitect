@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "vendor": "juniper",
+  "platform": "junos",
+  "commands": [
+    "show interfaces terse",
+    "show route",
+    "show ospf neighbor",
+    "show security flow session",
+    "show log messages"
+  ],
+  "policy": "read-only commands only; command support must be validated against the exact platform"
+}

@@ -1,0 +1,19 @@
+{# ============================================================
+   Template: legacy.base
+   Vendor: shared
+   Platform: shared
+   Feature: system.legacy
+   Description: Legacy guarded command fragment retained for backward compatibility.
+   Required Variables:
+     - none: exact commands are supplied by a feature guard.
+   Optional Variables:
+     - commands: list[string] - exact guard-approved commands (default: []).
+     - decision_ids: list[string] - design decision references (default: []).
+     - secret_references: list[string] - SecretManager references only (default: []).
+   Min Version: model/version scope must be supplied by the caller
+   Evidence: evidence://legacy-guarded-command-fragment
+   Last Validated: registry-scope-only; authoritative model/version validation required
+   ============================================================ #}
+{# Generic guarded command template; it emits only exact commands supplied by the generator. #}
+{% for command in commands %}{{ command }}
+{% endfor %}

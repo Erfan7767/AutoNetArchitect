@@ -1,0 +1,13 @@
+{
+  "vendors": [
+    "cisco_ios_xe",
+    "cisco_nxos",
+    "juniper",
+    "fortinet",
+    "paloalto",
+    "huawei",
+    "aruba",
+    "mikrotik"
+  ],
+  "rule": "never infer slot/module/port without model map"
+}

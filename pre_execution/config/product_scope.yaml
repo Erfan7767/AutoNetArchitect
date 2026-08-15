@@ -1,0 +1,6 @@
+schema_version: "1.0.0"
+product_name: AutoNetArchitect
+v1_scope: network_design_and_lab_validation
+user_mode: single_user
+local_first: true
+production_deployment_default: denied
