@@ -1,0 +1,2 @@
+ALTER TABLE `network_projects` MODIFY COLUMN `vendor_preferences` varchar(1000) NOT NULL DEFAULT '';--> statement-breakpoint
+ALTER TABLE `network_projects` MODIFY COLUMN `compliance_needs` varchar(1000) NOT NULL DEFAULT '';

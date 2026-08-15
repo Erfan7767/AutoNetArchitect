@@ -1,0 +1,21 @@
+# Project TODO
+
+- [x] Model persistent network projects with status, metadata, questionnaire answers, lifecycle summaries, deployment gate state, and redacted audit events.
+- [x] Implement protected backend procedures for project creation, listing, viewing, deletion, lifecycle detail retrieval, approval changes, and paginated audit access.
+- [x] Enforce audit redaction so sensitive-key names and secret-like values are not returned or displayed.
+- [x] Build a refined authenticated application shell with responsive sidebar navigation.
+- [x] Include explicit sidebar labels: Questionnaire, Requirements, Design, Equipment, Configs, Deployment, Operations, Compliance, Reports, Admin, and Audit.
+- [x] Build the Dashboard landing experience with lifecycle progress, operational status, projects, and governance signals.
+- [x] Build project management views with create, list, view, status tracking, metadata, and delete confirmation.
+- [x] Build Questionnaire and Requirements views for capturing and reviewing network requirements with completeness indicators.
+- [x] Build Design, Equipment, and Configs views for topology/VLAN/IP decisions, BOM details, feature guard status, and unsupported-feature logs.
+- [x] Build Deployment, Operations, Compliance, Reports, Admin, and Audit views with a distinct approval-bound go/no-go gate.
+- [x] Add Vitest coverage for project completeness, audit redaction, and go/no-go approval behavior.
+- [x] Implement per-project design detail storage and review for topology decisions, VLAN plan, IP addressing summary, and decision records.
+- [x] Implement per-project equipment/BOM storage and UI for selected devices, optics, licensing, support, and human-supplied cost estimates.
+- [x] Implement per-project vendor config artifacts with feature-guard outcomes and unsupported-feature audit log entries.
+- [x] Add dedicated unsupported-feature audit events and show those events through the paginated audit trail.
+- [x] Store and render redacted per-vendor config artifact preview content with explicit feature-guard linkage.
+- [x] Verify desktop and mobile rendering.
+- [ ] Save a WebDev release checkpoint for the verified publish-ready state.
+- [ ] Document the publish-ready handoff tied to the release checkpoint.

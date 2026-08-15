@@ -1,0 +1,1 @@
+ALTER TABLE `project_config_artifacts` ADD `artifact_preview` varchar(8000) DEFAULT '' NOT NULL;

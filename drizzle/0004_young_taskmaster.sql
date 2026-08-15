@@ -1,0 +1,1 @@
+ALTER TABLE `project_design_details` MODIFY COLUMN `decision_records` varchar(8000) NOT NULL DEFAULT '';
