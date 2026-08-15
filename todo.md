@@ -17,5 +17,5 @@
 - [x] Add dedicated unsupported-feature audit events and show those events through the paginated audit trail.
 - [x] Store and render redacted per-vendor config artifact preview content with explicit feature-guard linkage.
 - [x] Verify desktop and mobile rendering.
-- [ ] Save a WebDev release checkpoint for the verified publish-ready state.
-- [ ] Document the publish-ready handoff tied to the release checkpoint.
+- [x] Save a WebDev release checkpoint for the verified publish-ready state: `945b0cbd`.
+- [x] Document the publish-ready handoff tied to checkpoint `945b0cbd` for user-initiated Publish in `PUBLISH_HANDOFF.md`.
