@@ -57,11 +57,11 @@
 - [ ] Build multi-site business requirement intake for branch count, services, availability objectives, jurisdictional constraints, and human-supplied mandatory fields.
 - [ ] Build a local virtual-test workflow that binds generated artifacts to device facts and target scope before the approval-bound execution workflow.
 - [ ] Package and test the Windows app only against approved virtual or physical laboratory targets before customer production use.
-- [ ] Inspect Git repository state, remotes, ignored files, and potential credential exposure before publishing.
-- [ ] Prepare a complete source commit that excludes secrets, runtime state, caches, local databases, logs, and generated test artifacts.
-- [ ] Create or validate a private GitHub repository and push the current complete project revision.
-- [ ] Verify the remote commit and record the repository URL and commit identifier in the publication handoff.
-- [ ] Complete a public-release review that excludes any secret material, customer identifiers, runtime databases, local logs, and environment-specific artifacts before GitHub push.
+- [x] Inspect Git repository state, remotes, ignored files, and potential credential exposure before publishing.
+- [x] Prepare a complete source commit that excludes secrets, runtime state, caches, local databases, logs, and generated test artifacts.
+- [x] Create or validate a public GitHub repository and push the current complete project revision.
+- [x] Verify the remote commit and record the repository URL and commit identifier in the publication handoff.
+- [x] Complete a public-release review that excludes any secret material, customer identifiers, runtime databases, local logs, and environment-specific artifacts before GitHub push.
 - [ ] Require every automated recommendation to expose source facts, uncertainty, rationale, alternatives, affected devices, and required human authority.
 - [ ] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
 - [ ] Define measurable benchmark scenarios and release gates for supported vendor/model/version paths instead of asserting universal network coverage.
