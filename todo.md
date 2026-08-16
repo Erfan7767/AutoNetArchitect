@@ -145,4 +145,4 @@
 - [x] Wire saved authorized-discovery scope creation, selection, and discovery-run linking through the protected API, console, and integration tests.
 - [x] Wire the local virtual-test workflow into the Windows app shell with explicit status and safe error handling.
 - [x] Bind the Windows local virtual-test flow to generated artifact references and discovered facts from local state rather than test-only inputs.
-- [ ] Surface successful local virtual-test evidence only as a review record for approval-bound preparation; never as production execution authority.
+- [x] Surface successful local virtual-test evidence only as a review record for approval-bound preparation; never as production execution authority.

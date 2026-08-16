@@ -90,7 +90,8 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=vendor_row + 4, column=0, sticky="w", pady=(8, 4))
         ttk.Button(frame, text="Review discovery evidence", command=self._review_discovery_evidence).grid(row=vendor_row + 4, column=1, sticky="e", pady=(8, 4))
         ttk.Button(frame, text="Prepare virtual validation review", command=self._prepare_virtual_validation_review).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(8, 4))
-        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        ttk.Button(frame, text="Review local virtual-test evidence", command=self._review_virtual_validation_evidence).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(4, 4))
+        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 7, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
             ("address", "Address", 150),
@@ -100,8 +101,8 @@ class AutoNetWindowsApp:
         ):
             self._inventory.heading(column, text=label)
             self._inventory.column(column, width=width, stretch=True)
-        self._inventory.grid(row=vendor_row + 7, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
-        frame.rowconfigure(vendor_row + 7, weight=1)
+        self._inventory.grid(row=vendor_row + 8, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(vendor_row + 8, weight=1)
 
     def _update_vendor_status(self) -> None:
         """Show the selected vendor contract and its evidence boundary without claiming support."""
@@ -255,6 +256,37 @@ class AutoNetWindowsApp:
                 messagebox.showerror("Virtual validation blocked", str(error))
 
         ttk.Button(frame, text="Prepare hash-bound validation plan", command=prepare).grid(row=len(fields) + 1, column=1, sticky="e", pady=(12, 0))
+
+    def _review_virtual_validation_evidence(self) -> None:
+        """Display externally produced local virtual-test evidence as review material only, never as execution authority."""
+
+        try:
+            result = self._workspace.load_virtual_test_result()
+            if result is None:
+                raise ValueError("No externally produced local virtual-test evidence is recorded in this workspace.")
+            review_window = tk.Toplevel(self._root)
+            review_window.title("AutoNetArchitect — Local Virtual-Test Evidence")
+            review_window.minsize(680, 300)
+            frame = ttk.Frame(review_window, padding=16)
+            frame.grid(sticky="nsew")
+            review_window.columnconfigure(0, weight=1)
+            ttk.Label(frame, text="Review record only: this evidence does not approve a change, upload configuration, or grant production execution authority.", wraplength=620).grid(row=0, column=0, sticky="w", pady=(0, 12))
+            rows = (
+                ("State", result.state.value),
+                ("Adapter", result.adapter_kind),
+                ("Fidelity", result.fidelity_label),
+                ("Artifact hash", result.artifact_hash),
+                ("Target facts hash", result.target_facts_hash),
+                ("Scope hash", result.scope_hash),
+                ("Observed", result.observed_at.isoformat()),
+                ("Detail", result.detail),
+            )
+            for row, (label, value) in enumerate(rows, start=1):
+                ttk.Label(frame, text=f"{label}:").grid(row=row, column=0, sticky="nw", pady=3)
+                ttk.Label(frame, text=value, wraplength=500).grid(row=row, column=1, sticky="nw", pady=3)
+            frame.columnconfigure(1, weight=1)
+        except (ValueError, OSError) as error:
+            messagebox.showerror("Virtual-test evidence unavailable", str(error))
 
 
 def run() -> None:
