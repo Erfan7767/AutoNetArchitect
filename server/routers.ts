@@ -39,6 +39,7 @@ import { COOKIE_NAME } from "../shared/const";
 import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
 import { assessRecommendation, assessRestrictedClaim } from "./automationPolicy";
 import { assessBenchmarkCoverage } from "./benchmarkPolicy";
+import { assessMultiAgentWorkflow } from "./multiAgentPolicy";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -257,6 +258,26 @@ export const appRouter = router({
           if (run === undefined) projectNotFound();
           return run;
         }),
+    }),
+    multiAgentStatus: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+      const [sites, runs, devices] = await Promise.all([
+        listManagedSites(input.projectId, ctx.user.id),
+        listDiscoveryRuns(input.projectId, ctx.user.id),
+        listManagedDevices(input.projectId, ctx.user.id),
+      ]);
+      if (sites === undefined || runs === undefined || devices === undefined) projectNotFound();
+      return assessMultiAgentWorkflow({
+        registeredSiteCount: sites.length,
+        discoveryRuns: runs.map(({ run }) => ({
+          state: run.state,
+          ambiguousCount: run.ambiguousCount,
+          unsupportedCount: run.unsupportedCount,
+        })),
+        devices: devices.map(({ device }) => ({
+          factState: device.factState,
+          capabilityVerified: device.capabilityVerified,
+        })),
+      });
     }),
     sites: router({
       list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {

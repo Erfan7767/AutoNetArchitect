@@ -108,3 +108,8 @@
 - [ ] Add persisted benchmark scenario records and expose bounded acceptance criteria through protected API/UI surfaces.
 - [ ] Integrate measured coverage into claim and change-plan release decisions so paths outside coverage are blocked.
 - [ ] Add integration tests proving claim and release decisions block vendor/model/version/sector paths outside measured coverage.
+- [x] Define a first-class multi-agent responsibility model for authorized discovery, evidence review, design, capability assessment, virtual validation, safety review, and release coordination.
+- [x] Implement a parallel discovery-coordination contract that preserves per-target authorization, protocol restrictions, evidence provenance, and no-guess outcomes.
+- [x] Create an evidence-bound handoff model from discovery through design and virtual validation, including artifact hashes and unresolved-state blocking.
+- [x] Expose multi-agent workflow status and the mandatory human Go/No-Go boundary in the control plane without enabling autonomous production execution.
+- [ ] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.
