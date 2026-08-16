@@ -21,14 +21,14 @@ classifiers = [
   "Topic :: System :: Networking",
 ]
 dependencies = [
-  "click>=8.1,<9",
-  "fastapi>=0.100,<1",
-  "uvicorn>=0.20,<1",
-  "pydantic>=2.13,<3",
-  "jinja2>=3.1,<4",
-  "PyYAML>=6,<7",
-  "reportlab>=4,<5",
-  "openpyxl>=3.1,<4",
+  "click>=8.4.2,<9",
+  "fastapi>=0.141.1,<1",
+  "uvicorn>=0.52.1,<1",
+  "pydantic>=2.13.4,<3",
+  "jinja2>=3.1.6,<4",
+  "PyYAML>=6.0.3,<7",
+  "reportlab>=5.0.0,<6",
+  "openpyxl>=3.1.5,<4",
   "Pillow>=12.3,<13",
 ]
 
@@ -54,18 +54,18 @@ dev = [
   "wheel>=0.44,<1",
 ]
 docs = [
-  "mkdocs>=1.6,<2",
-  "mkdocs-material>=9.5,<10",
-  "mkdocstrings[python]>=0.25,<1",
+  "mkdocs>=1.6.1,<2",
+  "mkdocs-material>=9.7.7,<10",
+  "mkdocstrings[python]>=1.0.6,<2",
 ]
 optional = [
-  "arabic-reshaper>=3,<4",
-  "python-bidi>=0.4,<1",
-  "streamlit>=1.35,<2",
-  "weasyprint>=60,<70",
-  "matplotlib>=3.8,<4",
-  "pandas>=2.0,<3",
-  "numpy>=1.26,<3",
+  "arabic-reshaper>=3.0.1,<4",
+  "python-bidi>=0.6.11,<1",
+  "streamlit>=1.61.1,<2",
+  "weasyprint>=69.0,<70",
+  "matplotlib>=3.11.1,<4",
+  "pandas>=3.0.5,<4",
+  "numpy>=2.4.6,<3",
 ]
 all = [
   "autonetarchitect[dev,docs,optional]",
