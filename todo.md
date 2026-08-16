@@ -141,5 +141,5 @@
 - [x] Add explicit candidate/review-required and unsupported capability decisions to the web assessment workflow and block a passing feature guard for both states.
 - [x] Add per-vendor integration coverage proving candidate-only, unsupported, and missing-evidence capability paths are rejected before config artifact storage.
 - [x] Add a persisted structured authorized-discovery scope definition with target or CIDR allowlist and protocol restrictions; do not rely only on free-text scope references or hashes.
-- [ ] Tie inventory evidence review to the authorized site and discovery-run scope, with integration coverage for scoped inventory and evidence-confidence outcomes.
+- [x] Tie inventory evidence review to the authorized site and discovery-run scope, with integration coverage for scoped inventory and evidence-confidence outcomes.
 - [x] Wire saved authorized-discovery scope creation, selection, and discovery-run linking through the protected API, console, and integration tests.

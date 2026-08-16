@@ -118,6 +118,8 @@ export const authorizedDiscoveryScopes = mysqlTable("authorized_discovery_scopes
 export const managedDevices = mysqlTable("managed_devices", {
   id: int("id").autoincrement().primaryKey(),
   siteId: int("site_id").notNull(),
+  discoveryRunId: int("discovery_run_id").notNull().default(0),
+  discoveryScopeId: int("discovery_scope_id").notNull().default(0),
   deviceReference: varchar("device_reference", { length: 200 }).notNull(),
   managementAddress: varchar("management_address", { length: 255 }).notNull(),
   protocol: mysqlEnum("protocol", ["ssh", "netconf", "https_api", "snmp"]).notNull(),

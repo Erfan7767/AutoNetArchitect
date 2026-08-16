@@ -522,6 +522,8 @@ export const appRouter = router({
         .input(z.object({
           projectId: z.number().int().positive(),
           deviceId: z.number().int().positive(),
+          discoveryRunId: z.number().int().positive(),
+          discoveryScopeId: z.number().int().positive(),
           observedVendor: z.string().trim().max(120),
           observedPlatform: z.string().trim().max(160),
           observedModel: z.string().trim().max(160),

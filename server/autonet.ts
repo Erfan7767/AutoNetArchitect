@@ -106,6 +106,8 @@ export type ManagedDeviceDraft = {
 };
 
 export type DeviceObservationDraft = {
+  discoveryRunId: number;
+  discoveryScopeId: number;
   observedVendor: string;
   observedPlatform: string;
   observedModel: string;
@@ -730,6 +732,27 @@ async function getManagedDeviceForUser(deviceId: number, ownerId: number) {
 export async function recordDeviceObservation(projectId: number, deviceId: number, draft: DeviceObservationDraft, actor: AuditActor) {
   const record = await getManagedDeviceForUser(deviceId, actor.id);
   if (!record || record.project.id !== projectId) return undefined;
+  const db = await requireDatabase();
+  const discoveryEvidence = await db
+    .select({ run: discoveryRuns, scope: authorizedDiscoveryScopes })
+    .from(discoveryRuns)
+    .innerJoin(authorizedDiscoveryScopes, eq(discoveryRuns.discoveryScopeId, authorizedDiscoveryScopes.id))
+    .innerJoin(managedSites, eq(discoveryRuns.siteId, managedSites.id))
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(
+      eq(discoveryRuns.id, draft.discoveryRunId),
+      eq(discoveryRuns.discoveryScopeId, draft.discoveryScopeId),
+      eq(discoveryRuns.siteId, record.device.siteId),
+      eq(authorizedDiscoveryScopes.siteId, record.device.siteId),
+      eq(authorizedDiscoveryScopes.projectId, projectId),
+      eq(networkProjects.ownerId, actor.id),
+    ))
+    .limit(1);
+  const source = discoveryEvidence[0];
+  if (!source) throw new Error("Device evidence must reference a discovery run and scope authorized for the device site.");
+  if (source.run.state !== "completed" && source.run.state !== "partial") {
+    throw new Error("Device evidence can be recorded only from a completed or partial read-only discovery run.");
+  }
   const capabilityEvidenceReference = draft.capabilityEvidenceReference?.trim() || "";
   const licenseEvidenceReference = draft.licenseEvidenceReference?.trim() || "";
   const configurationPathEvidenceReference = draft.configurationPathEvidenceReference?.trim() || "";
@@ -739,10 +762,11 @@ export async function recordDeviceObservation(projectId: number, deviceId: numbe
   if (draft.capabilityVerified && (!capabilityEvidenceReference || !licenseEvidenceReference || !configurationPathEvidenceReference)) {
     throw new Error("Capability verification requires capability, license, and configuration-path evidence references.");
   }
-  const db = await requireDatabase();
   await db
     .update(managedDevices)
     .set({
+      discoveryRunId: draft.discoveryRunId,
+      discoveryScopeId: draft.discoveryScopeId,
       observedVendor: draft.observedVendor.trim(),
       observedPlatform: draft.observedPlatform.trim(),
       observedModel: draft.observedModel.trim(),
