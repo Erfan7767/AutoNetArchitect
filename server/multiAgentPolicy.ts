@@ -13,10 +13,16 @@ export type DeviceSignal = {
   capabilityVerified: boolean;
 };
 
+export type ApprovalReadinessSignal = {
+  status: "blocked" | "ready_for_human_approval";
+  blockers: readonly string[];
+};
+
 export type MultiAgentWorkflowInput = {
   registeredSiteCount: number;
   discoveryRuns: readonly DiscoverySignal[];
   devices: readonly DeviceSignal[];
+  approvalReadiness: readonly ApprovalReadinessSignal[];
 };
 
 export type MultiAgentWorkflowStatus = {
@@ -86,12 +92,30 @@ function capabilityStatus(input: MultiAgentWorkflowInput, evidence: AgentStageSt
   return { state: "ready", detail: "Observed devices are capability-verified; a separately reviewed artifact and virtual test remain required." };
 }
 
+function safetyReviewStatus(input: MultiAgentWorkflowInput, capability: AgentStageStatus): AgentStageStatus {
+  if (capability.state === "blocked") {
+    return { state: "blocked", detail: "Safety review cannot proceed while discovery, device evidence, or capability assessment remains blocked." };
+  }
+  if (input.approvalReadiness.length === 0) {
+    return { state: "awaiting_evidence", detail: "Safety review waits for a hash-bound change plan and its current validation, backup, maintenance, and authority evidence." };
+  }
+  const blockedReadiness = input.approvalReadiness.find(readiness => readiness.status === "blocked");
+  if (blockedReadiness) {
+    return {
+      state: "blocked",
+      detail: `A change-plan release gate is blocked: ${blockedReadiness.blockers.join(" ") || "required evidence is incomplete."}`,
+    };
+  }
+  return { state: "ready", detail: "The recorded change-plan evidence is ready for a named human Go/No-Go decision; agents cannot approve it." };
+}
+
 export function assessMultiAgentWorkflow(input: MultiAgentWorkflowInput): MultiAgentWorkflowStatus {
   /** Describe preparation readiness without creating release or production authority. */
 
   const discovery = discoveryStatus(input);
   const evidence = deviceEvidenceStatus(input, discovery);
   const capability = capabilityStatus(input, evidence);
+  const safetyReview = safetyReviewStatus(input, capability);
   return {
     stages: [
       { role: "authorized_discovery", ...discovery },
@@ -113,8 +137,7 @@ export function assessMultiAgentWorkflow(input: MultiAgentWorkflowInput): MultiA
       },
       {
         role: "safety_review",
-        state: "awaiting_evidence",
-        detail: "Safety review requires current virtual validation, backup, maintenance, target-fact, and capability evidence.",
+        ...safetyReview,
       },
       {
         role: "release_coordination",

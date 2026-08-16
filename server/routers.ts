@@ -260,12 +260,14 @@ export const appRouter = router({
         }),
     }),
     multiAgentStatus: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
-      const [sites, runs, devices] = await Promise.all([
+      const [sites, runs, devices, plans] = await Promise.all([
         listManagedSites(input.projectId, ctx.user.id),
         listDiscoveryRuns(input.projectId, ctx.user.id),
         listManagedDevices(input.projectId, ctx.user.id),
+        listChangePlans(input.projectId, ctx.user.id),
       ]);
-      if (sites === undefined || runs === undefined || devices === undefined) projectNotFound();
+      if (sites === undefined || runs === undefined || devices === undefined || plans === undefined) projectNotFound();
+      const readiness = await Promise.all(plans.map(plan => getChangePlanApprovalReadiness(plan.id, ctx.user.id)));
       return assessMultiAgentWorkflow({
         registeredSiteCount: sites.length,
         discoveryRuns: runs.map(({ run }) => ({
@@ -277,6 +279,7 @@ export const appRouter = router({
           factState: device.factState,
           capabilityVerified: device.capabilityVerified,
         })),
+        approvalReadiness: readiness.flatMap(item => item ? [{ status: item.decision.status, blockers: item.decision.blockers }] : []),
       });
     }),
     sites: router({

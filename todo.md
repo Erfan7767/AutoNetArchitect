@@ -112,4 +112,4 @@
 - [x] Implement a parallel discovery-coordination contract that preserves per-target authorization, protocol restrictions, evidence provenance, and no-guess outcomes.
 - [x] Create an evidence-bound handoff model from discovery through design and virtual validation, including artifact hashes and unresolved-state blocking.
 - [x] Expose multi-agent workflow status and the mandatory human Go/No-Go boundary in the control plane without enabling autonomous production execution.
-- [ ] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.
+- [x] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.

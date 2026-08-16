@@ -419,8 +419,8 @@ function DiscoveryPage({ project }: { project: ProjectRecord }) {
   const sitesQuery = trpc.projects.sites.list.useQuery({ projectId: project.id });
   const runsQuery = trpc.projects.discoveryRuns.list.useQuery({ projectId: project.id });
   const multiAgentQuery = trpc.projects.multiAgentStatus.useQuery({ projectId: project.id });
-  const createSite = trpc.projects.sites.create.useMutation({ onSuccess: () => utils.projects.sites.list.invalidate({ projectId: project.id }) });
-  const createRun = trpc.projects.discoveryRuns.create.useMutation({ onSuccess: () => utils.projects.discoveryRuns.list.invalidate({ projectId: project.id }) });
+  const createSite = trpc.projects.sites.create.useMutation({ onSuccess: () => { utils.projects.sites.list.invalidate({ projectId: project.id }); utils.projects.multiAgentStatus.invalidate({ projectId: project.id }); } });
+  const createRun = trpc.projects.discoveryRuns.create.useMutation({ onSuccess: () => { utils.projects.discoveryRuns.list.invalidate({ projectId: project.id }); utils.projects.multiAgentStatus.invalidate({ projectId: project.id }); } });
   const [siteName, setSiteName] = useState("");
   const [scopeReference, setScopeReference] = useState("");
   const [selectedSite, setSelectedSite] = useState<number | null>(null);
