@@ -22,8 +22,9 @@ function createContext(): TrpcContext {
 
 const benchmarkScenario = {
   scenarioId: "bank-cisco-iosxe-17-9-lab-001",
-  vendorFamily: "cisco" as const,
+  vendorFamily: "cisco",
   platform: "ios_xe",
+  model: "C9300-48P",
   softwareVersion: "17.9.4",
   licenseEvidenceReference: "license-evidence-001",
   configurationPathReference: "candidate-commit-path-001",
@@ -31,6 +32,8 @@ const benchmarkScenario = {
   measuredRuns: 3,
   acceptedRuns: 2,
   rejectedRuns: 1,
+  minimumAcceptanceRatePercent: 60,
+  acceptanceCriteriaReference: "approved-acceptance-criteria-001",
   evidenceReference: "lab-evidence-001",
   reviewedAt: new Date(),
 };
@@ -82,7 +85,7 @@ describe("claims.assessPublication integration path", () => {
     });
 
     expect(result.status).toBe("blocked");
-    expect(result.missing).toContain("Exact platform and software version are required.");
+    expect(result.missing).toContain("Exact platform, model, and software version are required.");
   });
 });
 

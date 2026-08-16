@@ -1,0 +1,2 @@
+ALTER TABLE `benchmark_scenarios` ADD `minimum_acceptance_rate_percent` int NOT NULL;--> statement-breakpoint
+ALTER TABLE `benchmark_scenarios` ADD `acceptance_criteria_reference` varchar(1000) NOT NULL;

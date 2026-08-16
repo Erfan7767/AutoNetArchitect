@@ -105,9 +105,9 @@
 - [x] Add a restricted-claim assessment API surface that consumes scoped evidence and never publishes a positive claim without it.
 - [x] Add integration tests proving restricted claim requests are blocked when authoritative or measured evidence is absent.
 - [x] Surface change-plan approval-readiness blockers in the Operations console through the protected backend procedure.
-- [ ] Add persisted benchmark scenario records and expose bounded acceptance criteria through protected API/UI surfaces.
-- [ ] Integrate measured coverage into claim and change-plan release decisions so paths outside coverage are blocked.
-- [ ] Add integration tests proving claim and release decisions block vendor/model/version/sector paths outside measured coverage.
+- [x] Add persisted benchmark scenario records and expose bounded acceptance criteria through protected API/UI surfaces.
+- [x] Integrate measured coverage into claim and change-plan release decisions so paths outside coverage are blocked.
+- [x] Add integration tests proving claim and release decisions block vendor/model/version/sector paths outside measured coverage.
 - [x] Define a first-class multi-agent responsibility model for authorized discovery, evidence review, design, capability assessment, virtual validation, safety review, and release coordination.
 - [x] Implement a parallel discovery-coordination contract that preserves per-target authorization, protocol restrictions, evidence provenance, and no-guess outcomes.
 - [x] Create an evidence-bound handoff model from discovery through design and virtual validation, including artifact hashes and unresolved-state blocking.
@@ -134,3 +134,7 @@
 - [x] Add router integration tests for project restricted-claim record and report outcomes across blocked and scoped-review classes.
 - [x] Use the actual sector-review currentness evaluation in the lifecycle contract and test stale sector review as a requirements-stage block.
 - [x] Pass the active project directly to the Reports claim surface and verify a saved Claims Review assessment appears in that same project’s report output.
+- [x] Require an explicit human review date for benchmark recording in the UI and API; remove any synthetic timestamp fallback and test missing-review rejection.
+- [x] Add router integration tests for protected benchmark list and record procedures covering project ownership and accepted or blocked measured coverage outcomes.
+- [x] Add an exact model or SKU field to benchmark scenarios and enforce it in claim and change-plan benchmark matching.
+- [x] Add integration coverage proving vendor, model, version, and sector mismatches each block claim assessment and change-plan readiness.

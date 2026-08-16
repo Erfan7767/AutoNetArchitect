@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { and, count, desc, eq, or, sql } from "drizzle-orm";
 import {
   auditEvents,
+  benchmarkScenarios,
   changePlans,
   managedDevices,
   managedSites,
@@ -18,6 +19,7 @@ import {
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { evaluateApprovalReadiness } from "./automationPolicy";
+import { assessBenchmarkCoverage } from "./benchmarkPolicy";
 import {
   assessSectorProfileInputs,
   buildSectorReviewSnapshot,
@@ -88,6 +90,7 @@ export type ManagedDeviceDraft = {
 export type DeviceObservationDraft = {
   observedVendor: string;
   observedPlatform: string;
+  observedModel: string;
   observedVersion: string;
   factsHash: string;
   factState: "observed" | "ambiguous" | "unreachable" | "unsupported";
@@ -130,6 +133,24 @@ export type RestrictedClaimRecordDraft = {
   measuredEvidenceReference: string;
   reviewedAt: Date | null;
   assessmentStatus: "publishable" | "blocked";
+};
+
+export type BenchmarkScenarioDraft = {
+  scenarioId: string;
+  vendorFamily: "cisco" | "huawei" | "fortinet" | "hpe_aruba";
+  platform: string;
+  model: string;
+  softwareVersion: string;
+  licenseEvidenceReference: string;
+  configurationPathReference: string;
+  sectorProfile: "enterprise" | "financial_service_branch" | "retail_transaction_branch" | "industrial";
+  measuredRuns: number;
+  acceptedRuns: number;
+  rejectedRuns: number;
+  minimumAcceptanceRatePercent: number;
+  acceptanceCriteriaReference: string;
+  evidenceReference: string;
+  reviewedAt: Date;
 };
 
 export type ProjectSectorDraft = {
@@ -436,6 +457,40 @@ export async function listProjectRestrictedClaims(projectId: number, ownerId: nu
   return db.select().from(projectRestrictedClaims).where(eq(projectRestrictedClaims.projectId, projectId)).orderBy(desc(projectRestrictedClaims.updatedAt));
 }
 
+export async function listBenchmarkScenarios(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(benchmarkScenarios).where(eq(benchmarkScenarios.projectId, projectId)).orderBy(desc(benchmarkScenarios.updatedAt));
+}
+
+/** Records supplied measurement facts and acceptance criteria; it makes no unscoped performance or safety claim. */
+export async function recordBenchmarkScenario(projectId: number, draft: BenchmarkScenarioDraft, actor: AuditActor) {
+  const project = await getProjectForUser(projectId, actor.id);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  await db.insert(benchmarkScenarios).values({
+    projectId,
+    scenarioId: draft.scenarioId.trim(),
+    vendorFamily: draft.vendorFamily,
+    platform: draft.platform.trim(),
+    model: draft.model.trim(),
+    softwareVersion: draft.softwareVersion.trim(),
+    licenseEvidenceReference: redactAuditDetails(draft.licenseEvidenceReference),
+    configurationPathReference: redactAuditDetails(draft.configurationPathReference),
+    sectorProfile: draft.sectorProfile,
+    measuredRuns: draft.measuredRuns,
+    acceptedRuns: draft.acceptedRuns,
+    rejectedRuns: draft.rejectedRuns,
+    minimumAcceptanceRatePercent: draft.minimumAcceptanceRatePercent,
+    acceptanceCriteriaReference: redactAuditDetails(draft.acceptanceCriteriaReference),
+    evidenceReference: redactAuditDetails(draft.evidenceReference),
+    reviewedAt: draft.reviewedAt,
+  });
+  await appendAuditEvent(projectId, actor, "benchmark.scenario_recorded", `Measured scenario ${draft.scenarioId.trim()} recorded for bounded review.`);
+  return listBenchmarkScenarios(projectId, actor.id);
+}
+
 /** Stores a scoped claim assessment record without publishing a claim or granting execution authority. */
 export async function recordProjectRestrictedClaim(projectId: number, draft: RestrictedClaimRecordDraft, actor: AuditActor) {
   const project = await getProjectForUser(projectId, actor.id);
@@ -600,6 +655,7 @@ export async function recordDeviceObservation(projectId: number, deviceId: numbe
     .set({
       observedVendor: draft.observedVendor.trim(),
       observedPlatform: draft.observedPlatform.trim(),
+      observedModel: draft.observedModel.trim(),
       observedVersion: draft.observedVersion.trim(),
       factsHash: draft.factsHash.trim(),
       factState: draft.factState,
@@ -723,6 +779,19 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
     .orderBy(desc(virtualTestRuns.observedAt))
     .limit(1);
   const latestTest = latestTests[0];
+  const scenarios = await db
+    .select()
+    .from(benchmarkScenarios)
+    .where(eq(benchmarkScenarios.projectId, planRecord.project.id))
+    .orderBy(desc(benchmarkScenarios.updatedAt));
+  const benchmarkCoverageCurrent = scenarios.some(scenario => {
+    const matchesTarget = scenario.vendorFamily === deviceRecord.device.observedVendor.toLowerCase()
+      && scenario.platform === deviceRecord.device.observedPlatform
+      && scenario.model === deviceRecord.device.observedModel
+      && scenario.softwareVersion === deviceRecord.device.observedVersion
+      && scenario.sectorProfile === planRecord.project.sectorProfile;
+    return matchesTarget && assessBenchmarkCoverage(scenario).status === "measured_coverage";
+  });
   const targetFactsCurrent = deviceRecord.device.factState === "observed"
     && deviceRecord.device.factsHash === planRecord.plan.targetFactsHash
     && isRecentEvidence(deviceRecord.device.lastObservedAt);
@@ -731,7 +800,7 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
     && latestTest.targetFactsHash === planRecord.plan.targetFactsHash
     && latestTest.scopeHash === planRecord.plan.scopeHash;
   const virtualTestCurrent = isRecentEvidence(latestTest?.observedAt);
-  const decision = evaluateApprovalReadiness({
+  const baseDecision = evaluateApprovalReadiness({
     requirementsComplete: planRecord.project.requirementsComplete === 100,
     targetFactsCurrent,
     deviceCapabilityVerified: deviceRecord.device.capabilityVerified,
@@ -741,6 +810,9 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
     backupVerified: planRecord.plan.backupVerified,
     maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
   });
+  const decision = benchmarkCoverageCurrent
+    ? baseDecision
+    : { status: "blocked" as const, blockers: [...baseDecision.blockers, "No matching measured benchmark scenario meets its recorded acceptance criteria for the observed vendor, platform, model, version, and sector scope."] };
   return {
     changePlanId,
     releaseState: planRecord.plan.releaseState,
@@ -752,6 +824,7 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
       virtualTestCurrent,
       backupVerified: planRecord.plan.backupVerified,
       maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
+      benchmarkCoverageCurrent,
       latestVirtualTestState: latestTest?.state || planRecord.plan.virtualValidationState,
     },
   };

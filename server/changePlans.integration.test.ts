@@ -191,7 +191,7 @@ describe("projects.changePlans.create real integration path", () => {
     expect(result.requiredHumanAction).toContain("authorized human executor");
   });
 
-  it("keeps automatic upload denied after all readiness evidence and human approval are recorded", async () => {
+  it("keeps preparation blocked when no matching measured benchmark scenario exists", async () => {
     const now = new Date();
     const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
     const planRecord = {
@@ -227,9 +227,48 @@ describe("projects.changePlans.create real integration path", () => {
 
     const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 56 });
 
+    expect(result.status).toBe("blocked");
+    expect(result.automaticUploadAllowed).toBe(false);
+    expect(result.blockers).toContain("No matching measured benchmark scenario meets its recorded acceptance criteria for the observed vendor, platform, model, version, and sector scope.");
+  });
+
+  it("permits only human-controlled preparation when a matching measured benchmark meets acceptance criteria", async () => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = { id: 58, projectId: 1, deviceId: 10, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash", virtualValidationState: "test_passed", releaseState: "approved", backupVerified: true, maintenanceWindowValid: true };
+    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true, lastObservedAt: now, observedVendor: "cisco", observedPlatform: "ios_xe", observedModel: "C9300-48P", observedVersion: "17.9.4" }, project: projectRecord };
+    const virtualTestRecord = { state: "test_passed", observedAt: now, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash" };
+    const scenario = { scenarioId: "lab-001", vendorFamily: "cisco", platform: "ios_xe", model: "C9300-48P", softwareVersion: "17.9.4", licenseEvidenceReference: "license", configurationPathReference: "path", sectorProfile: "enterprise", measuredRuns: 5, acceptedRuns: 4, rejectedRuns: 1, minimumAcceptanceRatePercent: 80, acceptanceCriteriaReference: "criteria", evidenceReference: "evidence", reviewedAt: now, updatedAt: now };
+    selectResults.push([{ plan: planRecord, project: projectRecord }], [{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord], [scenario]);
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 58 });
+
     expect(result.status).toBe("human_execution_required");
     expect(result.automaticUploadAllowed).toBe(false);
-    expect(result.blockers).toEqual([]);
+    expect(result.readiness.evidence.benchmarkCoverageCurrent).toBe(true);
+  });
+
+  it.each([
+    ["vendor", { vendorFamily: "huawei" }],
+    ["model", { model: "C9200-48P" }],
+    ["version", { softwareVersion: "17.12.1" }],
+    ["sector", { sectorProfile: "industrial" }],
+  ])("blocks human-controlled preparation when the measured benchmark has a mismatched %s", async (_dimension, override) => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = { id: 59, projectId: 1, deviceId: 10, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash", virtualValidationState: "test_passed", releaseState: "approved", backupVerified: true, maintenanceWindowValid: true };
+    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true, lastObservedAt: now, observedVendor: "cisco", observedPlatform: "ios_xe", observedModel: "C9300-48P", observedVersion: "17.9.4" }, project: projectRecord };
+    const virtualTestRecord = { state: "test_passed", observedAt: now, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash" };
+    const scenario = { scenarioId: "lab-mismatch", vendorFamily: "cisco", platform: "ios_xe", model: "C9300-48P", softwareVersion: "17.9.4", licenseEvidenceReference: "license", configurationPathReference: "path", sectorProfile: "enterprise", measuredRuns: 5, acceptedRuns: 4, rejectedRuns: 1, minimumAcceptanceRatePercent: 80, acceptanceCriteriaReference: "criteria", evidenceReference: "evidence", reviewedAt: now, updatedAt: now, ...override };
+    selectResults.push([{ plan: planRecord, project: projectRecord }], [{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord], [scenario]);
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 59 });
+
+    expect(result.status).toBe("blocked");
+    expect(result.readiness.evidence.benchmarkCoverageCurrent).toBe(false);
+    expect(result.blockers).toContain("No matching measured benchmark scenario meets its recorded acceptance criteria for the observed vendor, platform, model, version, and sector scope.");
   });
 
   it("records an observed failed verification and flags human rollback review", async () => {

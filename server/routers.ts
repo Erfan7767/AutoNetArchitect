@@ -19,6 +19,7 @@ import {
   listDiscoveryRuns,
   listBomItems,
   listConfigArtifacts,
+  listBenchmarkScenarios,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -28,6 +29,7 @@ import {
   prepareDeployment,
   recordDeviceObservation,
   recordAgentTeamAudit,
+  recordBenchmarkScenario,
   recordProjectRestrictedClaim,
   recordVirtualTest,
   recordPostChangeVerification,
@@ -73,6 +75,7 @@ export const appRouter = router({
           scenarioId: z.string().trim().max(200),
           vendorFamily: z.enum(["cisco", "huawei", "fortinet", "hpe_aruba"]),
           platform: z.string().trim().max(160),
+          model: z.string().trim().max(160).default(""),
           softwareVersion: z.string().trim().max(160),
           licenseEvidenceReference: z.string().trim().max(1000),
           configurationPathReference: z.string().trim().max(1000),
@@ -80,6 +83,8 @@ export const appRouter = router({
           measuredRuns: z.number().int().nonnegative(),
           acceptedRuns: z.number().int().nonnegative(),
           rejectedRuns: z.number().int().nonnegative(),
+          minimumAcceptanceRatePercent: z.number().int().min(0).max(100).default(0),
+          acceptanceCriteriaReference: z.string().trim().max(1000).default(""),
           evidenceReference: z.string().trim().max(1000),
           reviewedAt: z.coerce.date().nullable(),
         }),
@@ -351,6 +356,7 @@ export const appRouter = router({
             scenarioId: z.string().trim().max(200),
             vendorFamily: z.enum(["cisco", "huawei", "fortinet", "hpe_aruba"]),
             platform: z.string().trim().max(160),
+            model: z.string().trim().max(160).default(""),
             softwareVersion: z.string().trim().max(160),
             licenseEvidenceReference: z.string().trim().max(1000),
             configurationPathReference: z.string().trim().max(1000),
@@ -358,21 +364,64 @@ export const appRouter = router({
             measuredRuns: z.number().int().nonnegative(),
             acceptedRuns: z.number().int().nonnegative(),
             rejectedRuns: z.number().int().nonnegative(),
+            minimumAcceptanceRatePercent: z.number().int().min(0).max(100).default(0),
+            acceptanceCriteriaReference: z.string().trim().max(1000).default(""),
             evidenceReference: z.string().trim().max(1000),
             reviewedAt: z.coerce.date().nullable(),
           }),
         }))
         .mutation(async ({ ctx, input }) => {
           const baseAssessment = assessRestrictedClaim(input);
-          const coverage = assessBenchmarkCoverage(input.benchmarkScenario);
-          const assessment = baseAssessment.status === "blocked"
-            ? baseAssessment
-            : coverage.status === "measured_coverage"
+          let assessment = baseAssessment;
+          if (baseAssessment.status === "publishable") {
+            const scenarios = await listBenchmarkScenarios(input.projectId, ctx.user.id);
+            if (!scenarios) projectNotFound();
+            const persistedCoverage = scenarios.some(scenario => scenario.scenarioId === input.benchmarkScenario.scenarioId
+              && scenario.vendorFamily === input.benchmarkScenario.vendorFamily
+              && scenario.platform === input.benchmarkScenario.platform
+              && scenario.model === input.benchmarkScenario.model
+              && scenario.softwareVersion === input.benchmarkScenario.softwareVersion
+              && scenario.sectorProfile === input.benchmarkScenario.sectorProfile
+              && assessBenchmarkCoverage(scenario).status === "measured_coverage");
+            assessment = persistedCoverage
               ? baseAssessment
-              : { status: "blocked" as const, missing: coverage.blockers };
+              : { status: "blocked" as const, missing: ["No matching persisted benchmark scenario meets its recorded acceptance criteria for this restricted claim scope."] };
+          }
           const records = await recordProjectRestrictedClaim(input.projectId, { ...input, assessmentStatus: assessment.status }, actorFromUser(ctx.user));
           if (!records) projectNotFound();
           return { ...assessment, records };
+      }),
+    }),
+    benchmarks: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const scenarios = await listBenchmarkScenarios(input.projectId, ctx.user.id);
+        if (!scenarios) projectNotFound();
+        return scenarios;
+      }),
+      record: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          scenarioId: z.string().trim().min(1).max(200),
+          vendorFamily: z.enum(["cisco", "huawei", "fortinet", "hpe_aruba"]),
+          platform: z.string().trim().min(1).max(160),
+          model: z.string().trim().min(1).max(160),
+          softwareVersion: z.string().trim().min(1).max(160),
+          licenseEvidenceReference: z.string().trim().min(1).max(1000),
+          configurationPathReference: z.string().trim().min(1).max(1000),
+          sectorProfile: z.enum(["enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"]),
+          measuredRuns: z.number().int().positive(),
+          acceptedRuns: z.number().int().nonnegative(),
+          rejectedRuns: z.number().int().nonnegative(),
+          minimumAcceptanceRatePercent: z.number().int().min(0).max(100),
+          acceptanceCriteriaReference: z.string().trim().min(1).max(1000),
+          evidenceReference: z.string().trim().min(1).max(1000),
+          reviewedAt: z.coerce.date().refine(value => value.getTime() > 0, "A human review date is required."),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const coverage = assessBenchmarkCoverage(input);
+          const scenarios = await recordBenchmarkScenario(input.projectId, input, actorFromUser(ctx.user));
+          if (!scenarios) projectNotFound();
+          return { coverage, scenarios };
         }),
     }),
     recordMultiAgentAudit: protectedProcedure
@@ -434,6 +483,7 @@ export const appRouter = router({
           deviceId: z.number().int().positive(),
           observedVendor: z.string().trim().max(120),
           observedPlatform: z.string().trim().max(160),
+          observedModel: z.string().trim().max(160),
           observedVersion: z.string().trim().max(160),
           factsHash: z.string().trim().max(160),
           factState: z.enum(["observed", "ambiguous", "unreachable", "unsupported"]),

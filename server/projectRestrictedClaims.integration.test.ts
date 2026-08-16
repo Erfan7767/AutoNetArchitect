@@ -35,6 +35,7 @@ const reviewableScenario = {
   scenarioId: "recorded-scenario",
   vendorFamily: "cisco" as const,
   platform: "ios_xe",
+  model: "C9300-48P",
   softwareVersion: "17.9.4",
   licenseEvidenceReference: "license-reference",
   configurationPathReference: "configuration-path-reference",
@@ -70,6 +71,68 @@ describe("projects.restrictedClaims integration", () => {
     expect(result.status).toBe("blocked");
     expect(result.missing.length).toBeGreaterThan(0);
     expect(insertCalls.find(value => typeof value === "object" && value !== null && "assessmentStatus" in value)).toMatchObject({ projectId: 4, claimClass: "production_safe", assessmentStatus: "blocked" });
+  });
+
+  it("blocks an otherwise scoped claim when no matching persisted measured scenario exists", async () => {
+    const caller = appRouter.createCaller(context());
+    selectResults.push([ownedProject()], [], [ownedProject()], [ownedProject()], []);
+
+    const result = await caller.projects.restrictedClaims.record({
+      projectId: 4,
+      claimClass: "compatibility",
+      scopeDescription: "Exact Cisco laboratory path.",
+      authorityReference: "Reviewed official reference.",
+      measuredEvidenceReference: "Measured lab evidence.",
+      reviewedAt: new Date(),
+      benchmarkScenario: reviewableScenario,
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.missing).toContain("No matching persisted benchmark scenario meets its recorded acceptance criteria for this restricted claim scope.");
+  });
+
+  it("permits a scoped claim only when its matching persisted scenario meets acceptance criteria", async () => {
+    const now = new Date();
+    const storedScenario = { id: 4, projectId: 4, ...reviewableScenario, minimumAcceptanceRatePercent: 60, acceptanceCriteriaReference: "reviewed-criteria", createdAt: now, updatedAt: now };
+    selectResults.push([ownedProject()], [storedScenario], [ownedProject()], [ownedProject()], []);
+    const caller = appRouter.createCaller(context());
+
+    const result = await caller.projects.restrictedClaims.record({
+      projectId: 4,
+      claimClass: "compatibility",
+      scopeDescription: "Exact Cisco laboratory path.",
+      authorityReference: "Reviewed official reference.",
+      measuredEvidenceReference: "Measured lab evidence.",
+      reviewedAt: now,
+      benchmarkScenario: { ...reviewableScenario, minimumAcceptanceRatePercent: 60, acceptanceCriteriaReference: "reviewed-criteria" },
+    });
+
+    expect(result.status).toBe("publishable");
+  });
+
+  it.each([
+    ["vendor", { vendorFamily: "huawei" as const }],
+    ["model", { model: "C9200-48P" }],
+    ["version", { softwareVersion: "17.12.1" }],
+    ["sector", { sectorProfile: "industrial" as const }],
+  ])("blocks a scoped claim when the persisted scenario has a mismatched %s", async (_dimension, override) => {
+    const now = new Date();
+    const storedScenario = { id: 5, projectId: 4, ...reviewableScenario, minimumAcceptanceRatePercent: 60, acceptanceCriteriaReference: "reviewed-criteria", ...override, createdAt: now, updatedAt: now };
+    selectResults.push([ownedProject()], [storedScenario], [ownedProject()], [ownedProject()], []);
+    const caller = appRouter.createCaller(context());
+
+    const result = await caller.projects.restrictedClaims.record({
+      projectId: 4,
+      claimClass: "compatibility",
+      scopeDescription: "Exact Cisco laboratory path.",
+      authorityReference: "Reviewed official reference.",
+      measuredEvidenceReference: "Measured lab evidence.",
+      reviewedAt: now,
+      benchmarkScenario: { ...reviewableScenario, minimumAcceptanceRatePercent: 60, acceptanceCriteriaReference: "reviewed-criteria" },
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.missing).toContain("No matching persisted benchmark scenario meets its recorded acceptance criteria for this restricted claim scope.");
   });
 
   it("returns project-scoped report entries and does not elevate absent classes", async () => {

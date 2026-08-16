@@ -110,6 +110,7 @@ export const managedDevices = mysqlTable("managed_devices", {
   credentialReference: varchar("credential_reference", { length: 160 }).notNull(),
   observedVendor: varchar("observed_vendor", { length: 120 }).notNull().default(""),
   observedPlatform: varchar("observed_platform", { length: 160 }).notNull().default(""),
+  observedModel: varchar("observed_model", { length: 160 }).notNull().default(""),
   observedVersion: varchar("observed_version", { length: 160 }).notNull().default(""),
   factState: mysqlEnum("fact_state", ["unobserved", "observed", "ambiguous", "unreachable", "unsupported"])
     .notNull()
@@ -224,6 +225,7 @@ export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
   scenarioId: varchar("scenario_id", { length: 200 }).notNull(),
   vendorFamily: mysqlEnum("vendor_family", ["cisco", "huawei", "fortinet", "hpe_aruba"]).notNull(),
   platform: varchar("platform", { length: 160 }).notNull(),
+  model: varchar("model", { length: 160 }).notNull(),
   softwareVersion: varchar("software_version", { length: 160 }).notNull(),
   licenseEvidenceReference: varchar("license_evidence_reference", { length: 1000 }).notNull(),
   configurationPathReference: varchar("configuration_path_reference", { length: 1000 }).notNull(),
@@ -231,6 +233,8 @@ export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
   measuredRuns: int("measured_runs").notNull(),
   acceptedRuns: int("accepted_runs").notNull(),
   rejectedRuns: int("rejected_runs").notNull(),
+  minimumAcceptanceRatePercent: int("minimum_acceptance_rate_percent").notNull(),
+  acceptanceCriteriaReference: varchar("acceptance_criteria_reference", { length: 1000 }).notNull(),
   evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
   reviewedAt: timestamp("reviewed_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
