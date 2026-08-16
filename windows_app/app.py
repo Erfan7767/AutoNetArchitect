@@ -32,6 +32,7 @@ class AutoNetWindowsApp:
         self._credential_reference = tk.StringVar()
         self._acknowledged = tk.BooleanVar(value=False)
         self._status = tk.StringVar(value="Approve a read-only scope before discovery.")
+        self._inventory: ttk.Treeview | None = None
         self._build_view()
 
     def _build_view(self) -> None:
@@ -71,6 +72,17 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=protocol_row + 2, column=1, sticky="e", pady=(12, 4))
         ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=protocol_row + 3, column=0, sticky="w", pady=(8, 4))
         ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=protocol_row + 4, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
+        for column, label, width in (
+            ("address", "Address", 150),
+            ("mac", "MAC evidence", 160),
+            ("entry", "ARP entry", 120),
+            ("scope", "Scope result", 160),
+        ):
+            self._inventory.heading(column, text=label)
+            self._inventory.column(column, width=width, stretch=True)
+        self._inventory.grid(row=protocol_row + 5, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(protocol_row + 5, weight=1)
 
     def _approve_scope(self) -> None:
         """Validate and save the local scope selected by the human operator."""
@@ -114,6 +126,13 @@ class AutoNetWindowsApp:
                 raise PermissionError("Save an approved local scope before reviewing local inventory.")
             neighbors = WindowsArpInventory().collect()
             targets = authorized_neighbors(scope, neighbors, ManagementProtocol(self._protocol.get()))
+            authorized_addresses = {target.address for target in targets}
+            if self._inventory is not None:
+                for item in self._inventory.get_children():
+                    self._inventory.delete(item)
+                for neighbor in neighbors:
+                    scope_result = "authorized candidate" if neighbor.address in authorized_addresses else "outside approved target scope"
+                    self._inventory.insert("", tk.END, values=(neighbor.address, neighbor.mac_address, neighbor.entry_kind, scope_result))
             self._status.set(
                 f"Local ARP cache contained {len(neighbors)} neighbor record(s); {len(targets)} matched the approved target and protocol scope."
             )
