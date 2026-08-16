@@ -20,6 +20,21 @@ function createContext(): TrpcContext {
   };
 }
 
+const benchmarkScenario = {
+  scenarioId: "bank-cisco-iosxe-17-9-lab-001",
+  vendorFamily: "cisco" as const,
+  platform: "ios_xe",
+  softwareVersion: "17.9.4",
+  licenseEvidenceReference: "license-evidence-001",
+  configurationPathReference: "candidate-commit-path-001",
+  sectorProfile: "financial_service_branch" as const,
+  measuredRuns: 3,
+  acceptedRuns: 2,
+  rejectedRuns: 1,
+  evidenceReference: "lab-evidence-001",
+  reviewedAt: new Date(),
+};
+
 describe("claims.assessPublication integration path", () => {
   it.each([
     ["missing authoritative reference", { authorityReference: "" }],
@@ -33,6 +48,7 @@ describe("claims.assessPublication integration path", () => {
       authorityReference: "Vendor release note reference.",
       measuredEvidenceReference: "Pilot run P-001.",
       reviewedAt: new Date(),
+      benchmarkScenario,
       ...overrides,
     });
 
@@ -48,9 +64,25 @@ describe("claims.assessPublication integration path", () => {
       authorityReference: "Official vendor source reference.",
       measuredEvidenceReference: "Recorded laboratory evidence identifier.",
       reviewedAt: new Date(),
+      benchmarkScenario,
     });
 
     expect(result).toEqual({ status: "publishable", missing: [] });
+  });
+
+  it("blocks an otherwise complete claim outside measured benchmark coverage", async () => {
+    const caller = appRouter.createCaller(createContext());
+    const result = await caller.claims.assessPublication({
+      claimClass: "compatibility",
+      scopeDescription: "A stated model/version/license/path combination only.",
+      authorityReference: "Official vendor source reference.",
+      measuredEvidenceReference: "Recorded laboratory evidence identifier.",
+      reviewedAt: new Date(),
+      benchmarkScenario: { ...benchmarkScenario, softwareVersion: "", measuredRuns: 0, acceptedRuns: 0, rejectedRuns: 0 },
+    });
+
+    expect(result.status).toBe("blocked");
+    expect(result.missing).toContain("Exact platform and software version are required.");
   });
 });
 

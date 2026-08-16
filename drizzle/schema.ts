@@ -178,6 +178,25 @@ export const virtualTestRuns = mysqlTable("virtual_test_runs", {
   observedAt: timestamp("observed_at").defaultNow().notNull(),
 });
 
+export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  scenarioId: varchar("scenario_id", { length: 200 }).notNull(),
+  vendorFamily: mysqlEnum("vendor_family", ["cisco", "huawei", "fortinet", "hpe_aruba"]).notNull(),
+  platform: varchar("platform", { length: 160 }).notNull(),
+  softwareVersion: varchar("software_version", { length: 160 }).notNull(),
+  licenseEvidenceReference: varchar("license_evidence_reference", { length: 1000 }).notNull(),
+  configurationPathReference: varchar("configuration_path_reference", { length: 1000 }).notNull(),
+  sectorProfile: mysqlEnum("sector_profile", ["enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"]).notNull(),
+  measuredRuns: int("measured_runs").notNull(),
+  acceptedRuns: int("accepted_runs").notNull(),
+  rejectedRuns: int("rejected_runs").notNull(),
+  evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
+  reviewedAt: timestamp("reviewed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type NetworkProject = typeof networkProjects.$inferSelect;
@@ -199,3 +218,5 @@ export type ChangePlan = typeof changePlans.$inferSelect;
 export type InsertChangePlan = typeof changePlans.$inferInsert;
 export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
 export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;
+export type BenchmarkScenario = typeof benchmarkScenarios.$inferSelect;
+export type InsertBenchmarkScenario = typeof benchmarkScenarios.$inferInsert;

@@ -105,3 +105,6 @@
 - [x] Add a restricted-claim assessment API surface that consumes scoped evidence and never publishes a positive claim without it.
 - [x] Add integration tests proving restricted claim requests are blocked when authoritative or measured evidence is absent.
 - [x] Surface change-plan approval-readiness blockers in the Operations console through the protected backend procedure.
+- [ ] Add persisted benchmark scenario records and expose bounded acceptance criteria through protected API/UI surfaces.
+- [ ] Integrate measured coverage into claim and change-plan release decisions so paths outside coverage are blocked.
+- [ ] Add integration tests proving claim and release decisions block vendor/model/version/sector paths outside measured coverage.

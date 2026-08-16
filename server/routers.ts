@@ -38,6 +38,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { COOKIE_NAME } from "../shared/const";
 import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
 import { assessRecommendation, assessRestrictedClaim } from "./automationPolicy";
+import { assessBenchmarkCoverage } from "./benchmarkPolicy";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -59,8 +60,29 @@ export const appRouter = router({
         authorityReference: z.string().trim().max(1000),
         measuredEvidenceReference: z.string().trim().max(1000),
         reviewedAt: z.coerce.date().nullable(),
+        benchmarkScenario: z.object({
+          scenarioId: z.string().trim().max(200),
+          vendorFamily: z.enum(["cisco", "huawei", "fortinet", "hpe_aruba"]),
+          platform: z.string().trim().max(160),
+          softwareVersion: z.string().trim().max(160),
+          licenseEvidenceReference: z.string().trim().max(1000),
+          configurationPathReference: z.string().trim().max(1000),
+          sectorProfile: z.enum(["enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"]),
+          measuredRuns: z.number().int().nonnegative(),
+          acceptedRuns: z.number().int().nonnegative(),
+          rejectedRuns: z.number().int().nonnegative(),
+          evidenceReference: z.string().trim().max(1000),
+          reviewedAt: z.coerce.date().nullable(),
+        }),
       }))
-      .mutation(({ input }) => assessRestrictedClaim(input)),
+      .mutation(({ input }) => {
+        const claimAssessment = assessRestrictedClaim(input);
+        const coverage = assessBenchmarkCoverage(input.benchmarkScenario);
+        if (claimAssessment.status === "blocked") return claimAssessment;
+        return coverage.status === "measured_coverage"
+          ? claimAssessment
+          : { status: "blocked" as const, missing: coverage.blockers };
+      }),
   }),
   recommendations: router({
     assess: protectedProcedure
