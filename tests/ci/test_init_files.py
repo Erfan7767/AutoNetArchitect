@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Final
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[2]
-NON_PACKAGE_PARTS: Final[frozenset[str]] = frozenset({".git", ".tox", ".nox", ".venv", "build", "dist", "__pycache__", "tests", "scripts"})
+NON_PACKAGE_PARTS: Final[frozenset[str]] = frozenset({".git", ".tox", ".nox", ".venv", "build", "dist", "__pycache__", "tests", "scripts", "node_modules"})
 
 
 def _is_source_python_file(path: Path) -> bool:

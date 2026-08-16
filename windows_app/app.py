@@ -6,13 +6,14 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox, ttk
 
-from site_agent.models import DiscoveryTarget, ManagementProtocol
-from site_agent.vendor_support import VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 from site_agent.local_inventory import WindowsArpInventory, authorized_neighbors
+from site_agent.models import DiscoveryTarget, ManagementProtocol
 from site_agent.scope import AuthorizedScope
+from site_agent.vendor_support import VendorFamily
 
 from .controller import WindowsDiscoveryController
 from .probe import ReadOnlyReachabilityProbe
+from .vendor_support_view import contracts_for_display, protocol_allowed
 from .workspace import WindowsWorkspace
 
 
@@ -33,7 +34,7 @@ class AutoNetWindowsApp:
         self._vendor_family = tk.StringVar(value=VendorFamily.CISCO.value)
         self._credential_reference = tk.StringVar()
         self._vendor_status = tk.StringVar()
-        self._vendor_contracts = {contract.family.value: contract for contract in VendorCapabilityRegistry().contracts}
+        self._vendor_contracts = {contract.family.value: contract for contract in contracts_for_display()}
         self._acknowledged = tk.BooleanVar(value=False)
         self._status = tk.StringVar(value="Approve a read-only scope before discovery.")
         self._inventory: ttk.Treeview | None = None
@@ -126,9 +127,9 @@ class AutoNetWindowsApp:
         """Attempt a bounded read-only probe for one explicitly entered management endpoint."""
 
         try:
-            contract: VendorCapabilityContract = self._vendor_contracts[self._vendor_family.get()]
+            contract = self._vendor_contracts[self._vendor_family.get()]
             protocol = ManagementProtocol(self._protocol.get())
-            if protocol not in contract.protocols:
+            if not protocol_allowed(self._vendor_family.get(), protocol):
                 raise PermissionError(f"{protocol.value} is not declared for the selected {contract.family.value} discovery contract.")
             target = DiscoveryTarget(
                 address=self._address.get().strip(),

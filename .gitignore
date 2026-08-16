@@ -1,14 +1,18 @@
 # Dependencies
 **/node_modules
+node_modules/
 .pnpm-store/
 
 # Build outputs
 dist/
 build/
 *.dist
+*.egg-info/
 
 # Environment variables
 .env
+!.env.example
+!.env.test
 .env.local
 .env.development.local
 .env.test.local
@@ -112,10 +116,13 @@ temp/
 # Python local tooling and runtime artifacts
 __pycache__/
 *.py[cod]
+*.pyc
+*.pyo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .tox/
+.nox/
 
 # AutoNetArchitect local state and secret-bearing stores
 data/vault.enc
@@ -125,6 +132,10 @@ cache/
 exports/
 reports/
 *.vault
+*.key
+*.pem
+*.p12
+*.pfx
 *.vault.enc
 *.keystore
 

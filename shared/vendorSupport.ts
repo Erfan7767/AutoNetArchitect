@@ -10,6 +10,10 @@ export type VendorSupportStatus = {
   boundary: string;
 };
 
+export function filterVendorSupport(items: VendorSupportStatus[], selectedFamily: string): VendorSupportStatus[] {
+  return selectedFamily === "all" ? items : items.filter(item => item.vendorFamily === selectedFamily);
+}
+
 export const VENDOR_SUPPORT_STATUS: VendorSupportStatus[] = [
   {
     vendorFamily: "cisco",
