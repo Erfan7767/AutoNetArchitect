@@ -66,3 +66,16 @@
 - [ ] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
 - [ ] Define measurable benchmark scenarios and release gates for supported vendor/model/version paths instead of asserting universal network coverage.
 - [ ] Present human accountability separately for review, approval, execution authority, and emergency exception handling.
+
+- [x] Document bounded official-source references for Cisco, Huawei, Fortinet, and HPE Aruba.
+- [x] Push the vendor-source documentation and Windows scope-guard revisions to the public GitHub `main` branch.
+- [x] Implement a vendor-family registry with explicit discovery protocols, evidence requirements, and unsupported status for Cisco, Huawei, Fortinet, and HPE Aruba.
+- [ ] Add exact platform/version/license capability assessment before configuration generation for each supported vendor family.
+- [x] Add vendor-specific read-only discovery adapter contracts without fabricating commands or falling back to generic configuration.
+- [ ] Add vendor-specific virtual-validation adapter contracts with fidelity and evidence labels.
+- [ ] Add vendor selection and support-status visibility to the Windows application and web review console.
+- [x] Add tests for supported, ambiguous, unsupported, mismatched-version, and missing-license vendor cases.
+- [ ] Package the four-vendor support scope into a reviewed release and publish its measured boundaries.
+- [ ] Add per-vendor version-policy data with bounded release matchers and explicit out-of-bound decisions.
+- [x] Add an explicit mismatched-version test proving configuration is blocked or requires review.
+- [ ] Document vendor-specific platform/version/license combinations as traceable policy data rather than generic evidence gates.
