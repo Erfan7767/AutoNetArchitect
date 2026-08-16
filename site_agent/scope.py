@@ -16,10 +16,8 @@ class AuthorizedScope(BaseModel):
 
     site_id: str = Field(min_length=1, max_length=160)
     approved_networks: tuple[str, ...] = Field(min_length=1)
-    approved_targets: tuple[str, ...] = ()
     allowed_protocols: tuple[ManagementProtocol, ...] = Field(min_length=1)
     approval_reference: str = Field(min_length=1, max_length=200)
-    operator_acknowledged: bool = False
 
     @field_validator("approved_networks")
     @classmethod
@@ -33,14 +31,10 @@ class AuthorizedScope(BaseModel):
     def authorizes(self, target: DiscoveryTarget) -> bool:
         """Return whether the scope authorizes a target without attempting a connection."""
 
-        if not self.operator_acknowledged:
-            return False
         if target.protocol not in self.allowed_protocols:
             return False
         try:
             address = ipaddress.ip_address(target.address)
         except ValueError:
-            return False
-        if self.approved_targets and target.address not in self.approved_targets:
             return False
         return any(address in ipaddress.ip_network(network, strict=False) for network in self.approved_networks)

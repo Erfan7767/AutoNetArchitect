@@ -20,10 +20,8 @@ def test_read_only_agent_blocks_target_outside_approved_scope() -> None:
     scope = AuthorizedScope(
         site_id="site-lab",
         approved_networks=("192.0.2.0/24",),
-        approved_targets=("192.0.2.10",),
         allowed_protocols=(ManagementProtocol.SSH,),
         approval_reference="scope-approval-001",
-        operator_acknowledged=True,
     )
     target = DiscoveryTarget(address="198.51.100.10", protocol=ManagementProtocol.SSH, credential_reference="vault-ref-01")
 
