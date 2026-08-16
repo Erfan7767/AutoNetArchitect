@@ -101,6 +101,22 @@ export const managedSites = mysqlTable("managed_sites", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+/** Human-supplied business context for a future managed site; it does not assert discovered topology or device facts. */
+export const projectSiteBusinessRequirements = mysqlTable("project_site_business_requirements", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  siteReference: varchar("site_reference", { length: 160 }).notNull(),
+  branchRole: varchar("branch_role", { length: 120 }).notNull(),
+  servicePriorities: varchar("service_priorities", { length: 2000 }).notNull(),
+  availabilityObjective: varchar("availability_objective", { length: 1000 }).notNull(),
+  jurisdictionConstraints: varchar("jurisdiction_constraints", { length: 2000 }).notNull(),
+  humanMandatoryFields: varchar("human_mandatory_fields", { length: 4000 }).notNull().default("[]"),
+  reviewState: mysqlEnum("review_state", ["draft", "reviewed"]).notNull().default("draft"),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
 export const authorizedDiscoveryScopes = mysqlTable("authorized_discovery_scopes", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),

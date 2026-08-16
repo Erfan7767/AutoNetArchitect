@@ -13,6 +13,7 @@ import {
   projectConfigArtifacts,
   projectDesignDetails,
   projectRestrictedClaims,
+  projectSiteBusinessRequirements,
   postChangeVerificationRuns,
   virtualTestRuns,
   type InsertDiscoveryRun,
@@ -41,6 +42,16 @@ export type QuestionnaireDraft = {
   classification: "greenfield" | "brownfield" | "undetermined";
   vendorPreferences: string;
   complianceNeeds: string;
+};
+
+export type SiteBusinessRequirementDraft = {
+  siteReference: string;
+  branchRole: string;
+  servicePriorities: string;
+  availabilityObjective: string;
+  jurisdictionConstraints: string;
+  humanMandatoryFields: string[];
+  reviewState: "draft" | "reviewed";
 };
 
 export type DesignDetailDraft = {
@@ -360,6 +371,47 @@ export async function updateProjectQuestionnaire(
     `Questionnaire captured with ${completeness}% completeness.`,
   );
   return getProjectForUser(projectId, actor.id);
+}
+
+/** List human-supplied business context records without treating them as discovered site facts. */
+export async function listSiteBusinessRequirements(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  const records = await db
+    .select()
+    .from(projectSiteBusinessRequirements)
+    .where(eq(projectSiteBusinessRequirements.projectId, projectId))
+    .orderBy(desc(projectSiteBusinessRequirements.updatedAt));
+  return records.map(record => ({ ...record, humanMandatoryFields: parseSectorInputs(record.humanMandatoryFields) }));
+}
+
+/** Persist one reviewed or draft site-business record after verifying project ownership. */
+export async function recordSiteBusinessRequirement(
+  projectId: number,
+  draft: SiteBusinessRequirementDraft,
+  actor: AuditActor,
+) {
+  const project = await getProjectForUser(projectId, actor.id);
+  if (!project) return undefined;
+  const mandatoryFields = Array.from(new Set(draft.humanMandatoryFields.map(value => value.trim()).filter(Boolean)));
+  if (draft.reviewState === "reviewed" && mandatoryFields.length === 0) {
+    throw new Error("A reviewed multi-site business record requires named human-supplied mandatory fields.");
+  }
+  const db = await requireDatabase();
+  await db.insert(projectSiteBusinessRequirements).values({
+    projectId,
+    siteReference: draft.siteReference.trim(),
+    branchRole: draft.branchRole.trim(),
+    servicePriorities: draft.servicePriorities.trim(),
+    availabilityObjective: draft.availabilityObjective.trim(),
+    jurisdictionConstraints: draft.jurisdictionConstraints.trim(),
+    humanMandatoryFields: JSON.stringify(mandatoryFields),
+    reviewState: draft.reviewState,
+    reviewedAt: draft.reviewState === "reviewed" ? new Date() : null,
+  });
+  await appendAuditEvent(projectId, actor, "multi_site_business_requirement.recorded", `Multi-site business intake record saved in ${draft.reviewState} state.`);
+  return listSiteBusinessRequirements(projectId, actor.id);
 }
 
 export async function updateProjectSector(projectId: number, draft: ProjectSectorDraft, actor: AuditActor) {

@@ -28,6 +28,7 @@ import {
   listAuditEventsForUser,
   listManagedDevices,
   listManagedSites,
+  listSiteBusinessRequirements,
   listPostChangeVerifications,
   listProjectsForUser,
   prepareDeployment,
@@ -38,6 +39,7 @@ import {
   recordProjectRestrictedClaim,
   recordVirtualTest,
   recordPostChangeVerification,
+  recordSiteBusinessRequirement,
   registerManagedDevice,
   requestDeploymentApproval,
   transitionDiscoveryRun,
@@ -164,6 +166,29 @@ export const appRouter = router({
         const project = await updateProjectQuestionnaire(input.projectId, input, actorFromUser(ctx.user));
         return project || projectNotFound();
       }),
+    siteBusinessRequirements: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const records = await listSiteBusinessRequirements(input.projectId, ctx.user.id);
+        if (records === undefined) projectNotFound();
+        return records;
+      }),
+      record: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteReference: z.string().trim().min(2).max(160),
+          branchRole: z.string().trim().min(2).max(120),
+          servicePriorities: z.string().trim().min(2).max(2000),
+          availabilityObjective: z.string().trim().min(2).max(1000),
+          jurisdictionConstraints: z.string().trim().min(2).max(2000),
+          humanMandatoryFields: z.array(z.string().trim().min(2).max(300)).min(1).max(50),
+          reviewState: z.enum(["draft", "reviewed"]),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const records = await recordSiteBusinessRequirement(input.projectId, input, actorFromUser(ctx.user));
+          if (records === undefined) projectNotFound();
+          return records;
+        }),
+    }),
     sectorReview: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
       const status = await getSectorReviewStatus(input.projectId, ctx.user.id);
       if (status === undefined) projectNotFound();
