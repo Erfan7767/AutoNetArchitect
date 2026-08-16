@@ -114,7 +114,7 @@
 - [x] Expose multi-agent workflow status and the mandatory human Go/No-Go boundary in the control plane without enabling autonomous production execution.
 - [x] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.
 - [x] Persist exact capability, license, and configuration-path evidence references and require them before a managed device is marked capability-verified.
-- [ ] Enforce exact capability assessment in config-artifact preparation and prove four-vendor candidate, unsupported, and missing-evidence paths are blocked before artifact storage.
+- [x] Enforce exact capability assessment in config-artifact preparation and prove four-vendor candidate, unsupported, and missing-evidence paths are blocked before artifact storage.
 - [x] Publish a machine-readable multi-agent team manifest defining every agent role, authorized inputs, evidence-bound outputs, dependency gates, and prohibited actions.
 - [x] Add a coordination graph evaluator that schedules only dependency-ready read-only/review agents and returns explicit blocked or abstained states for every unmet input.
 - [x] Bind agent-team graph outcomes to audit-ready workflow evidence without granting configuration upload or production execution authority.
@@ -138,3 +138,5 @@
 - [x] Add router integration tests for protected benchmark list and record procedures covering project ownership and accepted or blocked measured coverage outcomes.
 - [x] Add an exact model or SKU field to benchmark scenarios and enforce it in claim and change-plan benchmark matching.
 - [x] Add integration coverage proving vendor, model, version, and sector mismatches each block claim assessment and change-plan readiness.
+- [x] Add explicit candidate/review-required and unsupported capability decisions to the web assessment workflow and block a passing feature guard for both states.
+- [x] Add per-vendor integration coverage proving candidate-only, unsupported, and missing-evidence capability paths are rejected before config artifact storage.

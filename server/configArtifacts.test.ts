@@ -8,8 +8,8 @@ const queryBuilder = () => {
   builder.from = () => builder;
   builder.innerJoin = () => builder;
   builder.where = () => builder;
+  builder.orderBy = () => builder;
   builder.limit = async () => selectResults.shift() || [];
-  builder.orderBy = async () => selectResults.shift() || [];
   return builder;
 };
 
@@ -35,6 +35,9 @@ function device(vendor: string) {
       factState: "observed",
       factsHash: "facts-hash",
       observedVendor: vendor,
+      observedPlatform: "network_os",
+      observedModel: "observed-model",
+      observedVersion: "1.0.0",
       capabilityVerified: true,
       capabilityEvidenceReference: "capability-evidence",
       licenseEvidenceReference: "license-evidence",
@@ -80,6 +83,79 @@ describe("config artifact capability gate", () => {
     }, actor);
 
     expect(insertCalls[0]).toMatchObject({ projectId: 1, deviceId: 10, featureGuard: "blocked" });
+  });
+
+  it.each(["Cisco", "Huawei", "Fortinet", "HPE Aruba"])("allows %s pass artifacts only with a persisted exact configuration-supported decision", async vendor => {
+    const currentDevice = device(vendor);
+    const assessment = {
+      decision: "configuration_supported",
+      observedVendor: vendor,
+      observedPlatform: currentDevice.device.observedPlatform,
+      observedModel: currentDevice.device.observedModel,
+      observedVersion: currentDevice.device.observedVersion,
+      capabilityEvidenceReference: currentDevice.device.capabilityEvidenceReference,
+      licenseEvidenceReference: currentDevice.device.licenseEvidenceReference,
+      configurationPathEvidenceReference: currentDevice.device.configurationPathEvidenceReference,
+    };
+    selectResults.push([project()], [currentDevice], [assessment], [project()], []);
+
+    await addConfigArtifact(1, {
+      deviceId: 10,
+      vendor,
+      deviceName: "observed-device",
+      artifactSummary: "Exact reviewed capability path only.",
+      artifactPreview: "redacted preview",
+      featureGuard: "pass",
+      unsupportedFeatureLog: "",
+    }, actor);
+
+    expect(insertCalls[0]).toMatchObject({ projectId: 1, deviceId: 10, featureGuard: "pass" });
+  });
+
+  it.each(["Cisco", "Huawei", "Fortinet", "HPE Aruba"])("blocks %s candidate and unsupported capability decisions before pass artifact storage", async vendor => {
+    for (const decision of ["review_required", "unsupported"] as const) {
+      const currentDevice = device(vendor);
+      const assessment = {
+        decision,
+        observedVendor: vendor,
+        observedPlatform: currentDevice.device.observedPlatform,
+        observedModel: currentDevice.device.observedModel,
+        observedVersion: currentDevice.device.observedVersion,
+        capabilityEvidenceReference: currentDevice.device.capabilityEvidenceReference,
+        licenseEvidenceReference: currentDevice.device.licenseEvidenceReference,
+        configurationPathEvidenceReference: currentDevice.device.configurationPathEvidenceReference,
+      };
+      selectResults.push([project()], [currentDevice], [assessment]);
+
+      await expect(addConfigArtifact(1, {
+        deviceId: 10,
+        vendor,
+        deviceName: "observed-device",
+        artifactSummary: "Capability decision remains non-authorizing.",
+        artifactPreview: "",
+        featureGuard: "pass",
+        unsupportedFeatureLog: "",
+      }, actor)).rejects.toThrow("accepted exact capability decision");
+    }
+    expect(insertCalls).toHaveLength(0);
+  });
+
+  it.each(["Cisco", "Huawei", "Fortinet", "HPE Aruba"])("blocks %s pass artifacts when device capability evidence is missing", async vendor => {
+    const incomplete = device(vendor);
+    incomplete.device.capabilityVerified = false;
+    incomplete.device.licenseEvidenceReference = "";
+    selectResults.push([project()], [incomplete]);
+
+    await expect(addConfigArtifact(1, {
+      deviceId: 10,
+      vendor,
+      deviceName: "observed-device",
+      artifactSummary: "No exact evidence path.",
+      artifactPreview: "",
+      featureGuard: "pass",
+      unsupportedFeatureLog: "",
+    }, actor)).rejects.toThrow("requires exact capability, license, and configuration-path evidence references");
+    expect(insertCalls).toHaveLength(0);
   });
 
   it("persists a redacted team evaluation without execution authority", async () => {

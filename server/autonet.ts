@@ -4,6 +4,7 @@ import {
   auditEvents,
   benchmarkScenarios,
   changePlans,
+  deviceCapabilityAssessments,
   managedDevices,
   managedSites,
   networkProjects,
@@ -98,6 +99,18 @@ export type DeviceObservationDraft = {
   capabilityEvidenceReference?: string;
   licenseEvidenceReference?: string;
   configurationPathEvidenceReference?: string;
+};
+
+export type DeviceCapabilityAssessmentDraft = {
+  observedVendor: string;
+  observedPlatform: string;
+  observedModel: string;
+  observedVersion: string;
+  capabilityEvidenceReference: string;
+  licenseEvidenceReference: string;
+  configurationPathEvidenceReference: string;
+  decision: "configuration_supported" | "review_required" | "unsupported";
+  assessedAt: Date;
 };
 
 export type ChangePlanDraft = {
@@ -536,7 +549,18 @@ export async function addConfigArtifact(projectId: number, draft: ConfigArtifact
     throw new Error("Config artifact preparation requires exact capability, license, and configuration-path evidence references.");
   }
   if (draft.featureGuard === "pass") {
-    throw new Error("Config artifact preparation cannot mark a feature guard as pass until an accepted exact capability decision is persisted for the device.");
+    const db = await requireDatabase();
+    const assessments = await db.select().from(deviceCapabilityAssessments).where(eq(deviceCapabilityAssessments.deviceId, device.id)).orderBy(desc(deviceCapabilityAssessments.assessedAt)).limit(1);
+    const assessment = assessments[0];
+    const accepted = assessment?.decision === "configuration_supported"
+      && assessment.observedVendor.trim().toLowerCase() === device.observedVendor.trim().toLowerCase()
+      && assessment.observedPlatform === device.observedPlatform
+      && assessment.observedModel === device.observedModel
+      && assessment.observedVersion === device.observedVersion
+      && assessment.capabilityEvidenceReference === device.capabilityEvidenceReference
+      && assessment.licenseEvidenceReference === device.licenseEvidenceReference
+      && assessment.configurationPathEvidenceReference === device.configurationPathEvidenceReference;
+    if (!accepted) throw new Error("Config artifact preparation cannot mark a feature guard as pass until an accepted exact capability decision is persisted for the current observed device.");
   }
   if (!device.observedVendor || !draft.vendor.trim().toLowerCase().includes(device.observedVendor.trim().toLowerCase())) {
     throw new Error("Config artifact vendor must match the observed device vendor evidence.");
@@ -669,6 +693,45 @@ export async function recordDeviceObservation(projectId: number, deviceId: numbe
     .where(eq(managedDevices.id, deviceId));
   await appendAuditEvent(projectId, actor, "device.observation_recorded", `Device observation recorded with state ${draft.factState}.`);
   return getManagedDeviceForUser(deviceId, actor.id);
+}
+
+export async function listDeviceCapabilityAssessments(projectId: number, deviceId: number, ownerId: number) {
+  const deviceRecord = await getManagedDeviceForUser(deviceId, ownerId);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(deviceCapabilityAssessments).where(eq(deviceCapabilityAssessments.deviceId, deviceId)).orderBy(desc(deviceCapabilityAssessments.assessedAt));
+}
+
+/** Persists an exact human-reviewed capability decision; it does not authorize a device action. */
+export async function recordDeviceCapabilityAssessment(projectId: number, deviceId: number, draft: DeviceCapabilityAssessmentDraft, actor: AuditActor) {
+  const deviceRecord = await getManagedDeviceForUser(deviceId, actor.id);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  const device = deviceRecord.device;
+  if (device.factState !== "observed" || !device.factsHash) throw new Error("Exact capability assessment requires current observed device facts.");
+  const identityMatches = device.observedVendor.trim().toLowerCase() === draft.observedVendor.trim().toLowerCase()
+    && device.observedPlatform.trim() === draft.observedPlatform.trim()
+    && device.observedModel.trim() === draft.observedModel.trim()
+    && device.observedVersion.trim() === draft.observedVersion.trim();
+  if (!identityMatches) throw new Error("Exact capability assessment must match the observed vendor, platform, model, and version.");
+  const evidenceMatches = device.capabilityEvidenceReference === draft.capabilityEvidenceReference.trim()
+    && device.licenseEvidenceReference === draft.licenseEvidenceReference.trim()
+    && device.configurationPathEvidenceReference === draft.configurationPathEvidenceReference.trim();
+  if (!evidenceMatches) throw new Error("Exact capability assessment must use the persisted capability, license, and configuration-path evidence references.");
+  const db = await requireDatabase();
+  await db.insert(deviceCapabilityAssessments).values({
+    deviceId,
+    observedVendor: draft.observedVendor.trim(),
+    observedPlatform: draft.observedPlatform.trim(),
+    observedModel: draft.observedModel.trim(),
+    observedVersion: draft.observedVersion.trim(),
+    capabilityEvidenceReference: redactAuditDetails(draft.capabilityEvidenceReference),
+    licenseEvidenceReference: redactAuditDetails(draft.licenseEvidenceReference),
+    configurationPathEvidenceReference: redactAuditDetails(draft.configurationPathEvidenceReference),
+    decision: draft.decision,
+    assessedAt: draft.assessedAt,
+  });
+  await appendAuditEvent(projectId, actor, "device.capability_assessed", `Exact capability assessment recorded with decision ${draft.decision}.`);
+  return listDeviceCapabilityAssessments(projectId, deviceId, actor.id);
 }
 
 export async function listChangePlans(projectId: number, ownerId: number) {

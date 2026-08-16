@@ -20,6 +20,7 @@ import {
   listBomItems,
   listConfigArtifacts,
   listBenchmarkScenarios,
+  listDeviceCapabilityAssessments,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -28,6 +29,7 @@ import {
   listProjectsForUser,
   prepareDeployment,
   recordDeviceObservation,
+  recordDeviceCapabilityAssessment,
   recordAgentTeamAudit,
   recordBenchmarkScenario,
   recordProjectRestrictedClaim,
@@ -496,6 +498,32 @@ export const appRouter = router({
           const device = await recordDeviceObservation(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
           if (device === undefined) projectNotFound();
           return device;
+        }),
+      listCapabilityAssessments: protectedProcedure
+        .input(z.object({ projectId: z.number().int().positive(), deviceId: z.number().int().positive() }))
+        .query(async ({ ctx, input }) => {
+          const assessments = await listDeviceCapabilityAssessments(input.projectId, input.deviceId, ctx.user.id);
+          if (assessments === undefined) projectNotFound();
+          return assessments;
+        }),
+      recordCapabilityAssessment: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          deviceId: z.number().int().positive(),
+          observedVendor: z.string().trim().min(1).max(120),
+          observedPlatform: z.string().trim().min(1).max(160),
+          observedModel: z.string().trim().min(1).max(160),
+          observedVersion: z.string().trim().min(1).max(160),
+          capabilityEvidenceReference: z.string().trim().min(1).max(1000),
+          licenseEvidenceReference: z.string().trim().min(1).max(1000),
+          configurationPathEvidenceReference: z.string().trim().min(1).max(1000),
+          decision: z.enum(["configuration_supported", "review_required", "unsupported"]),
+          assessedAt: z.coerce.date(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const assessments = await recordDeviceCapabilityAssessment(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
+          if (assessments === undefined) projectNotFound();
+          return assessments;
         }),
     }),
     changePlans: router({

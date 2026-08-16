@@ -125,6 +125,22 @@ export const managedDevices = mysqlTable("managed_devices", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+/** Human-reviewed exact capability assessment; it never authorizes device execution. */
+export const deviceCapabilityAssessments = mysqlTable("device_capability_assessments", {
+  id: int("id").autoincrement().primaryKey(),
+  deviceId: int("device_id").notNull(),
+  observedVendor: varchar("observed_vendor", { length: 120 }).notNull(),
+  observedPlatform: varchar("observed_platform", { length: 160 }).notNull(),
+  observedModel: varchar("observed_model", { length: 160 }).notNull(),
+  observedVersion: varchar("observed_version", { length: 160 }).notNull(),
+  capabilityEvidenceReference: varchar("capability_evidence_reference", { length: 1000 }).notNull(),
+  licenseEvidenceReference: varchar("license_evidence_reference", { length: 1000 }).notNull(),
+  configurationPathEvidenceReference: varchar("configuration_path_evidence_reference", { length: 1000 }).notNull(),
+  decision: mysqlEnum("decision", ["configuration_supported", "review_required", "unsupported"]).notNull(),
+  assessedAt: timestamp("assessed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const discoveryRuns = mysqlTable("discovery_runs", {
   id: int("id").autoincrement().primaryKey(),
   siteId: int("site_id").notNull(),
