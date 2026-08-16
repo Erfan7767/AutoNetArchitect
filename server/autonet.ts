@@ -9,6 +9,7 @@ import {
   projectBomItems,
   projectConfigArtifacts,
   projectDesignDetails,
+  postChangeVerificationRuns,
   virtualTestRuns,
   type InsertDiscoveryRun,
   type InsertNetworkProject,
@@ -110,6 +111,15 @@ export type VirtualTestDraft = {
   targetFactsHash: string;
   scopeHash: string;
   detail: string;
+};
+
+export type PostChangeVerificationDraft = {
+  state: "passed" | "failed" | "warning" | "not_verifiable";
+  verificationType: "command_verification" | "connectivity_verification" | "service_verification" | "routing_verification" | "monitoring_verification" | "user_verification";
+  expectedOutcome: string;
+  observedOutcome: string;
+  evidenceReference: string;
+  observedAt: Date;
 };
 
 export type ProjectSectorDraft = {
@@ -710,6 +720,104 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
       latestVirtualTestState: latestTest?.state || planRecord.plan.virtualValidationState,
     },
   };
+}
+
+/**
+ * Evaluates preparation for a human-controlled change without exposing an upload
+ * operation. Automated configuration upload is denied in every outcome, including
+ * a fully evidenced and human-approved plan.
+ */
+export async function prepareDeployment(changePlanId: number, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  const readiness = await getChangePlanApprovalReadiness(changePlanId, actor.id);
+  if (!readiness) return undefined;
+
+  const blockers = [...readiness.decision.blockers];
+  if (planRecord.plan.releaseState !== "approved") {
+    blockers.push("A recorded human change-plan approval is required before any human-controlled execution may be considered.");
+  }
+
+  const status = blockers.length === 0 ? "human_execution_required" : "blocked";
+  await appendAuditEvent(
+    planRecord.project.id,
+    actor,
+    "change_plan.automatic_upload_blocked",
+    status === "blocked"
+      ? `Automatic upload remains blocked. ${blockers.join(" ")}`
+      : "Automatic upload remains blocked even though evidence gates are complete; an authorized human executor must use an approved external change process.",
+  );
+
+  return {
+    changePlanId,
+    status,
+    automaticUploadAllowed: false as const,
+    blockers,
+    readiness,
+    requiredHumanAction: "An authorized human executor must follow the approved external change process; this control plane does not upload configuration or execute production changes.",
+  };
+}
+
+/** Lists observed verification records without inferring that a production action occurred. */
+export async function listPostChangeVerifications(changePlanId: number, ownerId: number) {
+  const planRecord = await getChangePlanForUser(changePlanId, ownerId);
+  if (!planRecord) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select()
+    .from(postChangeVerificationRuns)
+    .where(eq(postChangeVerificationRuns.changePlanId, changePlanId))
+    .orderBy(desc(postChangeVerificationRuns.observedAt));
+}
+
+/**
+ * Records an externally observed verification result after recorded human approval.
+ * It neither initiates a probe nor executes a rollback. A failed or unverifiable
+ * observation closes the plan's automated path and flags human rollback review.
+ */
+export async function recordPostChangeVerification(changePlanId: number, draft: PostChangeVerificationDraft, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  if (planRecord.plan.releaseState !== "approved" || !planRecord.plan.humanApprover) {
+    throw new Error("Post-change verification evidence requires a recorded human change-plan approval.");
+  }
+  const evidenceReference = redactAuditDetails(draft.evidenceReference);
+  if (evidenceReference === "Sensitive details were redacted.") {
+    throw new Error("Post-change verification evidence reference cannot contain sensitive values.");
+  }
+  const observedOutcome = redactAuditDetails(draft.observedOutcome);
+  if (observedOutcome === "Sensitive details were redacted.") {
+    throw new Error("Observed verification outcome cannot contain sensitive values.");
+  }
+  const expectedOutcome = redactAuditDetails(draft.expectedOutcome);
+  if (expectedOutcome === "Sensitive details were redacted.") {
+    throw new Error("Expected verification outcome cannot contain sensitive values.");
+  }
+  const rollbackReviewRequired = draft.state === "failed" || draft.state === "not_verifiable";
+  const db = await requireDatabase();
+  await db.insert(postChangeVerificationRuns).values({
+    changePlanId,
+    state: draft.state,
+    verificationType: draft.verificationType,
+    expectedOutcome,
+    observedOutcome,
+    evidenceReference,
+    rollbackReviewRequired,
+    recordedBy: actorLabel(actor),
+    observedAt: draft.observedAt,
+  });
+  if (rollbackReviewRequired) {
+    await db.update(changePlans).set({ releaseState: "blocked", updatedAt: new Date() }).where(eq(changePlans.id, changePlanId));
+  }
+  await appendAuditEvent(
+    planRecord.project.id,
+    actor,
+    "post_change_verification.recorded",
+    rollbackReviewRequired
+      ? "Observed post-change verification requires human rollback review; no rollback was executed."
+      : `Observed post-change verification recorded with state ${draft.state}.`,
+  );
+  return listPostChangeVerifications(changePlanId, actor.id);
 }
 
 export async function requestChangePlanApproval(changePlanId: number, actor: AuditActor) {

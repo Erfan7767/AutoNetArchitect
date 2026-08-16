@@ -33,7 +33,7 @@
 - [x] Require a passed, current, and scope-matched virtual test before a change plan can request human release.
 - [x] Keep human approval, backup verification, maintenance-window validation, and device-specific capability checks mandatory even after virtual-test success.
 - [x] Build a virtual test adapter contract for lab, digital-twin, and vendor-supported candidate/commit validation paths, with explicit fidelity and evidence labels.
-- [ ] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
+- [x] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
 - [x] Create an explicit claim policy that prohibits engineer-equivalence, production-safe, compatibility, and compliance claims without scoped authoritative evidence.
 - [x] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
 - [ ] Implement structured claim classes for engineer-equivalence, production-safe, compatibility, and compliance output, with scoped evidence requirements enforced in API and UI/report surfaces.
@@ -122,7 +122,7 @@
 - [x] Distinguish team-graph abstention from dependency waiting and policy blocking when required evidence is absent or unresolved.
 - [x] Persist redacted agent-team graph outcomes through the control-plane audit path and prove they cannot grant execution authority.
 - [x] Prove the complete agent dependency chain and behaviorally safe parallel discovery scheduling in end-to-end graph tests.
-- [ ] Return and render structured recommendation evidence for human reviewers, with safe abstention when any required field is absent.
+- [x] Return and render structured recommendation evidence for human reviewers, with safe abstention when any required field is absent.
 - [ ] Define a traceable end-to-end lifecycle contract linking requirements, site scope, discovery, design, BOM, capability assessment, configuration artifacts, virtual validation, approval readiness, and post-change verification.
-- [ ] Add lifecycle integration tests proving an unresolved or failed gate halts downstream preparation and preserves the exact blocker for human review.
-- [ ] Add an approval-gated post-change verification evidence model that records only observed outcomes and supports rollback review without autonomous production execution.
+- [x] Add lifecycle integration tests proving an unresolved or failed gate halts downstream preparation and preserves the exact blocker for human review.
+- [x] Add an approval-gated post-change verification evidence model that records only observed outcomes and supports rollback review without autonomous production execution.

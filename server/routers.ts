@@ -22,10 +22,13 @@ import {
   listAuditEventsForUser,
   listManagedDevices,
   listManagedSites,
+  listPostChangeVerifications,
   listProjectsForUser,
+  prepareDeployment,
   recordDeviceObservation,
   recordAgentTeamAudit,
   recordVirtualTest,
+  recordPostChangeVerification,
   registerManagedDevice,
   requestDeploymentApproval,
   transitionDiscoveryRun,
@@ -382,8 +385,35 @@ export const appRouter = router({
         }),
       approvalReadiness: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
         const readiness = await getChangePlanApprovalReadiness(input.changePlanId, ctx.user.id);
-        if (readiness === undefined) projectNotFound();
+        if (!readiness) projectNotFound();
         return readiness;
+      }),
+      prepareDeployment: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+        const preparation = await prepareDeployment(input.changePlanId, actorFromUser(ctx.user));
+        if (!preparation) projectNotFound();
+        return preparation;
+      }),
+      postChangeVerification: router({
+        list: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+          const records = await listPostChangeVerifications(input.changePlanId, ctx.user.id);
+          if (!records) projectNotFound();
+          return records;
+        }),
+        record: protectedProcedure
+          .input(z.object({
+            changePlanId: z.number().int().positive(),
+            state: z.enum(["passed", "failed", "warning", "not_verifiable"]),
+            verificationType: z.enum(["command_verification", "connectivity_verification", "service_verification", "routing_verification", "monitoring_verification", "user_verification"]),
+            expectedOutcome: z.string().trim().min(1).max(1000),
+            observedOutcome: z.string().trim().min(1).max(2000),
+            evidenceReference: z.string().trim().min(1).max(1000),
+            observedAt: z.coerce.date(),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const records = await recordPostChangeVerification(input.changePlanId, input, actorFromUser(ctx.user));
+            if (!records) projectNotFound();
+            return records;
+          }),
       }),
       requestApproval: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
         const readiness = await requestChangePlanApproval(input.changePlanId, actorFromUser(ctx.user));

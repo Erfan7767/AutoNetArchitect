@@ -182,6 +182,28 @@ export const virtualTestRuns = mysqlTable("virtual_test_runs", {
   observedAt: timestamp("observed_at").defaultNow().notNull(),
 });
 
+/** Observed post-change verification records; this table never implies an execution action. */
+export const postChangeVerificationRuns = mysqlTable("post_change_verification_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  changePlanId: int("change_plan_id").notNull(),
+  state: mysqlEnum("state", ["passed", "failed", "warning", "not_verifiable"]).notNull(),
+  verificationType: mysqlEnum("verification_type", [
+    "command_verification",
+    "connectivity_verification",
+    "service_verification",
+    "routing_verification",
+    "monitoring_verification",
+    "user_verification",
+  ]).notNull(),
+  expectedOutcome: varchar("expected_outcome", { length: 1000 }).notNull(),
+  observedOutcome: varchar("observed_outcome", { length: 2000 }).notNull(),
+  evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
+  rollbackReviewRequired: boolean("rollback_review_required").notNull().default(false),
+  recordedBy: varchar("recorded_by", { length: 160 }).notNull(),
+  observedAt: timestamp("observed_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),
@@ -222,5 +244,7 @@ export type ChangePlan = typeof changePlans.$inferSelect;
 export type InsertChangePlan = typeof changePlans.$inferInsert;
 export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
 export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;
+export type PostChangeVerificationRun = typeof postChangeVerificationRuns.$inferSelect;
+export type InsertPostChangeVerificationRun = typeof postChangeVerificationRuns.$inferInsert;
 export type BenchmarkScenario = typeof benchmarkScenarios.$inferSelect;
 export type InsertBenchmarkScenario = typeof benchmarkScenarios.$inferInsert;

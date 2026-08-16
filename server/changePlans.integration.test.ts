@@ -25,6 +25,9 @@ const fakeDb = {
       return promise;
     },
   })),
+  update: vi.fn(() => ({
+    set: () => ({ where: async () => undefined }),
+  })),
 };
 
 vi.mock("./db", () => ({ getDb: vi.fn(async () => fakeDb) }));
@@ -144,6 +147,153 @@ describe("projects.changePlans.create real integration path", () => {
     const result = await caller.projects.changePlans.approvalReadiness({ changePlanId: 55 });
     expect(result.decision.status).toBe("blocked");
     expect(result.decision.blockers).toContain(expectedBlocker);
+  });
+
+  it("blocks automatic upload and preserves the failed virtual-validation blocker", async () => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = {
+      id: 55,
+      projectId: 1,
+      deviceId: 10,
+      artifactHash: "artifact-hash",
+      targetFactsHash: "facts-hash",
+      scopeHash: "scope-hash",
+      virtualValidationState: "test_failed",
+      releaseState: "draft",
+      backupVerified: false,
+      maintenanceWindowValid: false,
+    };
+    const deviceRecord = {
+      device: {
+        id: 10,
+        factState: "observed",
+        factsHash: "facts-hash",
+        capabilityVerified: true,
+        lastObservedAt: now,
+      },
+      project: projectRecord,
+    };
+    const virtualTestRecord = { state: "test_failed", observedAt: now, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash" };
+    selectResults.push(
+      [{ plan: planRecord, project: projectRecord }],
+      [{ plan: planRecord, project: projectRecord }],
+      [deviceRecord],
+      [virtualTestRecord],
+    );
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 55 });
+
+    expect(result.status).toBe("blocked");
+    expect(result.automaticUploadAllowed).toBe(false);
+    expect(result.blockers).toContain("Virtual validation state is test_failed.");
+    expect(result.requiredHumanAction).toContain("authorized human executor");
+  });
+
+  it("keeps automatic upload denied after all readiness evidence and human approval are recorded", async () => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = {
+      id: 56,
+      projectId: 1,
+      deviceId: 10,
+      artifactHash: "artifact-hash",
+      targetFactsHash: "facts-hash",
+      scopeHash: "scope-hash",
+      virtualValidationState: "test_passed",
+      releaseState: "approved",
+      backupVerified: true,
+      maintenanceWindowValid: true,
+    };
+    const deviceRecord = {
+      device: {
+        id: 10,
+        factState: "observed",
+        factsHash: "facts-hash",
+        capabilityVerified: true,
+        lastObservedAt: now,
+      },
+      project: projectRecord,
+    };
+    const virtualTestRecord = { state: "test_passed", observedAt: now, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash" };
+    selectResults.push(
+      [{ plan: planRecord, project: projectRecord }],
+      [{ plan: planRecord, project: projectRecord }],
+      [deviceRecord],
+      [virtualTestRecord],
+    );
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 56 });
+
+    expect(result.status).toBe("human_execution_required");
+    expect(result.automaticUploadAllowed).toBe(false);
+    expect(result.blockers).toEqual([]);
+  });
+
+  it("records an observed failed verification and flags human rollback review", async () => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = {
+      id: 57,
+      projectId: 1,
+      releaseState: "approved",
+      humanApprover: "Named approver",
+    };
+    const recordedVerification = {
+      id: 1,
+      changePlanId: 57,
+      state: "failed",
+      verificationType: "connectivity_verification",
+      expectedOutcome: "Approved services remain reachable.",
+      observedOutcome: "Observed loss of reachability after the externally performed change.",
+      evidenceReference: "evidence://verification/57/1",
+      rollbackReviewRequired: true,
+      recordedBy: "Reviewer",
+      observedAt: now,
+      createdAt: now,
+    };
+    selectResults.push(
+      [{ plan: planRecord, project: projectRecord }],
+      [{ plan: planRecord, project: projectRecord }],
+      [recordedVerification],
+    );
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.postChangeVerification.record({
+      changePlanId: 57,
+      state: "failed",
+      verificationType: "connectivity_verification",
+      expectedOutcome: "Approved services remain reachable.",
+      observedOutcome: "Observed loss of reachability after the externally performed change.",
+      evidenceReference: "evidence://verification/57/1",
+      observedAt: now,
+    });
+
+    expect(result).toEqual([recordedVerification]);
+    const verificationInsert = insertCalls.find(value => typeof value === "object" && value !== null && "verificationType" in value) as Record<string, unknown> | undefined;
+    expect(verificationInsert?.rollbackReviewRequired).toBe(true);
+    expect(verificationInsert?.state).toBe("failed");
+    expect(fakeDb.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses post-change evidence until a human change-plan approval is recorded", async () => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = { id: 58, projectId: 1, releaseState: "ready_for_approval", humanApprover: null };
+    selectResults.push([{ plan: planRecord, project: projectRecord }]);
+    const caller = appRouter.createCaller(context);
+
+    await expect(caller.projects.changePlans.postChangeVerification.record({
+      changePlanId: 58,
+      state: "passed",
+      verificationType: "connectivity_verification",
+      expectedOutcome: "Approved services remain reachable.",
+      observedOutcome: "Observed reachability evidence was supplied.",
+      evidenceReference: "evidence://verification/58/1",
+      observedAt: now,
+    })).rejects.toThrow("recorded human change-plan approval");
   });
 
   it("persists and returns sector snapshot fields for a complete current state", async () => {
