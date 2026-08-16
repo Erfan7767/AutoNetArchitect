@@ -4,7 +4,6 @@ from pathlib import Path
 
 from site_agent.policy_catalog import VendorPolicyCatalog
 
-
 POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "vendor_support_policy.json"
 
 
