@@ -9,7 +9,9 @@ import {
   projectConfigArtifacts,
   projectDesignDetails,
   virtualTestRuns,
+  type InsertDiscoveryRun,
   type InsertNetworkProject,
+  discoveryRuns,
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { assessSectorProfileInputs, type SectorProfileId } from "./sectorProfiles";
@@ -582,6 +584,112 @@ export async function deleteProjectForUser(projectId: number, actor: AuditActor)
   const db = await requireDatabase();
   await db.delete(networkProjects).where(and(eq(networkProjects.id, projectId), eq(networkProjects.ownerId, actor.id)));
   return true;
+}
+
+export type DiscoveryRunDraft = {
+  siteId: number;
+  scopeHash: string;
+  evidenceSummary?: string;
+  evidenceHash?: string;
+  ambiguousCount?: number;
+  unsupportedCount?: number;
+};
+
+export type DiscoveryRunState = "queued" | "running" | "completed" | "partial" | "failed" | "blocked";
+
+const discoveryStateTransitions: Record<DiscoveryRunState, readonly DiscoveryRunState[]> = {
+  queued: ["running", "blocked"],
+  running: ["completed", "partial", "failed", "blocked"],
+  completed: [],
+  partial: [],
+  failed: [],
+  blocked: [],
+};
+
+export function canTransitionDiscoveryRun(from: DiscoveryRunState, to: DiscoveryRunState): boolean {
+  return discoveryStateTransitions[from].includes(to);
+}
+
+export function redactDiscoveryEvidence(value: string): string {
+  return redactAuditDetails(value);
+}
+
+async function getDiscoveryRunForActor(runId: number, actorId: number) {
+  const db = await requireDatabase();
+  const result = await db
+    .select({ run: discoveryRuns, projectId: networkProjects.id })
+    .from(discoveryRuns)
+    .innerJoin(managedSites, eq(discoveryRuns.siteId, managedSites.id))
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(eq(discoveryRuns.id, runId), eq(networkProjects.ownerId, actorId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function createDiscoveryRun(projectId: number, draft: DiscoveryRunDraft, actor: AuditActor) {
+  const db = await requireDatabase();
+  const site = await db
+    .select({ id: managedSites.id })
+    .from(managedSites)
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(eq(managedSites.id, draft.siteId), eq(managedSites.projectId, projectId), eq(networkProjects.ownerId, actor.id)))
+    .limit(1);
+  if (!site[0]) return undefined;
+  const values: InsertDiscoveryRun = {
+    siteId: draft.siteId,
+    mode: "read_only",
+    state: "queued",
+    scopeHash: draft.scopeHash.trim(),
+    evidenceSummary: redactDiscoveryEvidence(draft.evidenceSummary || ""),
+    evidenceHash: draft.evidenceHash?.trim() || "",
+    ambiguousCount: draft.ambiguousCount || 0,
+    unsupportedCount: draft.unsupportedCount || 0,
+  };
+  const inserted = await db.insert(discoveryRuns).values(values).$returningId();
+  const runId = inserted[0]?.id;
+  if (!runId) throw new Error("The discovery run could not be created.");
+  await appendAuditEvent(projectId, actor, "discovery.run_created", "A read-only discovery run was queued.");
+  return getDiscoveryRunForActor(runId, actor.id);
+}
+
+export async function listDiscoveryRuns(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select({ run: discoveryRuns, siteName: managedSites.name })
+    .from(discoveryRuns)
+    .innerJoin(managedSites, eq(discoveryRuns.siteId, managedSites.id))
+    .where(eq(managedSites.projectId, projectId))
+    .orderBy(desc(discoveryRuns.createdAt));
+}
+
+export async function transitionDiscoveryRun(
+  runId: number,
+  nextState: DiscoveryRunState,
+  draft: Pick<DiscoveryRunDraft, "evidenceSummary" | "evidenceHash" | "ambiguousCount" | "unsupportedCount">,
+  actor: AuditActor,
+) {
+  const existing = await getDiscoveryRunForActor(runId, actor.id);
+  if (!existing) return undefined;
+  const currentState = existing.run.state as DiscoveryRunState;
+  if (!canTransitionDiscoveryRun(currentState, nextState)) {
+    throw new Error(`Invalid discovery-run transition from ${currentState} to ${nextState}.`);
+  }
+  const db = await requireDatabase();
+  const now = new Date();
+  await db.update(discoveryRuns).set({
+    state: nextState,
+    evidenceSummary: draft.evidenceSummary === undefined ? existing.run.evidenceSummary : redactDiscoveryEvidence(draft.evidenceSummary),
+    evidenceHash: draft.evidenceHash === undefined ? existing.run.evidenceHash : draft.evidenceHash.trim(),
+    ambiguousCount: draft.ambiguousCount ?? existing.run.ambiguousCount,
+    unsupportedCount: draft.unsupportedCount ?? existing.run.unsupportedCount,
+    startedAt: currentState === "queued" && nextState === "running" ? now : existing.run.startedAt,
+    completedAt: ["completed", "partial", "failed", "blocked"].includes(nextState) ? now : existing.run.completedAt,
+    updatedAt: now,
+  }).where(eq(discoveryRuns.id, runId));
+  await appendAuditEvent(existing.projectId, actor, "discovery.run_state_changed", `Discovery run moved from ${currentState} to ${nextState}.`);
+  return getDiscoveryRunForActor(runId, actor.id);
 }
 
 export async function listAuditEventsForUser(ownerId: number, page: number, pageSize: number) {

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { calculateQuestionnaireCompleteness, getDeploymentGate, getSectorPlanBlocker, redactAuditDetails, requiresUnsupportedFeatureAudit } from "./autonet";
+import {
+  calculateQuestionnaireCompleteness,
+  canTransitionDiscoveryRun,
+  getDeploymentGate,
+  getSectorPlanBlocker,
+  redactAuditDetails,
+  redactDiscoveryEvidence,
+  requiresUnsupportedFeatureAudit,
+} from "./autonet";
 
 describe("AutoNetArchitect governance helpers", () => {
   it("calculates questionnaire completeness from supplied project requirements", () => {
@@ -44,6 +52,18 @@ describe("AutoNetArchitect governance helpers", () => {
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "blocked", unsupportedFeatureLog: "" })).toBe(true);
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "pass", unsupportedFeatureLog: "Needs vendor capability evidence" })).toBe(true);
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "pass", unsupportedFeatureLog: "" })).toBe(false);
+  });
+
+  it("enforces discovery-run lifecycle transitions and terminal states", () => {
+    expect(canTransitionDiscoveryRun("queued", "running")).toBe(true);
+    expect(canTransitionDiscoveryRun("running", "completed")).toBe(true);
+    expect(canTransitionDiscoveryRun("completed", "running")).toBe(false);
+    expect(canTransitionDiscoveryRun("failed", "completed")).toBe(false);
+  });
+
+  it("redacts discovery evidence when it contains secret-like content", () => {
+    expect(redactDiscoveryEvidence("token: should-not-be-stored")).toBe("Sensitive details were redacted.");
+    expect(redactDiscoveryEvidence("Observed 4 devices; 1 ambiguous.")).toBe("Observed 4 devices; 1 ambiguous.");
   });
 
   it("blocks change-plan creation until the selected sector profile has every required human input", () => {

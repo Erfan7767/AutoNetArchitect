@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   approveDeployment,
   createChangePlan,
+  createDiscoveryRun,
   createManagedSite,
   createProjectForUser,
   deleteProjectForUser,
@@ -11,6 +12,7 @@ import {
   getDesignDetails,
   getProjectForUser,
   listChangePlans,
+  listDiscoveryRuns,
   listBomItems,
   listConfigArtifacts,
   listAuditEventsForUser,
@@ -21,6 +23,7 @@ import {
   recordVirtualTest,
   registerManagedDevice,
   requestDeploymentApproval,
+  transitionDiscoveryRun,
   saveDesignDetails,
   updateProjectSector,
   updateProjectQuestionnaire,
@@ -162,6 +165,43 @@ export const appRouter = router({
           if (artifacts === undefined) projectNotFound();
           return artifacts;
       }),
+    }),
+    discoveryRuns: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const runs = await listDiscoveryRuns(input.projectId, ctx.user.id);
+        if (runs === undefined) projectNotFound();
+        return runs;
+      }),
+      create: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          scopeHash: z.string().trim().min(8).max(160),
+          evidenceSummary: z.string().trim().max(4000).optional(),
+          evidenceHash: z.string().trim().max(160).optional(),
+          ambiguousCount: z.number().int().min(0).max(100000).optional(),
+          unsupportedCount: z.number().int().min(0).max(100000).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const run = await createDiscoveryRun(input.projectId, input, actorFromUser(ctx.user));
+          if (run === undefined) projectNotFound();
+          return run;
+        }),
+      transition: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          runId: z.number().int().positive(),
+          nextState: z.enum(["queued", "running", "completed", "partial", "failed", "blocked"]),
+          evidenceSummary: z.string().trim().max(4000).optional(),
+          evidenceHash: z.string().trim().max(160).optional(),
+          ambiguousCount: z.number().int().min(0).max(100000).optional(),
+          unsupportedCount: z.number().int().min(0).max(100000).optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const run = await transitionDiscoveryRun(input.runId, input.nextState, input, actorFromUser(ctx.user));
+          if (run === undefined) projectNotFound();
+          return run;
+        }),
     }),
     sites: router({
       list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {

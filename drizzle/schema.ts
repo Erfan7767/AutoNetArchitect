@@ -118,6 +118,24 @@ export const managedDevices = mysqlTable("managed_devices", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+export const discoveryRuns = mysqlTable("discovery_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  siteId: int("site_id").notNull(),
+  mode: mysqlEnum("mode", ["read_only"]).notNull().default("read_only"),
+  state: mysqlEnum("state", ["queued", "running", "completed", "partial", "failed", "blocked"])
+    .notNull()
+    .default("queued"),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  evidenceSummary: varchar("evidence_summary", { length: 4000 }).notNull().default(""),
+  evidenceHash: varchar("evidence_hash", { length: 160 }).notNull().default(""),
+  ambiguousCount: int("ambiguous_count").notNull().default(0),
+  unsupportedCount: int("unsupported_count").notNull().default(0),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
 export const changePlans = mysqlTable("change_plans", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),
@@ -169,6 +187,8 @@ export type ManagedSite = typeof managedSites.$inferSelect;
 export type InsertManagedSite = typeof managedSites.$inferInsert;
 export type ManagedDevice = typeof managedDevices.$inferSelect;
 export type InsertManagedDevice = typeof managedDevices.$inferInsert;
+export type DiscoveryRun = typeof discoveryRuns.$inferSelect;
+export type InsertDiscoveryRun = typeof discoveryRuns.$inferInsert;
 export type ChangePlan = typeof changePlans.$inferSelect;
 export type InsertChangePlan = typeof changePlans.$inferInsert;
 export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;

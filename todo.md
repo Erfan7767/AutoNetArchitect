@@ -19,9 +19,9 @@
 - [x] Verify desktop and mobile rendering.
 - [x] Save a WebDev release checkpoint for the verified publish-ready state: `945b0cbd`.
 - [x] Document the publish-ready handoff tied to checkpoint `945b0cbd` for user-initiated Publish in `PUBLISH_HANDOFF.md`.
-- [ ] Define the supported production topology: hosted control plane plus an on-premises agent with outbound-only authenticated control traffic.
-- [ ] Define explicit device access, credential-reference, discovery-consent, network-scope, and human-approval policies.
-- [ ] Add site, managed-device, discovery-run, and change-plan data models with redacted evidence and state transitions.
+- [x] Define the supported production topology: hosted control plane plus an on-premises agent with outbound-only authenticated control traffic.
+- [x] Define explicit device access, credential-reference, discovery-consent, network-scope, and human-approval policies.
+- [x] Add site, managed-device, discovery-run, and change-plan data models with redacted evidence and state transitions.
 - [ ] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
 - [ ] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
 - [ ] Integrate supported vendor discovery through read-only SSH, NETCONF, HTTPS API, and SNMP collection only after explicit authorization and credential-reference assignment.
@@ -32,7 +32,7 @@
 - [x] Define virtual-validation evidence states: not-tested, test-queued, test-passed, test-failed, test-inconclusive, and not-supported-for-virtual-test.
 - [x] Require a passed, current, and scope-matched virtual test before a change plan can request human release.
 - [ ] Keep human approval, backup verification, maintenance-window validation, and device-specific capability checks mandatory even after virtual-test success.
-- [ ] Build a virtual test adapter contract for lab, digital-twin, and vendor-supported candidate/commit validation paths, with explicit fidelity and evidence labels.
+- [x] Build a virtual test adapter contract for lab, digital-twin, and vendor-supported candidate/commit validation paths, with explicit fidelity and evidence labels.
 - [ ] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
 - [x] Create an explicit claim policy that prohibits engineer-equivalence, production-safe, compatibility, and compliance claims without scoped authoritative evidence.
 - [ ] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
@@ -85,3 +85,10 @@
 - [x] Add tests proving policy data drives per-vendor version and license decisions.
 - [x] Align root .gitignore with repository CI assertions for Python bytecode, secrets, safe env templates, editor files, and node_modules patterns.
 - [x] Make package-initializer CI discovery ignore frontend dependency trees and retain Python-package enforcement.
+- [x] Add an explicit discovery_runs schema with redacted evidence fields and lifecycle states.
+- [x] Add discovery-run persistence helpers and tests for state transitions and evidence redaction.
+- [x] Add Vitest/integration-style tests for discovery-run ownership, create/list behavior, invalid transitions, and persisted redaction.
+- [x] Add router procedures for discovery-run list/create/transition with protected project ownership.
+- [x] Add explicit virtual-validation contract types for lab, digital-twin, and vendor-supported candidate/commit paths, each with distinct fidelity/evidence labels.
+- [x] Add tests proving each virtual-validation path type is selectable, scope-bound, hash-bound, and non-authorizing for production execution.
+- [x] Export and document the supported virtual-validation path classes so their boundaries are verifiable from code and UI/API surfaces.

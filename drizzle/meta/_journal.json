@@ -64,6 +64,13 @@
       "when": 1786762727616,
       "tag": "0008_new_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1786850669716,
+      "tag": "0009_lively_loki",
+      "breakpoints": true
     }
   ]
 }
