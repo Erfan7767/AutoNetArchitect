@@ -122,3 +122,7 @@
 - [x] Distinguish team-graph abstention from dependency waiting and policy blocking when required evidence is absent or unresolved.
 - [x] Persist redacted agent-team graph outcomes through the control-plane audit path and prove they cannot grant execution authority.
 - [x] Prove the complete agent dependency chain and behaviorally safe parallel discovery scheduling in end-to-end graph tests.
+- [ ] Return and render structured recommendation evidence for human reviewers, with safe abstention when any required field is absent.
+- [ ] Define a traceable end-to-end lifecycle contract linking requirements, site scope, discovery, design, BOM, capability assessment, configuration artifacts, virtual validation, approval readiness, and post-change verification.
+- [ ] Add lifecycle integration tests proving an unresolved or failed gate halts downstream preparation and preserves the exact blocker for human review.
+- [ ] Add an approval-gated post-change verification evidence model that records only observed outcomes and supports rollback review without autonomous production execution.

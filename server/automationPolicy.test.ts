@@ -62,6 +62,7 @@ describe("automation policy", () => {
   it("abstains rather than guessing when a recommendation lacks facts, scope, or a named authority", () => {
     const result = assessRecommendation({
       sourceFacts: [],
+      uncertainty: ["Model release is unknown"],
       rationale: "",
       alternatives: [],
       affectedDevices: [],
@@ -74,13 +75,15 @@ describe("automation policy", () => {
   });
 
   it("allows an evidenced recommendation to proceed only to human review", () => {
-    expect(assessRecommendation({
+    const evidence = {
       sourceFacts: ["Observed platform and version"],
+      uncertainty: ["No unresolved uncertainty remains within the stated scope."],
       rationale: "Capability evidence matches the requested path.",
       alternatives: ["Do not change the device"],
       affectedDevices: ["device-record-01"],
       unresolvedItems: [],
       requiredAuthority: "reviewer",
-    })).toEqual({ status: "ready_for_human_review", reasons: [] });
+    } as const;
+    expect(assessRecommendation(evidence)).toEqual({ status: "ready_for_human_review", reasons: [], evidence });
   });
 });

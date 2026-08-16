@@ -89,8 +89,9 @@ export const appRouter = router({
   recommendations: router({
     assess: protectedProcedure
       .input(z.object({
-        sourceFacts: z.array(z.string().trim().min(1).max(500)).max(100),
-        rationale: z.string().trim().max(2000),
+          sourceFacts: z.array(z.string().trim().min(1).max(500)).max(100),
+          uncertainty: z.array(z.string().trim().min(1).max(500)).max(100),
+          rationale: z.string().trim().max(2000),
         alternatives: z.array(z.string().trim().min(1).max(500)).max(20),
         affectedDevices: z.array(z.string().trim().min(1).max(200)).max(100),
         unresolvedItems: z.array(z.string().trim().min(1).max(500)).max(100),

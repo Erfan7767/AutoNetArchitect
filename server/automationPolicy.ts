@@ -121,6 +121,7 @@ export type HumanAuthority = "reviewer" | "approver" | "executor" | "emergency_a
 /** Inputs required to expose an automation recommendation to a human decision maker. */
 export type RecommendationEvidence = {
   sourceFacts: string[];
+  uncertainty: string[];
   rationale: string;
   alternatives: string[];
   affectedDevices: string[];
@@ -132,6 +133,7 @@ export type RecommendationEvidence = {
 export type RecommendationAssessment = {
   status: "ready_for_human_review" | "abstain";
   reasons: string[];
+  evidence: RecommendationEvidence;
 };
 
 /**
@@ -141,6 +143,7 @@ export type RecommendationAssessment = {
 export function assessRecommendation(evidence: RecommendationEvidence): RecommendationAssessment {
   const reasons: string[] = [];
   if (evidence.sourceFacts.length === 0) reasons.push("No observed source facts are attached.");
+  if (evidence.uncertainty.length === 0) reasons.push("No uncertainty assessment is attached.");
   if (!evidence.rationale.trim()) reasons.push("No engineering rationale is attached.");
   if (evidence.alternatives.length === 0) reasons.push("No alternative has been recorded.");
   if (evidence.affectedDevices.length === 0) reasons.push("No affected-device scope is recorded.");
@@ -148,6 +151,6 @@ export function assessRecommendation(evidence: RecommendationEvidence): Recommen
   if (!evidence.requiredAuthority) reasons.push("No required human authority is assigned.");
 
   return reasons.length === 0
-    ? { status: "ready_for_human_review", reasons: [] }
-    : { status: "abstain", reasons };
+    ? { status: "ready_for_human_review", reasons: [], evidence }
+    : { status: "abstain", reasons, evidence };
 }

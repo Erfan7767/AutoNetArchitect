@@ -91,6 +91,7 @@ describe("recommendations.assess integration path", () => {
     const caller = appRouter.createCaller(createContext());
     const result = await caller.recommendations.assess({
       sourceFacts: [],
+      uncertainty: ["The exact platform/version evidence is absent."],
       rationale: "",
       alternatives: [],
       affectedDevices: [],
@@ -107,6 +108,7 @@ describe("recommendations.assess integration path", () => {
     const caller = appRouter.createCaller(createContext());
     const result = await caller.recommendations.assess({
       sourceFacts: ["Observed facts hash: abc123"],
+      uncertainty: ["No unresolved uncertainty remains within the recorded scope."],
       rationale: "The option matches the recorded design intent.",
       alternatives: ["Retain the current approved design."],
       affectedDevices: ["device-reference-01"],
@@ -114,6 +116,17 @@ describe("recommendations.assess integration path", () => {
       requiredAuthority: "reviewer",
     });
 
-    expect(result).toEqual({ status: "ready_for_human_review", reasons: [] });
+    expect(result).toMatchObject({
+      status: "ready_for_human_review",
+      reasons: [],
+      evidence: {
+        sourceFacts: ["Observed facts hash: abc123"],
+        uncertainty: ["No unresolved uncertainty remains within the recorded scope."],
+        rationale: "The option matches the recorded design intent.",
+        alternatives: ["Retain the current approved design."],
+        affectedDevices: ["device-reference-01"],
+        requiredAuthority: "reviewer",
+      },
+    });
   });
 });
