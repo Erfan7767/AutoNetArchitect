@@ -29,6 +29,7 @@ import {
   listManagedDevices,
   listManagedSites,
   listSiteBusinessRequirements,
+  listRollbackReviews,
   listPostChangeVerifications,
   listProjectsForUser,
   prepareDeployment,
@@ -39,6 +40,7 @@ import {
   recordProjectRestrictedClaim,
   recordVirtualTest,
   recordPostChangeVerification,
+  recordRollbackReview,
   recordSiteBusinessRequirement,
   registerManagedDevice,
   requestDeploymentApproval,
@@ -639,6 +641,29 @@ export const appRouter = router({
           }))
           .mutation(async ({ ctx, input }) => {
             const records = await recordPostChangeVerification(input.changePlanId, input, actorFromUser(ctx.user));
+            if (!records) projectNotFound();
+            return records;
+          }),
+      }),
+      rollbackReview: router({
+        list: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+          const records = await listRollbackReviews(input.changePlanId, ctx.user.id);
+          if (!records) projectNotFound();
+          return records;
+        }),
+        record: protectedProcedure
+          .input(z.object({
+            changePlanId: z.number().int().positive(),
+            rollbackScopeReference: z.string().trim().min(2).max(1000),
+            rollbackArtifactHash: z.string().trim().min(8).max(160),
+            targetFactsHash: z.string().trim().min(8).max(160),
+            scopeHash: z.string().trim().min(8).max(160),
+            backupEvidenceReference: z.string().trim().min(2).max(1000),
+            trigger: z.string().trim().min(2).max(1000),
+            reviewState: z.enum(["review_required", "reviewed", "blocked"]),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const records = await recordRollbackReview(input.changePlanId, input, actorFromUser(ctx.user));
             if (!records) projectNotFound();
             return records;
           }),

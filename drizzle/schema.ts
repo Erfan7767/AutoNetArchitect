@@ -254,6 +254,23 @@ export const postChangeVerificationRuns = mysqlTable("post_change_verification_r
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/** Human review record for an externally executed rollback scope; it never authorizes automatic rollback. */
+export const changePlanRollbackReviews = mysqlTable("change_plan_rollback_reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  changePlanId: int("change_plan_id").notNull(),
+  rollbackScopeReference: varchar("rollback_scope_reference", { length: 1000 }).notNull(),
+  rollbackArtifactHash: varchar("rollback_artifact_hash", { length: 160 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  backupEvidenceReference: varchar("backup_evidence_reference", { length: 1000 }).notNull(),
+  trigger: varchar("trigger", { length: 1000 }).notNull(),
+  reviewState: mysqlEnum("review_state", ["review_required", "reviewed", "blocked"]).notNull().default("review_required"),
+  humanReviewer: varchar("human_reviewer", { length: 160 }).notNull(),
+  reviewedAt: timestamp("reviewed_at").defaultNow().notNull(),
+  automaticExecutionPermitted: boolean("automatic_execution_permitted").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 /** Scoped evidence assessments for restricted language; never a production-authorization record. */
 export const projectRestrictedClaims = mysqlTable("project_restricted_claims", {
   id: int("id").autoincrement().primaryKey(),
@@ -313,6 +330,8 @@ export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
 export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;
 export type PostChangeVerificationRun = typeof postChangeVerificationRuns.$inferSelect;
 export type InsertPostChangeVerificationRun = typeof postChangeVerificationRuns.$inferInsert;
+export type ChangePlanRollbackReview = typeof changePlanRollbackReviews.$inferSelect;
+export type InsertChangePlanRollbackReview = typeof changePlanRollbackReviews.$inferInsert;
 export type ProjectRestrictedClaim = typeof projectRestrictedClaims.$inferSelect;
 export type InsertProjectRestrictedClaim = typeof projectRestrictedClaims.$inferInsert;
 export type BenchmarkScenario = typeof benchmarkScenarios.$inferSelect;

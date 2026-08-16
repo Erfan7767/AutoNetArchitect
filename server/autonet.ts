@@ -4,6 +4,7 @@ import {
   auditEvents,
   authorizedDiscoveryScopes,
   benchmarkScenarios,
+  changePlanRollbackReviews,
   changePlans,
   deviceCapabilityAssessments,
   managedDevices,
@@ -76,6 +77,16 @@ export type ConfigArtifactDraft = {
   artifactPreview: string;
   featureGuard: "pass" | "blocked" | "unknown";
   unsupportedFeatureLog: string;
+};
+
+export type RollbackReviewDraft = {
+  rollbackScopeReference: string;
+  rollbackArtifactHash: string;
+  targetFactsHash: string;
+  scopeHash: string;
+  backupEvidenceReference: string;
+  trigger: string;
+  reviewState: "review_required" | "reviewed" | "blocked";
 };
 
 export type AgentTeamAuditDraft = {
@@ -1069,6 +1080,45 @@ export async function prepareDeployment(changePlanId: number, actor: AuditActor)
     readiness,
     requiredHumanAction: "An authorized human executor must follow the approved external change process; this control plane does not upload configuration or execute production changes.",
   };
+}
+
+/** List bounded rollback-review records; these records never assert a rollback was executed. */
+export async function listRollbackReviews(changePlanId: number, ownerId: number) {
+  const planRecord = await getChangePlanForUser(changePlanId, ownerId);
+  if (!planRecord) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select()
+    .from(changePlanRollbackReviews)
+    .where(eq(changePlanRollbackReviews.changePlanId, changePlanId))
+    .orderBy(desc(changePlanRollbackReviews.reviewedAt));
+}
+
+/** Record a human rollback-review packet that remains externally executed and permanently non-automatic. */
+export async function recordRollbackReview(changePlanId: number, draft: RollbackReviewDraft, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  if (!planRecord.plan.backupVerified) {
+    throw new Error("A rollback review requires a verified backup on the change plan.");
+  }
+  if (draft.targetFactsHash !== planRecord.plan.targetFactsHash || draft.scopeHash !== planRecord.plan.scopeHash) {
+    throw new Error("Rollback review hashes must exactly match the change-plan target facts and approved scope.");
+  }
+  const db = await requireDatabase();
+  await db.insert(changePlanRollbackReviews).values({
+    changePlanId,
+    rollbackScopeReference: redactAuditDetails(draft.rollbackScopeReference),
+    rollbackArtifactHash: draft.rollbackArtifactHash,
+    targetFactsHash: draft.targetFactsHash,
+    scopeHash: draft.scopeHash,
+    backupEvidenceReference: redactAuditDetails(draft.backupEvidenceReference),
+    trigger: redactAuditDetails(draft.trigger),
+    reviewState: draft.reviewState,
+    humanReviewer: actorLabel(actor),
+    automaticExecutionPermitted: false,
+  });
+  await appendAuditEvent(planRecord.project.id, actor, "change_plan.rollback_review_recorded", "Scoped rollback review was recorded; automatic rollback remains prohibited.");
+  return listRollbackReviews(changePlanId, actor.id);
 }
 
 /** Lists observed verification records without inferring that a production action occurred. */
