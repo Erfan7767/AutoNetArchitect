@@ -115,3 +115,10 @@
 - [x] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.
 - [x] Persist exact capability, license, and configuration-path evidence references and require them before a managed device is marked capability-verified.
 - [ ] Enforce exact capability assessment in config-artifact preparation and prove four-vendor candidate, unsupported, and missing-evidence paths are blocked before artifact storage.
+- [x] Publish a machine-readable multi-agent team manifest defining every agent role, authorized inputs, evidence-bound outputs, dependency gates, and prohibited actions.
+- [x] Add a coordination graph evaluator that schedules only dependency-ready read-only/review agents and returns explicit blocked or abstained states for every unmet input.
+- [x] Bind agent-team graph outcomes to audit-ready workflow evidence without granting configuration upload or production execution authority.
+- [x] Add tests for full-team dependency ordering, parallel-safe stages, unresolved-evidence abstention, and permanent production-execution denial.
+- [x] Distinguish team-graph abstention from dependency waiting and policy blocking when required evidence is absent or unresolved.
+- [x] Persist redacted agent-team graph outcomes through the control-plane audit path and prove they cannot grant execution authority.
+- [x] Prove the complete agent dependency chain and behaviorally safe parallel discovery scheduling in end-to-end graph tests.

@@ -20,6 +20,7 @@ from .evidence_handoff import DesignEvidenceHandoff, EvidenceBoundHandoffCoordin
 from .exact_capability import ExactCapabilityAssessor, ExactCapabilityEvidence
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
 from .scope import AuthorizedScope
+from .team_graph import MultiAgentTeamGraph, TeamGraphEvaluation
 from .validation_policy import ScenarioPolicyDecision, ScenarioValidationPolicy, ValidationScenario
 from .vendor_support import CapabilityAssessment, SupportDecision, VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 from .virtual_adapters import (
@@ -54,6 +55,8 @@ __all__ = [
     "ParallelDiscoveryCoordinator",
     "DesignEvidenceHandoff",
     "EvidenceBoundHandoffCoordinator",
+    "MultiAgentTeamGraph",
+    "TeamGraphEvaluation",
     "ExactCapabilityEvidence",
     "ExactCapabilityAssessor",
     "ReadOnlyRequest",

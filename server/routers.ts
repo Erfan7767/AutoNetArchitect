@@ -24,6 +24,7 @@ import {
   listManagedSites,
   listProjectsForUser,
   recordDeviceObservation,
+  recordAgentTeamAudit,
   recordVirtualTest,
   registerManagedDevice,
   requestDeploymentApproval,
@@ -286,6 +287,21 @@ export const appRouter = router({
         approvalReadiness: readiness.flatMap(item => item ? [{ status: item.decision.status, blockers: item.decision.blockers }] : []),
       });
     }),
+    recordMultiAgentAudit: protectedProcedure
+      .input(z.object({
+        projectId: z.number().int().positive(),
+        productionExecutionPermitted: z.literal(false),
+        agents: z.array(z.object({
+          role: z.string().trim().min(1).max(80),
+          state: z.enum(["ready", "waiting", "blocked", "abstained", "completed"]),
+          blockers: z.array(z.string().trim().max(300)).max(30),
+        })).min(1).max(20),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await recordAgentTeamAudit(input.projectId, input, actorFromUser(ctx.user));
+        if (result === undefined) projectNotFound();
+        return result;
+      }),
     sites: router({
       list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
         const sites = await listManagedSites(input.projectId, ctx.user.id);

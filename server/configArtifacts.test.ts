@@ -20,7 +20,7 @@ const fakeDb = {
 
 vi.mock("./db", () => ({ getDb: vi.fn(async () => fakeDb) }));
 
-const { addConfigArtifact } = await import("./autonet");
+const { addConfigArtifact, recordAgentTeamAudit } = await import("./autonet");
 
 const actor = { id: 7, name: "Engineer", email: "engineer@example.test" };
 
@@ -80,5 +80,18 @@ describe("config artifact capability gate", () => {
     }, actor);
 
     expect(insertCalls[0]).toMatchObject({ projectId: 1, deviceId: 10, featureGuard: "blocked" });
+  });
+
+  it("persists a redacted team evaluation without execution authority", async () => {
+    selectResults.push([project()]);
+
+    const result = await recordAgentTeamAudit(1, {
+      productionExecutionPermitted: false,
+      agents: [{ role: "authorized_discovery", state: "ready", blockers: [] }],
+    }, actor);
+
+    expect(result).toEqual({ recorded: true, productionExecutionPermitted: false });
+    expect(insertCalls[0]).toMatchObject({ action: "multi_agent.workflow_evaluated" });
+    expect(String(insertCalls[0])).not.toContain("credential_reference");
   });
 });

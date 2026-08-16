@@ -61,6 +61,15 @@ export type ConfigArtifactDraft = {
   unsupportedFeatureLog: string;
 };
 
+export type AgentTeamAuditDraft = {
+  productionExecutionPermitted: false;
+  agents: Array<{
+    role: string;
+    state: "ready" | "waiting" | "blocked" | "abstained" | "completed";
+    blockers: string[];
+  }>;
+};
+
 export type ManagedSiteDraft = {
   name: string;
   approvedScopeReference: string;
@@ -398,6 +407,20 @@ export async function listConfigArtifacts(projectId: number, ownerId: number) {
   if (!project) return undefined;
   const db = await requireDatabase();
   return db.select().from(projectConfigArtifacts).where(eq(projectConfigArtifacts.projectId, projectId)).orderBy(desc(projectConfigArtifacts.createdAt));
+}
+
+export async function recordAgentTeamAudit(projectId: number, draft: AgentTeamAuditDraft, actor: AuditActor) {
+  const project = await getProjectForUser(projectId, actor.id);
+  if (!project) return undefined;
+  if (draft.productionExecutionPermitted) {
+    throw new Error("Agent-team audit records cannot assert production execution authority.");
+  }
+  const details = JSON.stringify({
+    productionExecutionPermitted: false,
+    agents: draft.agents.map(agent => ({ role: agent.role, state: agent.state, blockers: agent.blockers })),
+  });
+  await appendAuditEvent(projectId, actor, "multi_agent.workflow_evaluated", details);
+  return { recorded: true, productionExecutionPermitted: false } as const;
 }
 
 export async function addConfigArtifact(projectId: number, draft: ConfigArtifactDraft, actor: AuditActor) {
