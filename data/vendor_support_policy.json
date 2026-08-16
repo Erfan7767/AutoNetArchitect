@@ -1,12 +1,28 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "policy_state": "evidence_required",
-  "purpose": "Bounded vendor support policy. Empty version prefixes intentionally block configuration until exact evidence is reviewed.",
+  "purpose": "Bounded vendor support policy. Candidate release records are evidence leads only; exact model, feature, entitlement, and configuration-path verification remains mandatory.",
   "vendors": [
     {
       "vendor_family": "cisco",
       "platform_families": ["ios_xe", "catalyst", "nexus"],
       "supported_version_prefixes": [],
+      "reviewed_candidate_releases": [
+        {
+          "platform_family": "catalyst",
+          "release_prefix": "17.18",
+          "scope_note": "Cisco Catalyst 9200, 9300, 9400, 9500, and 9600 release-note families are listed by Cisco.",
+          "source_url": "https://www.cisco.com/c/en/us/support/ios-nx-os-software/ios-xe-17/products-release-notes-list.html",
+          "decision": "verification_required"
+        },
+        {
+          "platform_family": "catalyst",
+          "release_prefix": "17.17",
+          "scope_note": "Cisco Catalyst 9200, 9300, 9400, 9500, and 9600 release-note families are listed by Cisco.",
+          "source_url": "https://www.cisco.com/c/en/us/support/ios-nx-os-software/ios-xe-17/products-release-notes-list.html",
+          "decision": "verification_required"
+        }
+      ],
       "license_evidence_required": true,
       "configuration_path_evidence_required": true,
       "status": "verification_required"
@@ -15,14 +31,25 @@
       "vendor_family": "huawei",
       "platform_families": ["vrp", "cloudengine"],
       "supported_version_prefixes": [],
+      "reviewed_candidate_releases": [],
       "license_evidence_required": true,
       "configuration_path_evidence_required": true,
-      "status": "verification_required"
+      "status": "verification_required",
+      "policy_note": "No exact release candidate is loaded until a platform-specific official release record is reviewed."
     },
     {
       "vendor_family": "fortinet",
       "platform_families": ["fortios", "fortigate"],
       "supported_version_prefixes": [],
+      "reviewed_candidate_releases": [
+        {
+          "platform_family": "fortigate",
+          "release_prefix": "8.0",
+          "scope_note": "Fortinet publishes FortiOS 8.0 release information and supported-model notes.",
+          "source_url": "https://docs.fortinet.com/document/fortigate/8.0.0/fortios-release-notes/760203/introduction-and-supported-models",
+          "decision": "verification_required"
+        }
+      ],
       "license_evidence_required": true,
       "configuration_path_evidence_required": true,
       "status": "verification_required"
@@ -31,6 +58,15 @@
       "vendor_family": "hpe_aruba",
       "platform_families": ["aos_cx", "aruba_cx"],
       "supported_version_prefixes": [],
+      "reviewed_candidate_releases": [
+        {
+          "platform_family": "aos_cx",
+          "release_prefix": "10.14",
+          "scope_note": "HPE Aruba documentation publishes AOS-CX 10.14 documentation and release-note material.",
+          "source_url": "https://www.arubanetworks.com/techdocs/AOS-CX/10.14/HTML/copp_4100i-6100/Content/home.htm",
+          "decision": "verification_required"
+        }
+      ],
       "license_evidence_required": true,
       "configuration_path_evidence_required": true,
       "status": "verification_required"
