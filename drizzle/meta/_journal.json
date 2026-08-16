@@ -71,6 +71,13 @@
       "when": 1786850669716,
       "tag": "0009_lively_loki",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786851210015,
+      "tag": "0010_cuddly_bloodscream",
+      "breakpoints": true
     }
   ]
 }

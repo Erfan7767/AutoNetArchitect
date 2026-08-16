@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { and, count, desc, eq, or, sql } from "drizzle-orm";
 import {
   auditEvents,
@@ -14,7 +15,12 @@ import {
   discoveryRuns,
 } from "../drizzle/schema";
 import { getDb } from "./db";
-import { assessSectorProfileInputs, type SectorProfileId } from "./sectorProfiles";
+import {
+  assessSectorProfileInputs,
+  buildSectorReviewSnapshot,
+  isSectorReviewCurrent,
+  type SectorProfileId,
+} from "./sectorProfiles";
 
 export type ProjectDraft = {
   name: string;
@@ -273,9 +279,10 @@ export async function updateProjectSector(projectId: number, draft: ProjectSecto
   if (!project) return undefined;
   const normalizedInputs = Array.from(new Set(draft.suppliedInputs.map(value => value.trim()).filter(Boolean)));
   const db = await requireDatabase();
+  const sectorInputsUpdatedAt = new Date();
   await db
     .update(networkProjects)
-    .set({ sectorProfile: draft.sectorProfile, sectorInputs: JSON.stringify(normalizedInputs), updatedAt: new Date() })
+    .set({ sectorProfile: draft.sectorProfile, sectorInputs: JSON.stringify(normalizedInputs), sectorInputsUpdatedAt, updatedAt: sectorInputsUpdatedAt })
     .where(eq(networkProjects.id, projectId));
   const gaps = assessSectorProfileInputs(draft.sectorProfile, normalizedInputs);
   await appendAuditEvent(
@@ -492,8 +499,16 @@ export async function listChangePlans(projectId: number, ownerId: number) {
 export async function createChangePlan(projectId: number, draft: ChangePlanDraft, actor: AuditActor) {
   const project = await getProjectForUser(projectId, actor.id);
   if (!project) return undefined;
-  const sectorBlocker = getSectorPlanBlocker(project.sectorProfile as "unselected" | SectorProfileId, parseSectorInputs(project.sectorInputs));
+  const sectorProfile = project.sectorProfile as "unselected" | SectorProfileId;
+  const sectorInputs = parseSectorInputs(project.sectorInputs);
+  const sectorBlocker = getSectorPlanBlocker(sectorProfile, sectorInputs);
   if (sectorBlocker) throw new Error(sectorBlocker);
+  if (sectorProfile === "unselected") throw new Error("A sector profile is required before creating a change plan.");
+  if (!project.sectorInputsUpdatedAt || !isSectorReviewCurrent(project.sectorInputsUpdatedAt)) {
+    throw new Error("Sector profile review is stale or missing; refresh the human-supplied sector inputs before creating a change plan.");
+  }
+  const sectorSnapshot = buildSectorReviewSnapshot(sectorProfile, sectorInputs);
+  const sectorInputsHash = createHash("sha256").update(JSON.stringify({ profile: sectorProfile, inputs: sectorInputs })).digest("hex");
   const deviceRecord = await getManagedDeviceForUser(draft.deviceId, actor.id);
   if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
   if (deviceRecord.device.factState !== "observed" || !deviceRecord.device.factsHash) {
@@ -509,6 +524,10 @@ export async function createChangePlan(projectId: number, draft: ChangePlanDraft
     scopeHash: draft.scopeHash.trim(),
     virtualValidationState: "not_tested",
     releaseState: "draft",
+    sectorProfileSnapshot: JSON.stringify(sectorSnapshot),
+    sectorInputsHash,
+    sectorReviewState: "current",
+    sectorReviewedAt: project.sectorInputsUpdatedAt,
   });
   await appendAuditEvent(projectId, actor, "change_plan.created", "A change plan was created from observed device facts.");
   return listChangePlans(projectId, actor.id);

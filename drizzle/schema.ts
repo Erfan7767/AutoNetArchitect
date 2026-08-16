@@ -28,6 +28,7 @@ export const networkProjects = mysqlTable("network_projects", {
     .notNull()
     .default("unselected"),
   sectorInputs: varchar("sector_inputs", { length: 8000 }).notNull().default("[]"),
+  sectorInputsUpdatedAt: timestamp("sector_inputs_updated_at"),
   status: mysqlEnum("status", ["intake", "design", "ready_for_review", "approved"])
     .notNull()
     .default("intake"),
@@ -152,6 +153,10 @@ export const changePlans = mysqlTable("change_plans", {
     .default("draft"),
   backupVerified: boolean("backup_verified").notNull().default(false),
   maintenanceWindowValid: boolean("maintenance_window_valid").notNull().default(false),
+  sectorProfileSnapshot: varchar("sector_profile_snapshot", { length: 8000 }).notNull().default("{}"),
+  sectorInputsHash: varchar("sector_inputs_hash", { length: 160 }).notNull().default(""),
+  sectorReviewState: mysqlEnum("sector_review_state", ["current", "stale", "missing"]).notNull().default("missing"),
+  sectorReviewedAt: timestamp("sector_reviewed_at"),
   humanApprover: varchar("human_approver", { length: 160 }),
   approvedAt: timestamp("approved_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

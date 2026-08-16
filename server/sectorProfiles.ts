@@ -75,7 +75,40 @@ export const sectorProfiles: Record<SectorProfileId, SectorProfile> = {
 };
 
 /** Return explicit profile completeness gaps without treating missing data as defaults. */
+export type SectorReviewSnapshot = {
+  profileId: SectorProfileId;
+  suppliedInputs: string[];
+  missingInputs: string[];
+  completenessPercent: number;
+  mandatoryReviewRoles: string[];
+};
+
+export const SECTOR_REVIEW_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+
 export function assessSectorProfileInputs(profileId: SectorProfileId, suppliedLabels: string[]): string[] {
   const supplied = new Set(suppliedLabels.map(value => value.trim().toLowerCase()));
   return sectorProfiles[profileId].requiredHumanInputs.filter(requirement => !supplied.has(requirement.toLowerCase()));
+}
+
+export function buildSectorReviewSnapshot(profileId: SectorProfileId, suppliedLabels: string[]): SectorReviewSnapshot {
+  const suppliedInputs = Array.from(new Set(suppliedLabels.map(value => value.trim()).filter(Boolean)));
+  const missingInputs = assessSectorProfileInputs(profileId, suppliedInputs);
+  const requiredCount = sectorProfiles[profileId].requiredHumanInputs.length;
+  return {
+    profileId,
+    suppliedInputs,
+    missingInputs,
+    completenessPercent: Math.round(((requiredCount - missingInputs.length) / requiredCount) * 100),
+    mandatoryReviewRoles: [...sectorProfiles[profileId].mandatoryReviewRoles],
+  };
+}
+
+export function isSectorReviewCurrent(
+  reviewedAt: Date | null | undefined,
+  now: Date = new Date(),
+  maxAgeMs: number = SECTOR_REVIEW_MAX_AGE_MS,
+): boolean {
+  if (!reviewedAt || !Number.isFinite(reviewedAt.getTime())) return false;
+  const age = now.getTime() - reviewedAt.getTime();
+  return age >= 0 && age <= maxAgeMs;
 }

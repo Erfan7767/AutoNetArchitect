@@ -42,10 +42,10 @@
 - [x] Require human-supplied sector constraints, site facts, hardware inventory, vendor/version evidence, critical-service boundaries, and maintenance policy before generating a deployable plan.
 - [x] Integrate sector-profile selection and supplied sector inputs into persistent project and change-plan data models and API routes.
 - [x] Block change-plan creation unless every required human input for the selected sector profile is recorded and current.
-- [ ] Persist a sector-profile completeness snapshot on each change plan so its review context remains traceable after parent-project edits.
-- [ ] Define a timestamped review/currentness rule for sector-required inputs and block change-plan creation when the recorded review is stale.
-- [ ] Add API-level integration tests for unselected, incomplete, stale, and complete sector-profile inputs across real change-plan creation paths.
-- [ ] Add integration tests proving change-plan creation rejects incomplete sector profiles and accepts complete scoped inputs.
+- [x] Persist a sector-profile completeness snapshot on each change plan so its review context remains traceable after parent-project edits.
+- [x] Define a timestamped review/currentness rule for sector-required inputs and block change-plan creation when the recorded review is stale.
+- [x] Add API-level integration tests for unselected, incomplete, stale, and complete sector-profile inputs across real change-plan creation paths.
+- [x] Add integration tests proving change-plan creation rejects incomplete sector profiles and accepts complete scoped inputs.
 - [ ] Add sector-profile selection and evidence-completeness status to the control plane and project review console.
 - [ ] Create scenario-specific virtual-validation policies that distinguish logical validation, vendor-image lab validation, physical-lab validation, and unsupported paths.
 - [ ] Add benchmark and acceptance criteria per supported sector/device/version scenario; block claims outside measured coverage.
@@ -92,3 +92,5 @@
 - [x] Add explicit virtual-validation contract types for lab, digital-twin, and vendor-supported candidate/commit paths, each with distinct fidelity/evidence labels.
 - [x] Add tests proving each virtual-validation path type is selectable, scope-bound, hash-bound, and non-authorizing for production execution.
 - [x] Export and document the supported virtual-validation path classes so their boundaries are verifiable from code and UI/API surfaces.
+- [x] Add sector-profile completeness snapshot, review timestamp, and currentness status to change plans.
+- [x] Add pure and persistence tests proving stale sector inputs block change-plan creation.
