@@ -11,6 +11,14 @@ from .discovery_adapters import (
 )
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
 from .scope import AuthorizedScope
+from .virtual_adapters import (
+    CiscoVirtualValidationAdapter,
+    FortinetVirtualValidationAdapter,
+    HpeArubaVirtualValidationAdapter,
+    HuaweiVirtualValidationAdapter,
+    VirtualFidelity,
+    VirtualValidationPlan,
+)
 from .virtual_validation import VirtualValidationCoordinator
 from .vendor_support import CapabilityAssessment, SupportDecision, VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 
@@ -27,6 +35,12 @@ __all__ = [
     "FortinetDiscoveryAdapter",
     "HpeArubaDiscoveryAdapter",
     "VirtualTestResult",
+    "VirtualFidelity",
+    "VirtualValidationPlan",
+    "CiscoVirtualValidationAdapter",
+    "HuaweiVirtualValidationAdapter",
+    "FortinetVirtualValidationAdapter",
+    "HpeArubaVirtualValidationAdapter",
     "VirtualValidationCoordinator",
     "CapabilityAssessment",
     "SupportDecision",

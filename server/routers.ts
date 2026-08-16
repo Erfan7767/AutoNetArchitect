@@ -29,6 +29,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { COOKIE_NAME } from "../shared/const";
+import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -42,6 +43,9 @@ function projectNotFound(): never {
 
 export const appRouter = router({
   system: systemRouter,
+  vendorSupport: router({
+    list: protectedProcedure.query(() => VENDOR_SUPPORT_STATUS),
+  }),
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

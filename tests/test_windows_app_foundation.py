@@ -89,3 +89,18 @@ def test_windows_controller_rejects_scope_without_operator_acknowledgement(tmp_p
                 approval_reference="LAB-APPROVAL-03",
             )
         )
+
+
+def test_windows_vendor_contracts_expose_four_bounded_families() -> None:
+    """The local app's vendor registry exposes only the documented four-family boundary."""
+
+    from site_agent.vendor_support import VendorCapabilityRegistry, VendorFamily
+
+    contracts = VendorCapabilityRegistry().contracts
+    assert {contract.family for contract in contracts} == {
+        VendorFamily.CISCO,
+        VendorFamily.HUAWEI,
+        VendorFamily.FORTINET,
+        VendorFamily.HPE_ARUBA,
+    }
+    assert all(not contract.supported_version_prefixes for contract in contracts)

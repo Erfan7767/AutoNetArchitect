@@ -7,6 +7,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 
 from site_agent.models import DiscoveryTarget, ManagementProtocol
+from site_agent.vendor_support import VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 from site_agent.local_inventory import WindowsArpInventory, authorized_neighbors
 from site_agent.scope import AuthorizedScope
 
@@ -29,7 +30,10 @@ class AutoNetWindowsApp:
         self._approval_reference = tk.StringVar()
         self._address = tk.StringVar()
         self._protocol = tk.StringVar(value=ManagementProtocol.SSH.value)
+        self._vendor_family = tk.StringVar(value=VendorFamily.CISCO.value)
         self._credential_reference = tk.StringVar()
+        self._vendor_status = tk.StringVar()
+        self._vendor_contracts = {contract.family.value: contract for contract in VendorCapabilityRegistry().contracts}
         self._acknowledged = tk.BooleanVar(value=False)
         self._status = tk.StringVar(value="Approve a read-only scope before discovery.")
         self._inventory: ttk.Treeview | None = None
@@ -63,15 +67,22 @@ class AutoNetWindowsApp:
         ttk.Label(frame, text="Read-only protocol").grid(row=protocol_row, column=0, sticky="w", pady=5)
         protocol_box = ttk.Combobox(frame, textvariable=self._protocol, state="readonly", values=[item.value for item in ManagementProtocol])
         protocol_box.grid(row=protocol_row, column=1, sticky="ew", pady=5)
+        vendor_row = protocol_row + 1
+        ttk.Label(frame, text="Observed vendor family hint").grid(row=vendor_row, column=0, sticky="w", pady=5)
+        vendor_box = ttk.Combobox(frame, textvariable=self._vendor_family, state="readonly", values=list(self._vendor_contracts))
+        vendor_box.grid(row=vendor_row, column=1, sticky="ew", pady=5)
+        vendor_box.bind("<<ComboboxSelected>>", lambda _event: self._update_vendor_status())
+        ttk.Label(frame, textvariable=self._vendor_status, wraplength=680).grid(row=vendor_row + 1, column=0, columnspan=2, sticky="w", pady=(2, 6))
+        self._update_vendor_status()
         ttk.Checkbutton(
             frame,
             text="I confirm this read-only scope and target list are authorized by the customer.",
             variable=self._acknowledged,
-        ).grid(row=protocol_row + 1, column=0, columnspan=2, sticky="w", pady=(12, 4))
-        ttk.Button(frame, text="Save approved scope", command=self._approve_scope).grid(row=protocol_row + 2, column=0, sticky="w", pady=(12, 4))
-        ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=protocol_row + 2, column=1, sticky="e", pady=(12, 4))
-        ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=protocol_row + 3, column=0, sticky="w", pady=(8, 4))
-        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=protocol_row + 4, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        ).grid(row=vendor_row + 2, column=0, columnspan=2, sticky="w", pady=(12, 4))
+        ttk.Button(frame, text="Save approved scope", command=self._approve_scope).grid(row=vendor_row + 3, column=0, sticky="w", pady=(12, 4))
+        ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=vendor_row + 3, column=1, sticky="e", pady=(12, 4))
+        ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=vendor_row + 4, column=0, sticky="w", pady=(8, 4))
+        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
             ("address", "Address", 150),
@@ -81,8 +92,16 @@ class AutoNetWindowsApp:
         ):
             self._inventory.heading(column, text=label)
             self._inventory.column(column, width=width, stretch=True)
-        self._inventory.grid(row=protocol_row + 5, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
-        frame.rowconfigure(protocol_row + 5, weight=1)
+        self._inventory.grid(row=vendor_row + 6, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(vendor_row + 6, weight=1)
+
+    def _update_vendor_status(self) -> None:
+        """Show the selected vendor contract and its evidence boundary without claiming support."""
+        contract = self._vendor_contracts[self._vendor_family.get()]
+        protocols = ", ".join(item.value for item in contract.protocols)
+        self._vendor_status.set(
+            f"{contract.family.value}: discovery protocols {protocols}. Configuration is blocked until exact platform, version, license, and path evidence are verified."
+        )
 
     def _approve_scope(self) -> None:
         """Validate and save the local scope selected by the human operator."""
@@ -107,9 +126,13 @@ class AutoNetWindowsApp:
         """Attempt a bounded read-only probe for one explicitly entered management endpoint."""
 
         try:
+            contract: VendorCapabilityContract = self._vendor_contracts[self._vendor_family.get()]
+            protocol = ManagementProtocol(self._protocol.get())
+            if protocol not in contract.protocols:
+                raise PermissionError(f"{protocol.value} is not declared for the selected {contract.family.value} discovery contract.")
             target = DiscoveryTarget(
                 address=self._address.get().strip(),
-                protocol=ManagementProtocol(self._protocol.get()),
+                protocol=protocol,
                 credential_reference=self._credential_reference.get().strip(),
             )
             result = self._controller.discover_target(target)

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "policy_state": "evidence_required",
+  "purpose": "Bounded vendor support policy. Empty version prefixes intentionally block configuration until exact evidence is reviewed.",
+  "vendors": [
+    {
+      "vendor_family": "cisco",
+      "platform_families": ["ios_xe", "catalyst", "nexus"],
+      "supported_version_prefixes": [],
+      "license_evidence_required": true,
+      "configuration_path_evidence_required": true,
+      "status": "verification_required"
+    },
+    {
+      "vendor_family": "huawei",
+      "platform_families": ["vrp", "cloudengine"],
+      "supported_version_prefixes": [],
+      "license_evidence_required": true,
+      "configuration_path_evidence_required": true,
+      "status": "verification_required"
+    },
+    {
+      "vendor_family": "fortinet",
+      "platform_families": ["fortios", "fortigate"],
+      "supported_version_prefixes": [],
+      "license_evidence_required": true,
+      "configuration_path_evidence_required": true,
+      "status": "verification_required"
+    },
+    {
+      "vendor_family": "hpe_aruba",
+      "platform_families": ["aos_cx", "aruba_cx"],
+      "supported_version_prefixes": [],
+      "license_evidence_required": true,
+      "configuration_path_evidence_required": true,
+      "status": "verification_required"
+    }
+  ]
+}

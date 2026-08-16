@@ -72,10 +72,14 @@
 - [x] Implement a vendor-family registry with explicit discovery protocols, evidence requirements, and unsupported status for Cisco, Huawei, Fortinet, and HPE Aruba.
 - [ ] Add exact platform/version/license capability assessment before configuration generation for each supported vendor family.
 - [x] Add vendor-specific read-only discovery adapter contracts without fabricating commands or falling back to generic configuration.
-- [ ] Add vendor-specific virtual-validation adapter contracts with fidelity and evidence labels.
+- [x] Add vendor-specific virtual-validation adapter contracts with fidelity and evidence labels.
 - [ ] Add vendor selection and support-status visibility to the Windows application and web review console.
 - [x] Add tests for supported, ambiguous, unsupported, mismatched-version, and missing-license vendor cases.
 - [ ] Package the four-vendor support scope into a reviewed release and publish its measured boundaries.
 - [ ] Add per-vendor version-policy data with bounded release matchers and explicit out-of-bound decisions.
 - [x] Add an explicit mismatched-version test proving configuration is blocked or requires review.
-- [ ] Document vendor-specific platform/version/license combinations as traceable policy data rather than generic evidence gates.
+- [x] Document vendor-specific platform/version/license combinations as traceable policy data rather than generic evidence gates.
+- [ ] Add Windows vendor-support review panel tests covering selector visibility and protocol-bound discovery rejection.
+- [ ] Add a dedicated web review-console vendor evidence flow rather than relying only on the Admin summary.
+- [ ] Replace empty version policies with reviewed exact combinations or explicitly reviewed out-of-bound combinations tied to source evidence.
+- [ ] Add tests proving policy data drives per-vendor version and license decisions.
