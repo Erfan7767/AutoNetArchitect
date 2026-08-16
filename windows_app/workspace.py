@@ -1,0 +1,48 @@
+"""Secret-free local workspace persistence for the Windows application."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from site_agent.scope import AuthorizedScope
+
+
+class WindowsWorkspace:
+    """Stores local discovery approval metadata without storing device credentials or collected secrets."""
+
+    def __init__(self, root: Path) -> None:
+        """Create a workspace rooted at a user-selected local directory."""
+
+        self._root = root
+        self._scope_path = root / "authorized_scope.json"
+
+    @property
+    def root(self) -> Path:
+        """Return the configured local workspace directory."""
+
+        return self._root
+
+    def save_scope(self, scope: AuthorizedScope) -> None:
+        """Persist an approved discovery scope atomically with restrictive user-only permissions where supported."""
+
+        self._root.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(scope.model_dump(mode="json"), indent=2, sort_keys=True)
+        temporary = self._scope_path.with_suffix(".tmp")
+        temporary.write_text(payload, encoding="utf-8")
+        temporary.replace(self._scope_path)
+        try:
+            self._scope_path.chmod(0o600)
+        except OSError:
+            return
+
+    def load_scope(self) -> AuthorizedScope | None:
+        """Return the saved scope or ``None`` when discovery has not yet been approved."""
+
+        if not self._scope_path.exists():
+            return None
+        raw: Any = json.loads(self._scope_path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("The authorized discovery scope file is invalid.")
+        return AuthorizedScope.model_validate(raw)

@@ -49,9 +49,12 @@
 - [ ] Add sector-profile selection and evidence-completeness status to the control plane and project review console.
 - [ ] Create scenario-specific virtual-validation policies that distinguish logical validation, vendor-image lab validation, physical-lab validation, and unsupported paths.
 - [ ] Add benchmark and acceptance criteria per supported sector/device/version scenario; block claims outside measured coverage.
-- [ ] Define Windows installer scope, local workspace storage, user consent prompts, and unsigned-package limitations for the first desktop release.
+- [x] Define Windows installer scope, local workspace storage, user consent prompts, and unsigned-package limitations for the first desktop release.
 - [ ] Build a Windows desktop shell that reuses AutoNetArchitect policy, sector, project, and audit models without exposing device credentials.
-- [ ] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
+- [x] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
+- [x] Document unsigned-package installation limitations and explicit user-consent prompts for the first Windows release.
+- [x] Add explicit per-target allowlist support to the Windows discovery scope and block targets outside it even when they are inside an approved CIDR.
+- [x] Add tests covering consent gating and target-allowlist enforcement for the Windows discovery workflow.
 - [ ] Implement Windows read-only collectors for supported protocols and vendor adapters only after observed identity and authorization checks.
 - [ ] Add a local inventory review workflow that shows discovered evidence, ambiguity, unsupported devices, and no-guess abstentions.
 - [ ] Build multi-site business requirement intake for branch count, services, availability objectives, jurisdictional constraints, and human-supplied mandatory fields.
