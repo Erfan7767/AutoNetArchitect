@@ -77,6 +77,7 @@ export const projectBomItems = mysqlTable("project_bom_items", {
 export const projectConfigArtifacts = mysqlTable("project_config_artifacts", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),
+  deviceId: int("device_id").notNull().default(0),
   vendor: varchar("vendor", { length: 120 }).notNull(),
   deviceName: varchar("device_name", { length: 160 }).notNull(),
   artifactSummary: varchar("artifact_summary", { length: 2000 }).notNull().default(""),
@@ -115,6 +116,9 @@ export const managedDevices = mysqlTable("managed_devices", {
     .default("unobserved"),
   factsHash: varchar("facts_hash", { length: 160 }).notNull().default(""),
   capabilityVerified: boolean("capability_verified").notNull().default(false),
+  capabilityEvidenceReference: varchar("capability_evidence_reference", { length: 1000 }).notNull().default(""),
+  licenseEvidenceReference: varchar("license_evidence_reference", { length: 1000 }).notNull().default(""),
+  configurationPathEvidenceReference: varchar("configuration_path_evidence_reference", { length: 1000 }).notNull().default(""),
   lastObservedAt: timestamp("last_observed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .coordination import CoordinationStage, MultiAgentResponsibilityModel
 from .discovery_coordination import DiscoveryBatchResult
+from .vendor_support import CapabilityAssessment, SupportDecision
 from .virtual_adapters import VirtualValidationPathAdapter, VirtualValidationPlan
 
 
@@ -21,6 +22,7 @@ class DesignEvidenceHandoff(BaseModel):
     target_facts_hash: str = Field(min_length=1, max_length=160)
     discovery_evidence_reference: str = Field(min_length=1, max_length=200)
     capability_assessment_reference: str = Field(min_length=1, max_length=200)
+    capability_assessment: CapabilityAssessment
     unresolved_item_ids: tuple[str, ...] = ()
 
 
@@ -60,3 +62,5 @@ class EvidenceBoundHandoffCoordinator:
             raise ValueError("Discovery evidence includes unresolved targets and cannot enter validation.")
         if handoff.unresolved_item_ids:
             raise ValueError("Unresolved design or capability items cannot enter validation.")
+        if handoff.capability_assessment.decision is not SupportDecision.CONFIGURATION_SUPPORTED:
+            raise ValueError("Exact platform, version, license, feature, and configuration-path capability evidence is not verified.")

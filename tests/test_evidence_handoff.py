@@ -9,7 +9,7 @@ from site_agent.discovery_coordination import (
 )
 from site_agent.evidence_handoff import DesignEvidenceHandoff, EvidenceBoundHandoffCoordinator
 from site_agent.models import DiscoveryResult, DiscoveryState, DiscoveryTarget, ManagementProtocol, ObservedDeviceFacts, VirtualTestState
-from site_agent.vendor_support import VendorFamily
+from site_agent.vendor_support import CapabilityAssessment, SupportDecision, VendorFamily
 from site_agent.virtual_adapters import LabValidationAdapter
 
 
@@ -63,6 +63,12 @@ def _handoff(**changes: object) -> DesignEvidenceHandoff:
         "target_facts_hash": "facts-1",
         "discovery_evidence_reference": "discovery-run-1",
         "capability_assessment_reference": "capability-1",
+        "capability_assessment": CapabilityAssessment(
+            vendor_family=VendorFamily.FORTINET,
+            decision=SupportDecision.CONFIGURATION_SUPPORTED,
+            reason="A controlled test fixture represents an already reviewed assessment record.",
+            source_url="https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/940602/using-apis",
+        ),
     }
     values.update(changes)
     return DesignEvidenceHandoff(**values)
@@ -137,5 +143,23 @@ def test_ambiguous_discovery_result_blocks_validation_handoff() -> None:
         EvidenceBoundHandoffCoordinator().build_validation_plan(
             batch,
             _handoff(),
+            LabValidationAdapter(VendorFamily.FORTINET),
+        )
+
+
+def test_review_required_capability_assessment_blocks_validation_handoff() -> None:
+    """A candidate release or missing entitlement cannot be passed by a reference string alone."""
+
+    with pytest.raises(ValueError, match="Exact platform, version, license"):
+        EvidenceBoundHandoffCoordinator().build_validation_plan(
+            _discovered_batch(),
+            _handoff(
+                capability_assessment=CapabilityAssessment(
+                    vendor_family=VendorFamily.FORTINET,
+                    decision=SupportDecision.REVIEW_REQUIRED,
+                    reason="Exact release and entitlement evidence remain under review.",
+                    required_evidence=("supported_software_version", "license_evidence"),
+                )
+            ),
             LabValidationAdapter(VendorFamily.FORTINET),
         )

@@ -86,7 +86,18 @@ describe("change-plan sector review gate", () => {
   it("stores a complete sector snapshot and deterministic input hash", async () => {
     const reviewedAt = new Date();
     const project = projectWithSector(reviewedAt);
-    const device = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true }, project };
+    const device = {
+      device: {
+        id: 10,
+        factState: "observed",
+        factsHash: "facts-hash",
+        capabilityVerified: true,
+        capabilityEvidenceReference: "capability-evidence-1",
+        licenseEvidenceReference: "license-evidence-1",
+        configurationPathEvidenceReference: "configuration-path-evidence-1",
+      },
+      project,
+    };
     selectResults.push([project], [device], [project], []);
 
     await createChangePlan(1, {
@@ -102,5 +113,19 @@ describe("change-plan sector review gate", () => {
     expect(planInsert?.sectorInputsHash).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.parse(String(planInsert?.sectorProfileSnapshot))).toMatchObject({ profileId: "enterprise", completenessPercent: 100 });
     expect(planInsert?.sectorReviewedAt).toEqual(reviewedAt);
+  });
+
+  it("rejects an asserted capability flag when exact evidence references are absent", async () => {
+    const project = projectWithSector(new Date());
+    const device = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true }, project };
+    selectResults.push([project], [device]);
+
+    await expect(createChangePlan(1, {
+      deviceId: 10,
+      name: "Evidence incomplete change",
+      artifactHash: "artifact-hash",
+      scopeHash: "scope-hash",
+    }, actor)).rejects.toThrow("capability, license, and configuration-path evidence references");
+    expect(insertCalls).toHaveLength(0);
   });
 });

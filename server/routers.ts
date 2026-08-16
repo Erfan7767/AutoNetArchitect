@@ -209,6 +209,7 @@ export const appRouter = router({
       add: protectedProcedure
         .input(z.object({
           projectId: z.number().int().positive(),
+          deviceId: z.number().int().positive(),
           vendor: z.string().trim().min(2).max(120),
           deviceName: z.string().trim().min(2).max(160),
           artifactSummary: z.string().trim().max(2000),
@@ -278,6 +279,9 @@ export const appRouter = router({
         devices: devices.map(({ device }) => ({
           factState: device.factState,
           capabilityVerified: device.capabilityVerified,
+          capabilityEvidenceRecorded: Boolean(device.capabilityEvidenceReference),
+          licenseEvidenceRecorded: Boolean(device.licenseEvidenceReference),
+          configurationPathEvidenceRecorded: Boolean(device.configurationPathEvidenceReference),
         })),
         approvalReadiness: readiness.flatMap(item => item ? [{ status: item.decision.status, blockers: item.decision.blockers }] : []),
       });
@@ -330,6 +334,9 @@ export const appRouter = router({
           factsHash: z.string().trim().max(160),
           factState: z.enum(["observed", "ambiguous", "unreachable", "unsupported"]),
           capabilityVerified: z.boolean(),
+          capabilityEvidenceReference: z.string().trim().max(1000).optional(),
+          licenseEvidenceReference: z.string().trim().max(1000).optional(),
+          configurationPathEvidenceReference: z.string().trim().max(1000).optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           const device = await recordDeviceObservation(input.projectId, input.deviceId, input, actorFromUser(ctx.user));

@@ -1,0 +1,1 @@
+ALTER TABLE `project_config_artifacts` ADD `device_id` int DEFAULT 0 NOT NULL;

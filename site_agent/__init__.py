@@ -17,6 +17,7 @@ from .discovery_coordination import (
     ParallelDiscoveryCoordinator,
 )
 from .evidence_handoff import DesignEvidenceHandoff, EvidenceBoundHandoffCoordinator
+from .exact_capability import ExactCapabilityAssessor, ExactCapabilityEvidence
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
 from .scope import AuthorizedScope
 from .validation_policy import ScenarioPolicyDecision, ScenarioValidationPolicy, ValidationScenario
@@ -53,6 +54,8 @@ __all__ = [
     "ParallelDiscoveryCoordinator",
     "DesignEvidenceHandoff",
     "EvidenceBoundHandoffCoordinator",
+    "ExactCapabilityEvidence",
+    "ExactCapabilityAssessor",
     "ReadOnlyRequest",
     "DiscoveryPlan",
     "CiscoDiscoveryAdapter",

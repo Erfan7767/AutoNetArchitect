@@ -16,6 +16,12 @@ AutoNetArchitect can coordinate specialized local and control-plane work, but it
 | Safety review | Approval-readiness result and blockers | Validation, backup, maintenance, and capability evidence | Cannot waive controls or self-approve |
 | Release coordination | Human review pack and approval reference | Readiness result and named authority | Cannot execute a change or override No-Go |
 
+## Exact Capability Evidence
+
+An observed vendor label or a candidate release note is not capability verification. Before the control plane treats a managed device as capability-verified, it requires three redacted reference identifiers: the exact platform/version/feature assessment, license or entitlement evidence, and documented configuration-path evidence. The references contain no device credentials or secret values.
+
+The assessment remains blocked or review-required if a model is absent, the observed release is only a candidate, a requested feature is unobserved, entitlement is unverified, or the configuration path has no evidence. The current policy data contains candidate release references for the four bounded vendor families, not blanket production authorization.
+
 ## Valid Handoff Order
 
 The shared workflow is `scope_confirmed → discovery → evidence_review → design_preparation → capability_assessment → virtual_validation → safety_review → human_go_no_go`. Agents may perform independent **read-only or review work** concurrently only where their inputs are complete and bound to the same approved scope. A later stage may not silently replace an unresolved result from an earlier stage.

@@ -26,7 +26,13 @@ describe("multi-agent workflow policy", () => {
     const status = assessMultiAgentWorkflow({
       registeredSiteCount: 1,
       discoveryRuns: [{ state: "completed", ambiguousCount: 0, unsupportedCount: 0 }],
-      devices: [{ factState: "observed", capabilityVerified: true }],
+      devices: [{
+        factState: "observed",
+        capabilityVerified: true,
+        capabilityEvidenceRecorded: true,
+        licenseEvidenceRecorded: true,
+        configurationPathEvidenceRecorded: true,
+      }],
       approvalReadiness: [],
     });
 
@@ -41,7 +47,13 @@ describe("multi-agent workflow policy", () => {
     const status = assessMultiAgentWorkflow({
       registeredSiteCount: 1,
       discoveryRuns: [{ state: "completed", ambiguousCount: 0, unsupportedCount: 1 }],
-      devices: [{ factState: "observed", capabilityVerified: true }],
+      devices: [{
+        factState: "observed",
+        capabilityVerified: true,
+        capabilityEvidenceRecorded: true,
+        licenseEvidenceRecorded: true,
+        configurationPathEvidenceRecorded: true,
+      }],
       approvalReadiness: [{
         status: "blocked",
         blockers: [
@@ -56,5 +68,23 @@ describe("multi-agent workflow policy", () => {
     expect(status.stages[5].state).toBe("blocked");
     expect(status.humanGoNoGo.state).toBe("human_decision_required");
     expect(status.productionExecution.state).toBe("blocked");
+  });
+
+  it("blocks a legacy capability flag that has no recorded provenance references", () => {
+    const status = assessMultiAgentWorkflow({
+      registeredSiteCount: 1,
+      discoveryRuns: [{ state: "completed", ambiguousCount: 0, unsupportedCount: 0 }],
+      devices: [{
+        factState: "observed",
+        capabilityVerified: true,
+        capabilityEvidenceRecorded: false,
+        licenseEvidenceRecorded: false,
+        configurationPathEvidenceRecorded: false,
+      }],
+      approvalReadiness: [],
+    });
+
+    expect(status.stages[3].state).toBe("blocked");
+    expect(status.stages[3].detail).toContain("without recorded capability");
   });
 });

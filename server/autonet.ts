@@ -52,6 +52,7 @@ export type BomItemDraft = {
 };
 
 export type ConfigArtifactDraft = {
+  deviceId: number;
   vendor: string;
   deviceName: string;
   artifactSummary: string;
@@ -80,6 +81,9 @@ export type DeviceObservationDraft = {
   factsHash: string;
   factState: "observed" | "ambiguous" | "unreachable" | "unsupported";
   capabilityVerified: boolean;
+  capabilityEvidenceReference?: string;
+  licenseEvidenceReference?: string;
+  configurationPathEvidenceReference?: string;
 };
 
 export type ChangePlanDraft = {
@@ -399,9 +403,25 @@ export async function listConfigArtifacts(projectId: number, ownerId: number) {
 export async function addConfigArtifact(projectId: number, draft: ConfigArtifactDraft, actor: AuditActor) {
   const project = await getProjectForUser(projectId, actor.id);
   if (!project) return undefined;
+  const deviceRecord = await getManagedDeviceForUser(draft.deviceId, actor.id);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  const device = deviceRecord.device;
+  if (device.factState !== "observed" || !device.factsHash) {
+    throw new Error("Config artifact preparation requires current observed device facts.");
+  }
+  if (!device.capabilityVerified || !device.capabilityEvidenceReference || !device.licenseEvidenceReference || !device.configurationPathEvidenceReference) {
+    throw new Error("Config artifact preparation requires exact capability, license, and configuration-path evidence references.");
+  }
+  if (draft.featureGuard === "pass") {
+    throw new Error("Config artifact preparation cannot mark a feature guard as pass until an accepted exact capability decision is persisted for the device.");
+  }
+  if (!device.observedVendor || !draft.vendor.trim().toLowerCase().includes(device.observedVendor.trim().toLowerCase())) {
+    throw new Error("Config artifact vendor must match the observed device vendor evidence.");
+  }
   const db = await requireDatabase();
   await db.insert(projectConfigArtifacts).values({
     projectId,
+    deviceId: draft.deviceId,
     vendor: draft.vendor.trim(),
     deviceName: draft.deviceName.trim(),
     artifactSummary: redactAuditDetails(draft.artifactSummary),
@@ -409,7 +429,7 @@ export async function addConfigArtifact(projectId: number, draft: ConfigArtifact
     featureGuard: draft.featureGuard,
     unsupportedFeatureLog: redactAuditDetails(draft.unsupportedFeatureLog),
   });
-  await appendAuditEvent(projectId, actor, "config.artifact_added", `Config artifact recorded for ${draft.vendor.trim()}.`);
+  await appendAuditEvent(projectId, actor, "config.artifact_added", `Capability-gated config artifact recorded for ${draft.vendor.trim()}.`);
   if (requiresUnsupportedFeatureAudit(draft)) {
     await appendAuditEvent(
       projectId,
@@ -497,6 +517,15 @@ async function getManagedDeviceForUser(deviceId: number, ownerId: number) {
 export async function recordDeviceObservation(projectId: number, deviceId: number, draft: DeviceObservationDraft, actor: AuditActor) {
   const record = await getManagedDeviceForUser(deviceId, actor.id);
   if (!record || record.project.id !== projectId) return undefined;
+  const capabilityEvidenceReference = draft.capabilityEvidenceReference?.trim() || "";
+  const licenseEvidenceReference = draft.licenseEvidenceReference?.trim() || "";
+  const configurationPathEvidenceReference = draft.configurationPathEvidenceReference?.trim() || "";
+  if (draft.capabilityVerified && draft.factState !== "observed") {
+    throw new Error("Capability verification requires an observed device fact state.");
+  }
+  if (draft.capabilityVerified && (!capabilityEvidenceReference || !licenseEvidenceReference || !configurationPathEvidenceReference)) {
+    throw new Error("Capability verification requires capability, license, and configuration-path evidence references.");
+  }
   const db = await requireDatabase();
   await db
     .update(managedDevices)
@@ -507,6 +536,9 @@ export async function recordDeviceObservation(projectId: number, deviceId: numbe
       factsHash: draft.factsHash.trim(),
       factState: draft.factState,
       capabilityVerified: draft.capabilityVerified,
+      capabilityEvidenceReference,
+      licenseEvidenceReference,
+      configurationPathEvidenceReference,
       lastObservedAt: new Date(),
       updatedAt: new Date(),
     })
@@ -542,6 +574,9 @@ export async function createChangePlan(projectId: number, draft: ChangePlanDraft
   }
   if (!deviceRecord.device.capabilityVerified) {
     throw new Error("A change plan requires explicit device capability verification for the observed platform and version.");
+  }
+  if (!deviceRecord.device.capabilityEvidenceReference || !deviceRecord.device.licenseEvidenceReference || !deviceRecord.device.configurationPathEvidenceReference) {
+    throw new Error("A change plan requires capability, license, and configuration-path evidence references for the observed device.");
   }
   const db = await requireDatabase();
   await db.insert(changePlans).values({

@@ -11,6 +11,9 @@ export type DiscoverySignal = {
 export type DeviceSignal = {
   factState: "unobserved" | "observed" | "ambiguous" | "unreachable" | "unsupported";
   capabilityVerified: boolean;
+  capabilityEvidenceRecorded: boolean;
+  licenseEvidenceRecorded: boolean;
+  configurationPathEvidenceRecorded: boolean;
 };
 
 export type ApprovalReadinessSignal = {
@@ -89,7 +92,10 @@ function capabilityStatus(input: MultiAgentWorkflowInput, evidence: AgentStageSt
   if (input.devices.some(device => !device.capabilityVerified)) {
     return { state: "blocked", detail: "At least one observed device has no exact capability verification; configuration must remain blocked." };
   }
-  return { state: "ready", detail: "Observed devices are capability-verified; a separately reviewed artifact and virtual test remain required." };
+  if (input.devices.some(device => !device.capabilityEvidenceRecorded || !device.licenseEvidenceRecorded || !device.configurationPathEvidenceRecorded)) {
+    return { state: "blocked", detail: "At least one device has a capability flag without recorded capability, license, and configuration-path evidence references." };
+  }
+  return { state: "ready", detail: "Observed devices have exact capability, license, and configuration-path evidence references; a reviewed artifact and virtual test remain required." };
 }
 
 function safetyReviewStatus(input: MultiAgentWorkflowInput, capability: AgentStageStatus): AgentStageStatus {

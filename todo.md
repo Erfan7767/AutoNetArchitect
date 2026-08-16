@@ -113,3 +113,5 @@
 - [x] Create an evidence-bound handoff model from discovery through design and virtual validation, including artifact hashes and unresolved-state blocking.
 - [x] Expose multi-agent workflow status and the mandatory human Go/No-Go boundary in the control plane without enabling autonomous production execution.
 - [x] Add tests proving unapproved, unresolved, unsupported, stale, and failed-validation paths cannot become production-ready through agent coordination.
+- [x] Persist exact capability, license, and configuration-path evidence references and require them before a managed device is marked capability-verified.
+- [ ] Enforce exact capability assessment in config-artifact preparation and prove four-vendor candidate, unsupported, and missing-evidence paths are blocked before artifact storage.

@@ -124,7 +124,19 @@ describe("projects.changePlans.create real integration path", () => {
       backupVerified: false,
       maintenanceWindowValid: false,
     };
-    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true, lastObservedAt: now }, project: projectRecord };
+    const deviceRecord = {
+      device: {
+        id: 10,
+        factState: "observed",
+        factsHash: "facts-hash",
+        capabilityVerified: true,
+        capabilityEvidenceReference: "capability-evidence-1",
+        licenseEvidenceReference: "license-evidence-1",
+        configurationPathEvidenceReference: "configuration-path-evidence-1",
+        lastObservedAt: now,
+      },
+      project: projectRecord,
+    };
     const virtualTestRecord = { ...virtualTest, changePlanId: 55, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", adapterKind: "test", fidelityLabel: "logical_intent_only", detail: "recorded" };
     selectResults.push([{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord]);
     const caller = appRouter.createCaller(context);
@@ -137,7 +149,18 @@ describe("projects.changePlans.create real integration path", () => {
   it("persists and returns sector snapshot fields for a complete current state", async () => {
     const reviewedAt = new Date();
     const projectRecord = project("enterprise", enterpriseInputs, reviewedAt);
-    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true }, project: projectRecord };
+    const deviceRecord = {
+      device: {
+        id: 10,
+        factState: "observed",
+        factsHash: "facts-hash",
+        capabilityVerified: true,
+        capabilityEvidenceReference: "capability-evidence-1",
+        licenseEvidenceReference: "license-evidence-1",
+        configurationPathEvidenceReference: "configuration-path-evidence-1",
+      },
+      project: projectRecord,
+    };
     const persistedPlan = {
       ...input,
       id: 77,
