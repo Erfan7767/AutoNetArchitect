@@ -37,7 +37,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { COOKIE_NAME } from "../shared/const";
 import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
-import { assessRestrictedClaim } from "./automationPolicy";
+import { assessRecommendation, assessRestrictedClaim } from "./automationPolicy";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -61,6 +61,18 @@ export const appRouter = router({
         reviewedAt: z.coerce.date().nullable(),
       }))
       .mutation(({ input }) => assessRestrictedClaim(input)),
+  }),
+  recommendations: router({
+    assess: protectedProcedure
+      .input(z.object({
+        sourceFacts: z.array(z.string().trim().min(1).max(500)).max(100),
+        rationale: z.string().trim().max(2000),
+        alternatives: z.array(z.string().trim().min(1).max(500)).max(20),
+        affectedDevices: z.array(z.string().trim().min(1).max(200)).max(100),
+        unresolvedItems: z.array(z.string().trim().min(1).max(500)).max(100),
+        requiredAuthority: z.enum(["reviewer", "approver", "executor", "emergency_authorizer"]).nullable(),
+      }))
+      .mutation(({ input }) => assessRecommendation(input)),
   }),
   vendorSupport: router({
     list: protectedProcedure.query(() => VENDOR_SUPPORT_STATUS),

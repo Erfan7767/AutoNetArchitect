@@ -104,3 +104,4 @@
 - [x] Add integration tests proving failed, stale, out-of-scope, and capability-unverified plans remain blocked before approval.
 - [x] Add a restricted-claim assessment API surface that consumes scoped evidence and never publishes a positive claim without it.
 - [x] Add integration tests proving restricted claim requests are blocked when authoritative or measured evidence is absent.
+- [x] Surface change-plan approval-readiness blockers in the Operations console through the protected backend procedure.

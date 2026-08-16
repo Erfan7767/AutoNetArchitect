@@ -53,3 +53,35 @@ describe("claims.assessPublication integration path", () => {
     expect(result).toEqual({ status: "publishable", missing: [] });
   });
 });
+
+describe("recommendations.assess integration path", () => {
+  it("abstains when evidence or human authority is missing", async () => {
+    const caller = appRouter.createCaller(createContext());
+    const result = await caller.recommendations.assess({
+      sourceFacts: [],
+      rationale: "",
+      alternatives: [],
+      affectedDevices: [],
+      unresolvedItems: ["Exact platform/version evidence is not supplied."],
+      requiredAuthority: null,
+    });
+
+    expect(result.status).toBe("abstain");
+    expect(result.reasons).toContain("No observed source facts are attached.");
+    expect(result.reasons).toContain("No required human authority is assigned.");
+  });
+
+  it("permits human review only when the evidence record is complete", async () => {
+    const caller = appRouter.createCaller(createContext());
+    const result = await caller.recommendations.assess({
+      sourceFacts: ["Observed facts hash: abc123"],
+      rationale: "The option matches the recorded design intent.",
+      alternatives: ["Retain the current approved design."],
+      affectedDevices: ["device-reference-01"],
+      unresolvedItems: [],
+      requiredAuthority: "reviewer",
+    });
+
+    expect(result).toEqual({ status: "ready_for_human_review", reasons: [] });
+  });
+});
