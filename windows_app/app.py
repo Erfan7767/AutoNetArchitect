@@ -12,6 +12,7 @@ from site_agent.scope import AuthorizedScope
 from site_agent.vendor_support import VendorFamily
 
 from .controller import WindowsDiscoveryController
+from .inventory_review import summarize_inventory
 from .probe import ReadOnlyReachabilityProbe
 from .vendor_support_view import contracts_for_display, protocol_allowed
 from .workspace import WindowsWorkspace
@@ -38,6 +39,7 @@ class AutoNetWindowsApp:
         self._acknowledged = tk.BooleanVar(value=False)
         self._status = tk.StringVar(value="Approve a read-only scope before discovery.")
         self._inventory: ttk.Treeview | None = None
+        self._discovery_results = []
         self._build_view()
 
     def _build_view(self) -> None:
@@ -83,6 +85,7 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Save approved scope", command=self._approve_scope).grid(row=vendor_row + 3, column=0, sticky="w", pady=(12, 4))
         ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=vendor_row + 3, column=1, sticky="e", pady=(12, 4))
         ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=vendor_row + 4, column=0, sticky="w", pady=(8, 4))
+        ttk.Button(frame, text="Review discovery evidence", command=self._review_discovery_evidence).grid(row=vendor_row + 4, column=1, sticky="e", pady=(8, 4))
         ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
@@ -137,6 +140,7 @@ class AutoNetWindowsApp:
                 credential_reference=self._credential_reference.get().strip(),
             )
             result = self._controller.discover_target(target)
+            self._discovery_results.append(result)
             self._status.set(f"{result.state.value}: {result.message}")
         except (PermissionError, ValueError) as error:
             messagebox.showerror("Discovery blocked", str(error))
@@ -162,6 +166,32 @@ class AutoNetWindowsApp:
             )
         except (PermissionError, RuntimeError, ValueError) as error:
             messagebox.showerror("Inventory review blocked", str(error))
+
+    def _review_discovery_evidence(self) -> None:
+        """Display recorded discovery outcomes without inventing facts for unresolved targets."""
+
+        summary = summarize_inventory(self._discovery_results)
+        review_window = tk.Toplevel(self._root)
+        review_window.title("AutoNetArchitect — Discovery Evidence Review")
+        review_window.minsize(780, 320)
+        frame = ttk.Frame(review_window, padding=16)
+        frame.grid(sticky="nsew")
+        review_window.columnconfigure(0, weight=1)
+        review_window.rowconfigure(0, weight=1)
+        ttk.Label(
+            frame,
+            text=f"Recorded targets: {len(summary.rows)} · Unresolved: {summary.unresolved_count} · Abstained: {summary.abstained_count}",
+        ).grid(row=0, column=0, sticky="w", pady=(0, 10))
+        table = ttk.Treeview(frame, columns=("address", "state", "disposition", "facts", "evidence"), show="headings", height=10)
+        for column, label, width in (("address", "Address", 130), ("state", "State", 110), ("disposition", "Disposition", 130), ("facts", "Observed facts", 210), ("evidence", "Evidence", 250)):
+            table.heading(column, text=label)
+            table.column(column, width=width, stretch=True)
+        for row in summary.rows:
+            facts = " · ".join(part for part in (row.vendor, row.platform, row.software_version) if part) or "No facts inferred"
+            table.insert("", tk.END, values=(row.address, row.state.value, row.disposition.value, facts, row.evidence_message))
+        table.grid(row=1, column=0, sticky="nsew")
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
 
 
 def run() -> None:

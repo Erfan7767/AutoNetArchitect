@@ -53,7 +53,7 @@
 - [ ] Build a Windows desktop shell that reuses AutoNetArchitect policy, sector, project, and audit models without exposing device credentials.
 - [x] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
 - [ ] Implement Windows read-only collectors for supported protocols and vendor adapters only after observed identity and authorization checks.
-- [ ] Add a local inventory review workflow that shows discovered evidence, ambiguity, unsupported devices, and no-guess abstentions.
+- [x] Add a local inventory review workflow that shows discovered evidence, ambiguity, unsupported devices, and no-guess abstentions.
 - [ ] Build multi-site business requirement intake for branch count, services, availability objectives, jurisdictional constraints, and human-supplied mandatory fields.
 - [ ] Build a local virtual-test workflow that binds generated artifacts to device facts and target scope before the approval-bound execution workflow.
 - [ ] Package and test the Windows app only against approved virtual or physical laboratory targets before customer production use.
