@@ -114,6 +114,7 @@ export const managedDevices = mysqlTable("managed_devices", {
     .notNull()
     .default("unobserved"),
   factsHash: varchar("facts_hash", { length: 160 }).notNull().default(""),
+  capabilityVerified: boolean("capability_verified").notNull().default(false),
   lastObservedAt: timestamp("last_observed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),

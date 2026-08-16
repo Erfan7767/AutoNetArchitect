@@ -86,7 +86,7 @@ describe("change-plan sector review gate", () => {
   it("stores a complete sector snapshot and deterministic input hash", async () => {
     const reviewedAt = new Date();
     const project = projectWithSector(reviewedAt);
-    const device = { device: { id: 10, factState: "observed", factsHash: "facts-hash" }, project };
+    const device = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true }, project };
     selectResults.push([project], [device], [project], []);
 
     await createChangePlan(1, {

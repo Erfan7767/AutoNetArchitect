@@ -10,7 +10,8 @@ const queryBuilder = () => {
   builder.innerJoin = () => builder;
   builder.where = () => builder;
   builder.limit = async () => selectResults.shift() || [];
-  builder.orderBy = async () => selectResults.shift() || [];
+  builder.orderBy = () => builder;
+  builder.then = (resolve: (value: unknown[]) => unknown, reject: (reason: unknown) => unknown) => Promise.resolve(selectResults.shift() || []).then(resolve, reject);
   return builder;
 };
 
@@ -93,10 +94,50 @@ describe("projects.changePlans.create real integration path", () => {
     expect(insertCalls).toHaveLength(0);
   });
 
+  it("blocks observed facts when capability verification is unresolved", async () => {
+    const reviewedAt = new Date();
+    const projectRecord = project("enterprise", enterpriseInputs, reviewedAt);
+    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: false }, project: projectRecord };
+    selectResults.push([projectRecord], [deviceRecord]);
+    const caller = appRouter.createCaller(context);
+
+    await expect(caller.projects.changePlans.create(input)).rejects.toThrow("capability verification");
+    expect(insertCalls).toHaveLength(0);
+  });
+
+  it.each([
+    ["failed virtual validation", { state: "test_failed", observedAt: new Date(), scopeHash: "scope-hash" }, "Virtual validation state is test_failed."],
+    ["stale virtual validation", { state: "test_passed", observedAt: new Date(Date.now() - 25 * 60 * 60 * 1000), scopeHash: "scope-hash" }, "Virtual-test evidence is stale."],
+    ["out-of-scope virtual validation", { state: "test_passed", observedAt: new Date(), scopeHash: "other-scope" }, "Virtual-test scope does not match the requested change."],
+  ])("blocks approval readiness for %s", async (_label, virtualTest, expectedBlocker) => {
+    const now = new Date();
+    const projectRecord = { ...project("enterprise", enterpriseInputs, now), requirementsComplete: 100 };
+    const planRecord = {
+      id: 55,
+      projectId: 1,
+      deviceId: 10,
+      artifactHash: "artifact-hash",
+      targetFactsHash: "facts-hash",
+      scopeHash: "scope-hash",
+      virtualValidationState: virtualTest.state,
+      releaseState: "draft",
+      backupVerified: false,
+      maintenanceWindowValid: false,
+    };
+    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true, lastObservedAt: now }, project: projectRecord };
+    const virtualTestRecord = { ...virtualTest, changePlanId: 55, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", adapterKind: "test", fidelityLabel: "logical_intent_only", detail: "recorded" };
+    selectResults.push([{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord]);
+    const caller = appRouter.createCaller(context);
+
+    const result = await caller.projects.changePlans.approvalReadiness({ changePlanId: 55 });
+    expect(result.decision.status).toBe("blocked");
+    expect(result.decision.blockers).toContain(expectedBlocker);
+  });
+
   it("persists and returns sector snapshot fields for a complete current state", async () => {
     const reviewedAt = new Date();
     const projectRecord = project("enterprise", enterpriseInputs, reviewedAt);
-    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash" }, project: projectRecord };
+    const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true }, project: projectRecord };
     const persistedPlan = {
       ...input,
       id: 77,

@@ -31,13 +31,13 @@
 - [ ] Publish the expanded architecture only after verifying supported vendor boundaries, agent security controls, and production deployment prerequisites.
 - [x] Define virtual-validation evidence states: not-tested, test-queued, test-passed, test-failed, test-inconclusive, and not-supported-for-virtual-test.
 - [x] Require a passed, current, and scope-matched virtual test before a change plan can request human release.
-- [ ] Keep human approval, backup verification, maintenance-window validation, and device-specific capability checks mandatory even after virtual-test success.
+- [x] Keep human approval, backup verification, maintenance-window validation, and device-specific capability checks mandatory even after virtual-test success.
 - [x] Build a virtual test adapter contract for lab, digital-twin, and vendor-supported candidate/commit validation paths, with explicit fidelity and evidence labels.
 - [ ] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
 - [x] Create an explicit claim policy that prohibits engineer-equivalence, production-safe, compatibility, and compliance claims without scoped authoritative evidence.
-- [ ] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
+- [x] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
 - [ ] Implement structured claim classes for engineer-equivalence, production-safe, compatibility, and compliance output, with scoped evidence requirements enforced in API and UI/report surfaces.
-- [ ] Add integration tests proving release blocks for failed, stale, and out-of-scope virtual tests and claim publication blocks when authoritative evidence is absent.
+- [x] Add integration tests proving release blocks for failed, stale, and out-of-scope virtual tests and claim publication blocks when authoritative evidence is absent.
 - [x] Define sector profiles for enterprise, financial-service branch, retail/ATM-style branch, and industrial environments without fabricating regulatory or operational requirements.
 - [x] Require human-supplied sector constraints, site facts, hardware inventory, vendor/version evidence, critical-service boundaries, and maintenance policy before generating a deployable plan.
 - [x] Integrate sector-profile selection and supplied sector inputs into persistent project and change-plan data models and API routes.
@@ -46,12 +46,12 @@
 - [x] Define a timestamped review/currentness rule for sector-required inputs and block change-plan creation when the recorded review is stale.
 - [x] Add API-level integration tests for unselected, incomplete, stale, and complete sector-profile inputs across real change-plan creation paths.
 - [x] Add integration tests proving change-plan creation rejects incomplete sector profiles and accepts complete scoped inputs.
-- [ ] Add sector-profile selection and evidence-completeness status to the control plane and project review console.
-- [ ] Create scenario-specific virtual-validation policies that distinguish logical validation, vendor-image lab validation, physical-lab validation, and unsupported paths.
+- [x] Add sector-profile selection and evidence-completeness status to the control plane and project review console.
+- [x] Create scenario-specific virtual-validation policies that distinguish logical validation, vendor-image lab validation, physical-lab validation, and unsupported paths.
 - [ ] Add benchmark and acceptance criteria per supported sector/device/version scenario; block claims outside measured coverage.
-- [ ] Define Windows installer scope, local workspace storage, user consent prompts, and unsigned-package limitations for the first desktop release.
+- [x] Define Windows installer scope, local workspace storage, user consent prompts, and unsigned-package limitations for the first desktop release.
 - [ ] Build a Windows desktop shell that reuses AutoNetArchitect policy, sector, project, and audit models without exposing device credentials.
-- [ ] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
+- [x] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
 - [ ] Implement Windows read-only collectors for supported protocols and vendor adapters only after observed identity and authorization checks.
 - [ ] Add a local inventory review workflow that shows discovered evidence, ambiguity, unsupported devices, and no-guess abstentions.
 - [ ] Build multi-site business requirement intake for branch count, services, availability objectives, jurisdictional constraints, and human-supplied mandatory fields.
@@ -94,3 +94,13 @@
 - [x] Export and document the supported virtual-validation path classes so their boundaries are verifiable from code and UI/API surfaces.
 - [x] Add sector-profile completeness snapshot, review timestamp, and currentness status to change plans.
 - [x] Add pure and persistence tests proving stale sector inputs block change-plan creation.
+- [x] Add scenario-specific validation policy decisions for logical, vendor-image lab, physical lab, candidate/commit, and unsupported paths.
+- [x] Add tests proving scenario policy labels fidelity, evidence requirements, and non-authorizing behavior.
+- [x] Define Windows V1 release scope as an installable local shell with explicit unsigned-package and laboratory-only limitations.
+- [x] Add tests for Windows release-scope policy and local workspace consent boundaries.
+- [x] Add a local inventory review model that preserves discovered, ambiguous, unsupported, unauthorized, and unreachable outcomes without guessing.
+- [x] Add tests for inventory review summaries and no-guess abstention behavior.
+- [x] Add change-plan approval-readiness procedure that evaluates virtual-test freshness/scope, backup, maintenance, human approval, and device capability gates.
+- [x] Add integration tests proving failed, stale, out-of-scope, and capability-unverified plans remain blocked before approval.
+- [x] Add a restricted-claim assessment API surface that consumes scoped evidence and never publishes a positive claim without it.
+- [x] Add integration tests proving restricted claim requests are blocked when authoritative or measured evidence is absent.

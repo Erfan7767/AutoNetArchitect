@@ -11,13 +11,15 @@ from .discovery_adapters import (
 )
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
 from .scope import AuthorizedScope
+from .validation_policy import ScenarioPolicyDecision, ScenarioValidationPolicy, ValidationScenario
+from .vendor_support import CapabilityAssessment, SupportDecision, VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 from .virtual_adapters import (
+    CandidateCommitValidationAdapter,
     CiscoVirtualValidationAdapter,
+    DigitalTwinValidationAdapter,
     FortinetVirtualValidationAdapter,
     HpeArubaVirtualValidationAdapter,
     HuaweiVirtualValidationAdapter,
-    CandidateCommitValidationAdapter,
-    DigitalTwinValidationAdapter,
     LabValidationAdapter,
     VirtualFidelity,
     VirtualValidationPath,
@@ -25,7 +27,6 @@ from .virtual_adapters import (
     VirtualValidationPlan,
 )
 from .virtual_validation import VirtualValidationCoordinator
-from .vendor_support import CapabilityAssessment, SupportDecision, VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
 
 __all__ = [
     "AgentHealth",
@@ -57,4 +58,7 @@ __all__ = [
     "VendorCapabilityContract",
     "VendorCapabilityRegistry",
     "VendorFamily",
+    "ScenarioPolicyDecision",
+    "ValidationScenario",
+    "ScenarioValidationPolicy",
 ]

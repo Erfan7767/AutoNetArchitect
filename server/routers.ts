@@ -11,6 +11,10 @@ import {
   addConfigArtifact,
   getDesignDetails,
   getProjectForUser,
+  getSectorReviewStatus,
+  getChangePlanApprovalReadiness,
+  requestChangePlanApproval,
+  approveChangePlan,
   listChangePlans,
   listDiscoveryRuns,
   listBomItems,
@@ -33,6 +37,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { COOKIE_NAME } from "../shared/const";
 import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
+import { assessRestrictedClaim } from "./automationPolicy";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -46,6 +51,17 @@ function projectNotFound(): never {
 
 export const appRouter = router({
   system: systemRouter,
+  claims: router({
+    assessPublication: protectedProcedure
+      .input(z.object({
+        claimClass: z.enum(["engineer_equivalence", "production_safe", "compatibility", "compliance"]),
+        scopeDescription: z.string().trim().max(1000),
+        authorityReference: z.string().trim().max(1000),
+        measuredEvidenceReference: z.string().trim().max(1000),
+        reviewedAt: z.coerce.date().nullable(),
+      }))
+      .mutation(({ input }) => assessRestrictedClaim(input)),
+  }),
   vendorSupport: router({
     list: protectedProcedure.query(() => VENDOR_SUPPORT_STATUS),
   }),
@@ -94,6 +110,11 @@ export const appRouter = router({
         const project = await updateProjectQuestionnaire(input.projectId, input, actorFromUser(ctx.user));
         return project || projectNotFound();
       }),
+    sectorReview: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+      const status = await getSectorReviewStatus(input.projectId, ctx.user.id);
+      if (status === undefined) projectNotFound();
+      return status;
+    }),
     updateSector: protectedProcedure
       .input(z.object({
         projectId: z.number().int().positive(),
@@ -250,6 +271,7 @@ export const appRouter = router({
           observedVersion: z.string().trim().max(160),
           factsHash: z.string().trim().max(160),
           factState: z.enum(["observed", "ambiguous", "unreachable", "unsupported"]),
+          capabilityVerified: z.boolean(),
         }))
         .mutation(async ({ ctx, input }) => {
           const device = await recordDeviceObservation(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
@@ -276,6 +298,21 @@ export const appRouter = router({
           if (plans === undefined) projectNotFound();
           return plans;
         }),
+      approvalReadiness: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+        const readiness = await getChangePlanApprovalReadiness(input.changePlanId, ctx.user.id);
+        if (readiness === undefined) projectNotFound();
+        return readiness;
+      }),
+      requestApproval: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+        const readiness = await requestChangePlanApproval(input.changePlanId, actorFromUser(ctx.user));
+        if (readiness === undefined) projectNotFound();
+        return readiness;
+      }),
+      approve: adminProcedure.input(z.object({ changePlanId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+        const result = await approveChangePlan(input.changePlanId, actorFromUser(ctx.user));
+        if (result === undefined) projectNotFound();
+        return result;
+      }),
       recordVirtualTest: protectedProcedure
         .input(z.object({
           projectId: z.number().int().positive(),

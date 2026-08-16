@@ -15,6 +15,7 @@ import {
   discoveryRuns,
 } from "../drizzle/schema";
 import { getDb } from "./db";
+import { evaluateApprovalReadiness } from "./automationPolicy";
 import {
   assessSectorProfileInputs,
   buildSectorReviewSnapshot,
@@ -78,6 +79,7 @@ export type DeviceObservationDraft = {
   observedVersion: string;
   factsHash: string;
   factState: "observed" | "ambiguous" | "unreachable" | "unsupported";
+  capabilityVerified: boolean;
 };
 
 export type ChangePlanDraft = {
@@ -294,6 +296,29 @@ export async function updateProjectSector(projectId: number, draft: ProjectSecto
   return getProjectForUser(projectId, actor.id);
 }
 
+export async function getSectorReviewStatus(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const profileId = project.sectorProfile as "unselected" | SectorProfileId;
+  if (profileId === "unselected") {
+    return {
+      profileId,
+      completenessPercent: 0,
+      missingInputs: ["A sector profile must be selected before review."],
+      reviewCurrent: false,
+      reviewedAt: project.sectorInputsUpdatedAt,
+    };
+  }
+  const snapshot = buildSectorReviewSnapshot(profileId, parseSectorInputs(project.sectorInputs));
+  return {
+    profileId,
+    completenessPercent: snapshot.completenessPercent,
+    missingInputs: snapshot.missingInputs,
+    reviewCurrent: isSectorReviewCurrent(project.sectorInputsUpdatedAt),
+    reviewedAt: project.sectorInputsUpdatedAt,
+  };
+}
+
 export async function requestDeploymentApproval(projectId: number, actor: AuditActor) {
   const project = await getProjectForUser(projectId, actor.id);
   if (!project) {
@@ -481,6 +506,7 @@ export async function recordDeviceObservation(projectId: number, deviceId: numbe
       observedVersion: draft.observedVersion.trim(),
       factsHash: draft.factsHash.trim(),
       factState: draft.factState,
+      capabilityVerified: draft.capabilityVerified,
       lastObservedAt: new Date(),
       updatedAt: new Date(),
     })
@@ -513,6 +539,9 @@ export async function createChangePlan(projectId: number, draft: ChangePlanDraft
   if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
   if (deviceRecord.device.factState !== "observed" || !deviceRecord.device.factsHash) {
     throw new Error("A change plan requires observed device facts and a facts hash.");
+  }
+  if (!deviceRecord.device.capabilityVerified) {
+    throw new Error("A change plan requires explicit device capability verification for the observed platform and version.");
   }
   const db = await requireDatabase();
   await db.insert(changePlans).values({
@@ -568,6 +597,87 @@ export async function recordVirtualTest(projectId: number, changePlanId: number,
     .where(eq(changePlans.id, changePlanId));
   await appendAuditEvent(projectId, actor, "virtual_test.recorded", `Virtual test recorded with state ${draft.state}.`);
   return getChangePlanForUser(changePlanId, actor.id);
+}
+
+const VIRTUAL_TEST_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+function isRecentEvidence(value: Date | null | undefined, now = new Date()): boolean {
+  if (!value || !Number.isFinite(value.getTime())) return false;
+  const age = now.getTime() - value.getTime();
+  return age >= 0 && age <= VIRTUAL_TEST_MAX_AGE_MS;
+}
+
+export async function getChangePlanApprovalReadiness(changePlanId: number, ownerId: number) {
+  const planRecord = await getChangePlanForUser(changePlanId, ownerId);
+  if (!planRecord) return undefined;
+  const deviceRecord = await getManagedDeviceForUser(planRecord.plan.deviceId, ownerId);
+  if (!deviceRecord) return undefined;
+  const db = await requireDatabase();
+  const latestTests = await db
+    .select()
+    .from(virtualTestRuns)
+    .where(eq(virtualTestRuns.changePlanId, changePlanId))
+    .orderBy(desc(virtualTestRuns.observedAt))
+    .limit(1);
+  const latestTest = latestTests[0];
+  const targetFactsCurrent = deviceRecord.device.factState === "observed"
+    && deviceRecord.device.factsHash === planRecord.plan.targetFactsHash
+    && isRecentEvidence(deviceRecord.device.lastObservedAt);
+  const virtualTestScopeMatches = Boolean(latestTest)
+    && latestTest.artifactHash === planRecord.plan.artifactHash
+    && latestTest.targetFactsHash === planRecord.plan.targetFactsHash
+    && latestTest.scopeHash === planRecord.plan.scopeHash;
+  const virtualTestCurrent = isRecentEvidence(latestTest?.observedAt);
+  const decision = evaluateApprovalReadiness({
+    requirementsComplete: planRecord.project.requirementsComplete === 100,
+    targetFactsCurrent,
+    deviceCapabilityVerified: deviceRecord.device.capabilityVerified,
+    virtualValidation: planRecord.plan.virtualValidationState,
+    virtualTestScopeMatches,
+    virtualTestCurrent,
+    backupVerified: planRecord.plan.backupVerified,
+    maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
+  });
+  return {
+    changePlanId,
+    releaseState: planRecord.plan.releaseState,
+    decision,
+    evidence: {
+      targetFactsCurrent,
+      deviceCapabilityVerified: deviceRecord.device.capabilityVerified,
+      virtualTestScopeMatches,
+      virtualTestCurrent,
+      backupVerified: planRecord.plan.backupVerified,
+      maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
+      latestVirtualTestState: latestTest?.state || planRecord.plan.virtualValidationState,
+    },
+  };
+}
+
+export async function requestChangePlanApproval(changePlanId: number, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  const readiness = await getChangePlanApprovalReadiness(changePlanId, actor.id);
+  if (!readiness || readiness.decision.status !== "ready_for_human_approval") {
+    const blockers = readiness?.decision.blockers.join(" ") || "Change plan was not found.";
+    throw new Error(`Change plan approval is blocked: ${blockers}`);
+  }
+  const db = await requireDatabase();
+  await db.update(changePlans).set({ releaseState: "ready_for_approval", updatedAt: new Date() }).where(eq(changePlans.id, changePlanId));
+  await appendAuditEvent(planRecord.project.id, actor, "change_plan.approval_requested", "Change-plan approval was requested after all readiness gates passed.");
+  return getChangePlanApprovalReadiness(changePlanId, actor.id);
+}
+
+export async function approveChangePlan(changePlanId: number, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  if (planRecord.plan.releaseState !== "ready_for_approval") {
+    throw new Error("A change plan must be ready for human approval before it can be approved.");
+  }
+  const db = await requireDatabase();
+  await db.update(changePlans).set({ releaseState: "approved", humanApprover: actorLabel(actor), approvedAt: new Date(), updatedAt: new Date() }).where(eq(changePlans.id, changePlanId));
+  await appendAuditEvent(planRecord.project.id, actor, "change_plan.approved", "Human approval was recorded for the change plan.");
+  return { changePlanId, approved: true, approver: actorLabel(actor) } as const;
 }
 
 export async function approveDeployment(projectId: number, actor: AuditActor) {

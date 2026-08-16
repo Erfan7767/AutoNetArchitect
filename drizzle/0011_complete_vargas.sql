@@ -1,0 +1,1 @@
+ALTER TABLE `managed_devices` ADD `capability_verified` boolean DEFAULT false NOT NULL;
