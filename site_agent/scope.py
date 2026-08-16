@@ -16,7 +16,7 @@ class AuthorizedScope(BaseModel):
 
     site_id: str = Field(min_length=1, max_length=160)
     approved_networks: tuple[str, ...] = Field(min_length=1)
-    approved_targets: tuple[str, ...] = Field(min_length=1)
+    approved_targets: tuple[str, ...] = ()
     allowed_protocols: tuple[ManagementProtocol, ...] = Field(min_length=1)
     approval_reference: str = Field(min_length=1, max_length=200)
     operator_acknowledged: bool = False
