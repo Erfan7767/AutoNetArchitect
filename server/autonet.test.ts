@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateQuestionnaireCompleteness, getDeploymentGate, redactAuditDetails, requiresUnsupportedFeatureAudit } from "./autonet";
+import { calculateQuestionnaireCompleteness, getDeploymentGate, getSectorPlanBlocker, redactAuditDetails, requiresUnsupportedFeatureAudit } from "./autonet";
 
 describe("AutoNetArchitect governance helpers", () => {
   it("calculates questionnaire completeness from supplied project requirements", () => {
@@ -44,5 +44,17 @@ describe("AutoNetArchitect governance helpers", () => {
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "blocked", unsupportedFeatureLog: "" })).toBe(true);
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "pass", unsupportedFeatureLog: "Needs vendor capability evidence" })).toBe(true);
     expect(requiresUnsupportedFeatureAudit({ featureGuard: "pass", unsupportedFeatureLog: "" })).toBe(false);
+  });
+
+  it("blocks change-plan creation until the selected sector profile has every required human input", () => {
+    expect(getSectorPlanBlocker("unselected", [])).toContain("sector profile must be selected");
+    expect(getSectorPlanBlocker("industrial", ["Process, safety, and availability impact boundaries"])).toContain("Sector profile is incomplete");
+    expect(getSectorPlanBlocker("enterprise", [
+      "Business-service priorities and outage impact",
+      "Site and management-network boundaries",
+      "Identity, segmentation, and internet-edge policy",
+      "Supported hardware, software, license, and support evidence",
+      "Change authority and maintenance policy",
+    ])).toBeNull();
   });
 });

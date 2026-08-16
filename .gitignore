@@ -49,6 +49,9 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+.coverage
+coverage.xml
+htmlcov/
 
 # nyc test coverage
 .nyc_output
@@ -105,6 +108,25 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Python local tooling and runtime artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# AutoNetArchitect local state and secret-bearing stores
+data/vault.enc
+projects/
+backups/
+cache/
+exports/
+reports/
+*.vault
+*.vault.enc
+*.keystore
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/

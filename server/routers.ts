@@ -2,18 +2,27 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   approveDeployment,
+  createChangePlan,
+  createManagedSite,
   createProjectForUser,
   deleteProjectForUser,
   addBomItem,
   addConfigArtifact,
   getDesignDetails,
   getProjectForUser,
+  listChangePlans,
   listBomItems,
   listConfigArtifacts,
   listAuditEventsForUser,
+  listManagedDevices,
+  listManagedSites,
   listProjectsForUser,
+  recordDeviceObservation,
+  recordVirtualTest,
+  registerManagedDevice,
   requestDeploymentApproval,
   saveDesignDetails,
+  updateProjectSector,
   updateProjectQuestionnaire,
 } from "./autonet";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -78,6 +87,16 @@ export const appRouter = router({
         const project = await updateProjectQuestionnaire(input.projectId, input, actorFromUser(ctx.user));
         return project || projectNotFound();
       }),
+    updateSector: protectedProcedure
+      .input(z.object({
+        projectId: z.number().int().positive(),
+        sectorProfile: z.enum(["enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"]),
+        suppliedInputs: z.array(z.string().trim().min(1).max(500)).max(20),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const project = await updateProjectSector(input.projectId, input, actorFromUser(ctx.user));
+        return project || projectNotFound();
+      }),
     design: router({
       get: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
         const details = await getDesignDetails(input.projectId, ctx.user.id);
@@ -138,6 +157,97 @@ export const appRouter = router({
           const artifacts = await addConfigArtifact(input.projectId, input, actorFromUser(ctx.user));
           if (artifacts === undefined) projectNotFound();
           return artifacts;
+      }),
+    }),
+    sites: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const sites = await listManagedSites(input.projectId, ctx.user.id);
+        if (sites === undefined) projectNotFound();
+        return sites;
+      }),
+      create: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          name: z.string().trim().min(2).max(160),
+          approvedScopeReference: z.string().trim().min(2).max(200),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const sites = await createManagedSite(input.projectId, input, actorFromUser(ctx.user));
+          if (sites === undefined) projectNotFound();
+          return sites;
+        }),
+    }),
+    devices: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const devices = await listManagedDevices(input.projectId, ctx.user.id);
+        if (devices === undefined) projectNotFound();
+        return devices;
+      }),
+      register: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          deviceReference: z.string().trim().min(2).max(200),
+          managementAddress: z.string().trim().min(2).max(255),
+          protocol: z.enum(["ssh", "netconf", "https_api", "snmp"]),
+          credentialReference: z.string().trim().min(2).max(160),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const devices = await registerManagedDevice(input.projectId, input, actorFromUser(ctx.user));
+          if (devices === undefined) projectNotFound();
+          return devices;
+        }),
+      recordObservation: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          deviceId: z.number().int().positive(),
+          observedVendor: z.string().trim().max(120),
+          observedPlatform: z.string().trim().max(160),
+          observedVersion: z.string().trim().max(160),
+          factsHash: z.string().trim().max(160),
+          factState: z.enum(["observed", "ambiguous", "unreachable", "unsupported"]),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const device = await recordDeviceObservation(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
+          if (device === undefined) projectNotFound();
+          return device;
+        }),
+    }),
+    changePlans: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const plans = await listChangePlans(input.projectId, ctx.user.id);
+        if (plans === undefined) projectNotFound();
+        return plans;
+      }),
+      create: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          deviceId: z.number().int().positive(),
+          name: z.string().trim().min(2).max(200),
+          artifactHash: z.string().trim().min(8).max(160),
+          scopeHash: z.string().trim().min(8).max(160),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const plans = await createChangePlan(input.projectId, input, actorFromUser(ctx.user));
+          if (plans === undefined) projectNotFound();
+          return plans;
+        }),
+      recordVirtualTest: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          changePlanId: z.number().int().positive(),
+          state: z.enum(["not_tested", "test_queued", "test_passed", "test_failed", "test_inconclusive", "not_supported_for_virtual_test"]),
+          adapterKind: z.string().trim().min(2).max(120),
+          fidelityLabel: z.string().trim().min(2).max(120),
+          artifactHash: z.string().trim().min(8).max(160),
+          targetFactsHash: z.string().trim().min(8).max(160),
+          scopeHash: z.string().trim().min(8).max(160),
+          detail: z.string().trim().max(1000),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const plan = await recordVirtualTest(input.projectId, input.changePlanId, input, actorFromUser(ctx.user));
+          if (plan === undefined) projectNotFound();
+          return plan;
         }),
     }),
     requestApproval: protectedProcedure.input(projectIdInput).mutation(async ({ ctx, input }) => {

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -24,6 +24,10 @@ export const networkProjects = mysqlTable("network_projects", {
     .default("undetermined"),
   vendorPreferences: varchar("vendor_preferences", { length: 1000 }).notNull().default(""),
   complianceNeeds: varchar("compliance_needs", { length: 1000 }).notNull().default(""),
+  sectorProfile: mysqlEnum("sector_profile", ["unselected", "enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"])
+    .notNull()
+    .default("unselected"),
+  sectorInputs: varchar("sector_inputs", { length: 8000 }).notNull().default("[]"),
   status: mysqlEnum("status", ["intake", "design", "ready_for_review", "approved"])
     .notNull()
     .default("intake"),
@@ -81,6 +85,75 @@ export const projectConfigArtifacts = mysqlTable("project_config_artifacts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const managedSites = mysqlTable("managed_sites", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  name: varchar("name", { length: 160 }).notNull(),
+  agentReference: varchar("agent_reference", { length: 160 }).notNull().default(""),
+  approvedScopeReference: varchar("approved_scope_reference", { length: 200 }).notNull(),
+  mode: mysqlEnum("mode", ["read_only", "prepared_change"]).notNull().default("read_only"),
+  enrollmentState: mysqlEnum("enrollment_state", ["not_enrolled", "pending", "active", "revoked"])
+    .notNull()
+    .default("not_enrolled"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const managedDevices = mysqlTable("managed_devices", {
+  id: int("id").autoincrement().primaryKey(),
+  siteId: int("site_id").notNull(),
+  deviceReference: varchar("device_reference", { length: 200 }).notNull(),
+  managementAddress: varchar("management_address", { length: 255 }).notNull(),
+  protocol: mysqlEnum("protocol", ["ssh", "netconf", "https_api", "snmp"]).notNull(),
+  credentialReference: varchar("credential_reference", { length: 160 }).notNull(),
+  observedVendor: varchar("observed_vendor", { length: 120 }).notNull().default(""),
+  observedPlatform: varchar("observed_platform", { length: 160 }).notNull().default(""),
+  observedVersion: varchar("observed_version", { length: 160 }).notNull().default(""),
+  factState: mysqlEnum("fact_state", ["unobserved", "observed", "ambiguous", "unreachable", "unsupported"])
+    .notNull()
+    .default("unobserved"),
+  factsHash: varchar("facts_hash", { length: 160 }).notNull().default(""),
+  lastObservedAt: timestamp("last_observed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const changePlans = mysqlTable("change_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  deviceId: int("device_id").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  artifactHash: varchar("artifact_hash", { length: 160 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  virtualValidationState: mysqlEnum("virtual_validation_state", ["not_tested", "test_queued", "test_passed", "test_failed", "test_inconclusive", "not_supported_for_virtual_test"])
+    .notNull()
+    .default("not_tested"),
+  releaseState: mysqlEnum("release_state", ["draft", "blocked", "ready_for_approval", "approved", "executed", "rolled_back"])
+    .notNull()
+    .default("draft"),
+  backupVerified: boolean("backup_verified").notNull().default(false),
+  maintenanceWindowValid: boolean("maintenance_window_valid").notNull().default(false),
+  humanApprover: varchar("human_approver", { length: 160 }),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const virtualTestRuns = mysqlTable("virtual_test_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  changePlanId: int("change_plan_id").notNull(),
+  state: mysqlEnum("state", ["not_tested", "test_queued", "test_passed", "test_failed", "test_inconclusive", "not_supported_for_virtual_test"])
+    .notNull(),
+  adapterKind: varchar("adapter_kind", { length: 120 }).notNull(),
+  fidelityLabel: varchar("fidelity_label", { length: 120 }).notNull(),
+  artifactHash: varchar("artifact_hash", { length: 160 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  detail: varchar("detail", { length: 1000 }).notNull().default(""),
+  observedAt: timestamp("observed_at").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type NetworkProject = typeof networkProjects.$inferSelect;
@@ -92,3 +165,11 @@ export type ProjectBomItem = typeof projectBomItems.$inferSelect;
 export type InsertProjectBomItem = typeof projectBomItems.$inferInsert;
 export type ProjectConfigArtifact = typeof projectConfigArtifacts.$inferSelect;
 export type InsertProjectConfigArtifact = typeof projectConfigArtifacts.$inferInsert;
+export type ManagedSite = typeof managedSites.$inferSelect;
+export type InsertManagedSite = typeof managedSites.$inferInsert;
+export type ManagedDevice = typeof managedDevices.$inferSelect;
+export type InsertManagedDevice = typeof managedDevices.$inferInsert;
+export type ChangePlan = typeof changePlans.$inferSelect;
+export type InsertChangePlan = typeof changePlans.$inferInsert;
+export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
+export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;

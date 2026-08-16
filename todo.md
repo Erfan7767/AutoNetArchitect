@@ -19,3 +19,50 @@
 - [x] Verify desktop and mobile rendering.
 - [x] Save a WebDev release checkpoint for the verified publish-ready state: `945b0cbd`.
 - [x] Document the publish-ready handoff tied to checkpoint `945b0cbd` for user-initiated Publish in `PUBLISH_HANDOFF.md`.
+- [ ] Define the supported production topology: hosted control plane plus an on-premises agent with outbound-only authenticated control traffic.
+- [ ] Define explicit device access, credential-reference, discovery-consent, network-scope, and human-approval policies.
+- [ ] Add site, managed-device, discovery-run, and change-plan data models with redacted evidence and state transitions.
+- [ ] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
+- [ ] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
+- [ ] Integrate supported vendor discovery through read-only SSH, NETCONF, HTTPS API, and SNMP collection only after explicit authorization and credential-reference assignment.
+- [ ] Connect evidence-backed device facts to capability checks and versioned config artifacts without inventing device attributes or commands.
+- [ ] Implement dry-run change plans, mandatory backup capture, human sign-off, post-change verification, and scoped rollback for eligible device actions.
+- [ ] Add lab-only integration tests and operational runbooks; do not test against production devices until a human provides written authorization and approved scope.
+- [ ] Publish the expanded architecture only after verifying supported vendor boundaries, agent security controls, and production deployment prerequisites.
+- [x] Define virtual-validation evidence states: not-tested, test-queued, test-passed, test-failed, test-inconclusive, and not-supported-for-virtual-test.
+- [x] Require a passed, current, and scope-matched virtual test before a change plan can request human release.
+- [ ] Keep human approval, backup verification, maintenance-window validation, and device-specific capability checks mandatory even after virtual-test success.
+- [ ] Build a virtual test adapter contract for lab, digital-twin, and vendor-supported candidate/commit validation paths, with explicit fidelity and evidence labels.
+- [ ] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
+- [x] Create an explicit claim policy that prohibits engineer-equivalence, production-safe, compatibility, and compliance claims without scoped authoritative evidence.
+- [ ] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
+- [ ] Implement structured claim classes for engineer-equivalence, production-safe, compatibility, and compliance output, with scoped evidence requirements enforced in API and UI/report surfaces.
+- [ ] Add integration tests proving release blocks for failed, stale, and out-of-scope virtual tests and claim publication blocks when authoritative evidence is absent.
+- [x] Define sector profiles for enterprise, financial-service branch, retail/ATM-style branch, and industrial environments without fabricating regulatory or operational requirements.
+- [x] Require human-supplied sector constraints, site facts, hardware inventory, vendor/version evidence, critical-service boundaries, and maintenance policy before generating a deployable plan.
+- [x] Integrate sector-profile selection and supplied sector inputs into persistent project and change-plan data models and API routes.
+- [x] Block change-plan creation unless every required human input for the selected sector profile is recorded and current.
+- [ ] Persist a sector-profile completeness snapshot on each change plan so its review context remains traceable after parent-project edits.
+- [ ] Define a timestamped review/currentness rule for sector-required inputs and block change-plan creation when the recorded review is stale.
+- [ ] Add API-level integration tests for unselected, incomplete, stale, and complete sector-profile inputs across real change-plan creation paths.
+- [ ] Add integration tests proving change-plan creation rejects incomplete sector profiles and accepts complete scoped inputs.
+- [ ] Add sector-profile selection and evidence-completeness status to the control plane and project review console.
+- [ ] Create scenario-specific virtual-validation policies that distinguish logical validation, vendor-image lab validation, physical-lab validation, and unsupported paths.
+- [ ] Add benchmark and acceptance criteria per supported sector/device/version scenario; block claims outside measured coverage.
+- [ ] Define Windows installer scope, local workspace storage, user consent prompts, and unsigned-package limitations for the first desktop release.
+- [ ] Build a Windows desktop shell that reuses AutoNetArchitect policy, sector, project, and audit models without exposing device credentials.
+- [ ] Add explicit local discovery scope registration with CIDR/target allowlist, protocol allowlist, and read-only start mode.
+- [ ] Implement Windows read-only collectors for supported protocols and vendor adapters only after observed identity and authorization checks.
+- [ ] Add a local inventory review workflow that shows discovered evidence, ambiguity, unsupported devices, and no-guess abstentions.
+- [ ] Build multi-site business requirement intake for branch count, services, availability objectives, jurisdictional constraints, and human-supplied mandatory fields.
+- [ ] Build a local virtual-test workflow that binds generated artifacts to device facts and target scope before the approval-bound execution workflow.
+- [ ] Package and test the Windows app only against approved virtual or physical laboratory targets before customer production use.
+- [ ] Inspect Git repository state, remotes, ignored files, and potential credential exposure before publishing.
+- [ ] Prepare a complete source commit that excludes secrets, runtime state, caches, local databases, logs, and generated test artifacts.
+- [ ] Create or validate a private GitHub repository and push the current complete project revision.
+- [ ] Verify the remote commit and record the repository URL and commit identifier in the publication handoff.
+- [ ] Complete a public-release review that excludes any secret material, customer identifiers, runtime databases, local logs, and environment-specific artifacts before GitHub push.
+- [ ] Require every automated recommendation to expose source facts, uncertainty, rationale, alternatives, affected devices, and required human authority.
+- [ ] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
+- [ ] Define measurable benchmark scenarios and release gates for supported vendor/model/version paths instead of asserting universal network coverage.
+- [ ] Present human accountability separately for review, approval, execution authority, and emergency exception handling.

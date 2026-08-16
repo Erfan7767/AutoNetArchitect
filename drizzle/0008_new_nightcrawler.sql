@@ -1,0 +1,2 @@
+ALTER TABLE `network_projects` ADD `sector_profile` enum('unselected','enterprise','financial_service_branch','retail_transaction_branch','industrial') DEFAULT 'unselected' NOT NULL;--> statement-breakpoint
+ALTER TABLE `network_projects` ADD `sector_inputs` varchar(8000) DEFAULT '[]' NOT NULL;

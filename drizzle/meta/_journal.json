@@ -43,6 +43,27 @@
       "when": 1786759972914,
       "tag": "0005_true_vance_astro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1786761803039,
+      "tag": "0006_natural_wolfsbane",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1786761920700,
+      "tag": "0007_medical_jane_foster",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1786762727616,
+      "tag": "0008_new_nightcrawler",
+      "breakpoints": true
     }
   ]
 }

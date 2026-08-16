@@ -1,0 +1,1 @@
+ALTER TABLE `change_plans` ADD `device_id` int NOT NULL;
