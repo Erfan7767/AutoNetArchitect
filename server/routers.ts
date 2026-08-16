@@ -19,6 +19,7 @@ import {
   listDiscoveryRuns,
   listBomItems,
   listConfigArtifacts,
+  listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
   listManagedSites,
@@ -27,6 +28,7 @@ import {
   prepareDeployment,
   recordDeviceObservation,
   recordAgentTeamAudit,
+  recordProjectRestrictedClaim,
   recordVirtualTest,
   recordPostChangeVerification,
   registerManagedDevice,
@@ -43,6 +45,8 @@ import { COOKIE_NAME } from "../shared/const";
 import { VENDOR_SUPPORT_STATUS } from "../shared/vendorSupport";
 import { assessRecommendation, assessRestrictedClaim } from "./automationPolicy";
 import { assessBenchmarkCoverage } from "./benchmarkPolicy";
+import { buildRestrictedClaimReport } from "./claimReportPolicy";
+import { assessEndToEndLifecycle } from "./lifecycleContract";
 import { assessMultiAgentWorkflow } from "./multiAgentPolicy";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
@@ -290,6 +294,86 @@ export const appRouter = router({
         })),
         approvalReadiness: readiness.flatMap(item => item ? [{ status: item.decision.status, blockers: item.decision.blockers }] : []),
       });
+    }),
+    lifecycleContract: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+      const project = await getProjectForUser(input.projectId, ctx.user.id);
+      if (!project) projectNotFound();
+      const [sites, runs, design, bomItems, devices, artifacts, plans, sectorReview] = await Promise.all([
+        listManagedSites(input.projectId, ctx.user.id),
+        listDiscoveryRuns(input.projectId, ctx.user.id),
+        getDesignDetails(input.projectId, ctx.user.id),
+        listBomItems(input.projectId, ctx.user.id),
+        listManagedDevices(input.projectId, ctx.user.id),
+        listConfigArtifacts(input.projectId, ctx.user.id),
+        listChangePlans(input.projectId, ctx.user.id),
+        getSectorReviewStatus(input.projectId, ctx.user.id),
+      ]);
+      if (!sites || !runs || !bomItems || !devices || !artifacts || !plans || !sectorReview) projectNotFound();
+      const readiness = await Promise.all(plans.map(plan => getChangePlanApprovalReadiness(plan.id, ctx.user.id)));
+      const verificationRecords = await Promise.all(plans.map(plan => listPostChangeVerifications(plan.id, ctx.user.id)));
+      return assessEndToEndLifecycle({
+        requirementsComplete: project.requirementsComplete === 100,
+        sectorReviewCurrent: sectorReview.reviewCurrent && sectorReview.completenessPercent === 100,
+        registeredSiteCount: sites.length,
+        discoveryStates: runs.map(({ run }) => run.state),
+        designRecorded: Boolean(design),
+        bomItemCount: bomItems.length,
+        observedDeviceCount: devices.filter(({ device }) => device.factState === "observed").length,
+        capabilityVerifiedDeviceCount: devices.filter(({ device }) => device.factState === "observed" && device.capabilityVerified && device.capabilityEvidenceReference && device.licenseEvidenceReference && device.configurationPathEvidenceReference).length,
+        configArtifactCount: artifacts.length,
+        virtualValidationStates: plans.map(plan => plan.virtualValidationState),
+        approvalReadiness: readiness.flatMap(value => value ? [{ status: value.decision.status, blockers: value.decision.blockers }] : []),
+        postChangeVerification: verificationRecords.flatMap(value => value || []).map(value => ({ state: value.state, rollbackReviewRequired: value.rollbackReviewRequired })),
+      });
+    }),
+    restrictedClaims: router({
+      report: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const claims = await listProjectRestrictedClaims(input.projectId, ctx.user.id);
+        if (!claims) projectNotFound();
+        return buildRestrictedClaimReport(claims.map(claim => ({
+          claimClass: claim.claimClass,
+          scopeDescription: claim.scopeDescription,
+          authorityReference: claim.authorityReference,
+          measuredEvidenceReference: claim.measuredEvidenceReference,
+          reviewedAt: claim.reviewedAt,
+          assessmentStatus: claim.assessmentStatus,
+        })));
+      }),
+      record: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          claimClass: z.enum(["engineer_equivalence", "production_safe", "compatibility", "compliance"]),
+          scopeDescription: z.string().trim().max(1000),
+          authorityReference: z.string().trim().max(1000),
+          measuredEvidenceReference: z.string().trim().max(1000),
+          reviewedAt: z.coerce.date().nullable(),
+          benchmarkScenario: z.object({
+            scenarioId: z.string().trim().max(200),
+            vendorFamily: z.enum(["cisco", "huawei", "fortinet", "hpe_aruba"]),
+            platform: z.string().trim().max(160),
+            softwareVersion: z.string().trim().max(160),
+            licenseEvidenceReference: z.string().trim().max(1000),
+            configurationPathReference: z.string().trim().max(1000),
+            sectorProfile: z.enum(["enterprise", "financial_service_branch", "retail_transaction_branch", "industrial"]),
+            measuredRuns: z.number().int().nonnegative(),
+            acceptedRuns: z.number().int().nonnegative(),
+            rejectedRuns: z.number().int().nonnegative(),
+            evidenceReference: z.string().trim().max(1000),
+            reviewedAt: z.coerce.date().nullable(),
+          }),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const baseAssessment = assessRestrictedClaim(input);
+          const coverage = assessBenchmarkCoverage(input.benchmarkScenario);
+          const assessment = baseAssessment.status === "blocked"
+            ? baseAssessment
+            : coverage.status === "measured_coverage"
+              ? baseAssessment
+              : { status: "blocked" as const, missing: coverage.blockers };
+          const records = await recordProjectRestrictedClaim(input.projectId, { ...input, assessmentStatus: assessment.status }, actorFromUser(ctx.user));
+          if (!records) projectNotFound();
+          return { ...assessment, records };
+        }),
     }),
     recordMultiAgentAudit: protectedProcedure
       .input(z.object({

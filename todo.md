@@ -36,7 +36,7 @@
 - [x] Block automatic upload whenever a virtual test fails, is stale, lacks evidence, is out of scope, or the target device capability is unresolved.
 - [x] Create an explicit claim policy that prohibits engineer-equivalence, production-safe, compatibility, and compliance claims without scoped authoritative evidence.
 - [x] Implement actual change-plan and human-release routes that enforce virtual-test pass, freshness, and scope match before a release request.
-- [ ] Implement structured claim classes for engineer-equivalence, production-safe, compatibility, and compliance output, with scoped evidence requirements enforced in API and UI/report surfaces.
+- [x] Implement structured claim classes for engineer-equivalence, production-safe, compatibility, and compliance output, with scoped evidence requirements enforced in API and UI/report surfaces.
 - [x] Add integration tests proving release blocks for failed, stale, and out-of-scope virtual tests and claim publication blocks when authoritative evidence is absent.
 - [x] Define sector profiles for enterprise, financial-service branch, retail/ATM-style branch, and industrial environments without fabricating regulatory or operational requirements.
 - [x] Require human-supplied sector constraints, site facts, hardware inventory, vendor/version evidence, critical-service boundaries, and maintenance policy before generating a deployable plan.
@@ -123,6 +123,14 @@
 - [x] Persist redacted agent-team graph outcomes through the control-plane audit path and prove they cannot grant execution authority.
 - [x] Prove the complete agent dependency chain and behaviorally safe parallel discovery scheduling in end-to-end graph tests.
 - [x] Return and render structured recommendation evidence for human reviewers, with safe abstention when any required field is absent.
-- [ ] Define a traceable end-to-end lifecycle contract linking requirements, site scope, discovery, design, BOM, capability assessment, configuration artifacts, virtual validation, approval readiness, and post-change verification.
+- [x] Define a traceable end-to-end lifecycle contract linking requirements, site scope, discovery, design, BOM, capability assessment, configuration artifacts, virtual validation, approval readiness, and post-change verification.
 - [x] Add lifecycle integration tests proving an unresolved or failed gate halts downstream preparation and preserves the exact blocker for human review.
 - [x] Add an approval-gated post-change verification evidence model that records only observed outcomes and supports rollback review without autonomous production execution.
+- [x] Add restricted-claim class presentation and scoped evidence/blocker output to report surfaces so claim controls remain consistent beyond the dedicated review page.
+- [x] Add tests covering report-surface claim rendering and blocking for engineer-equivalence, production-safe, compatibility, and compliance classes.
+- [x] Add a protected per-project claim-report procedure with persisted scoped evidence records and return class-specific blockers or review-ready entries.
+- [x] Wire the Reports surface to the protected project-specific claim-report procedure and add integration coverage for its blocked and scoped-review outcomes.
+- [x] Persist Claims Review assessments through the project-scoped claim route and refresh the active project report after the same UI workflow.
+- [x] Add router integration tests for project restricted-claim record and report outcomes across blocked and scoped-review classes.
+- [x] Use the actual sector-review currentness evaluation in the lifecycle contract and test stale sector review as a requirements-stage block.
+- [x] Pass the active project directly to the Reports claim surface and verify a saved Claims Review assessment appears in that same project’s report output.

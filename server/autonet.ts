@@ -9,6 +9,7 @@ import {
   projectBomItems,
   projectConfigArtifacts,
   projectDesignDetails,
+  projectRestrictedClaims,
   postChangeVerificationRuns,
   virtualTestRuns,
   type InsertDiscoveryRun,
@@ -120,6 +121,15 @@ export type PostChangeVerificationDraft = {
   observedOutcome: string;
   evidenceReference: string;
   observedAt: Date;
+};
+
+export type RestrictedClaimRecordDraft = {
+  claimClass: "engineer_equivalence" | "production_safe" | "compatibility" | "compliance";
+  scopeDescription: string;
+  authorityReference: string;
+  measuredEvidenceReference: string;
+  reviewedAt: Date | null;
+  assessmentStatus: "publishable" | "blocked";
 };
 
 export type ProjectSectorDraft = {
@@ -417,6 +427,31 @@ export async function listConfigArtifacts(projectId: number, ownerId: number) {
   if (!project) return undefined;
   const db = await requireDatabase();
   return db.select().from(projectConfigArtifacts).where(eq(projectConfigArtifacts.projectId, projectId)).orderBy(desc(projectConfigArtifacts.createdAt));
+}
+
+export async function listProjectRestrictedClaims(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(projectRestrictedClaims).where(eq(projectRestrictedClaims.projectId, projectId)).orderBy(desc(projectRestrictedClaims.updatedAt));
+}
+
+/** Stores a scoped claim assessment record without publishing a claim or granting execution authority. */
+export async function recordProjectRestrictedClaim(projectId: number, draft: RestrictedClaimRecordDraft, actor: AuditActor) {
+  const project = await getProjectForUser(projectId, actor.id);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  await db.insert(projectRestrictedClaims).values({
+    projectId,
+    claimClass: draft.claimClass,
+    scopeDescription: redactAuditDetails(draft.scopeDescription),
+    authorityReference: redactAuditDetails(draft.authorityReference),
+    measuredEvidenceReference: redactAuditDetails(draft.measuredEvidenceReference),
+    reviewedAt: draft.reviewedAt,
+    assessmentStatus: draft.assessmentStatus,
+  });
+  await appendAuditEvent(projectId, actor, "restricted_claim.assessed", `Scoped ${draft.claimClass.replaceAll("_", " ")} claim assessment recorded with status ${draft.assessmentStatus}.`);
+  return listProjectRestrictedClaims(projectId, actor.id);
 }
 
 export async function recordAgentTeamAudit(projectId: number, draft: AgentTeamAuditDraft, actor: AuditActor) {

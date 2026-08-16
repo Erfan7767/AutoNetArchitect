@@ -204,6 +204,20 @@ export const postChangeVerificationRuns = mysqlTable("post_change_verification_r
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/** Scoped evidence assessments for restricted language; never a production-authorization record. */
+export const projectRestrictedClaims = mysqlTable("project_restricted_claims", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  claimClass: mysqlEnum("claim_class", ["engineer_equivalence", "production_safe", "compatibility", "compliance"]).notNull(),
+  scopeDescription: varchar("scope_description", { length: 1000 }).notNull(),
+  authorityReference: varchar("authority_reference", { length: 1000 }).notNull(),
+  measuredEvidenceReference: varchar("measured_evidence_reference", { length: 1000 }).notNull(),
+  reviewedAt: timestamp("reviewed_at"),
+  assessmentStatus: mysqlEnum("assessment_status", ["publishable", "blocked"]).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
 export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),
@@ -246,5 +260,7 @@ export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
 export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;
 export type PostChangeVerificationRun = typeof postChangeVerificationRuns.$inferSelect;
 export type InsertPostChangeVerificationRun = typeof postChangeVerificationRuns.$inferInsert;
+export type ProjectRestrictedClaim = typeof projectRestrictedClaims.$inferSelect;
+export type InsertProjectRestrictedClaim = typeof projectRestrictedClaims.$inferInsert;
 export type BenchmarkScenario = typeof benchmarkScenarios.$inferSelect;
 export type InsertBenchmarkScenario = typeof benchmarkScenarios.$inferInsert;
