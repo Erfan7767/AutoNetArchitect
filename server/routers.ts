@@ -4,7 +4,9 @@ import {
   approveDeployment,
   createChangePlan,
   createDiscoveryRun,
+  createAuthorizedDiscoveryScope,
   createManagedSite,
+  enrollSiteAgent,
   createProjectForUser,
   deleteProjectForUser,
   addBomItem,
@@ -17,6 +19,7 @@ import {
   approveChangePlan,
   listChangePlans,
   listDiscoveryRuns,
+  listAuthorizedDiscoveryScopes,
   listBomItems,
   listConfigArtifacts,
   listBenchmarkScenarios,
@@ -249,7 +252,7 @@ export const appRouter = router({
         .input(z.object({
           projectId: z.number().int().positive(),
           siteId: z.number().int().positive(),
-          scopeHash: z.string().trim().min(8).max(160),
+          discoveryScopeId: z.number().int().positive(),
           evidenceSummary: z.string().trim().max(4000).optional(),
           evidenceHash: z.string().trim().max(160).optional(),
           ambiguousCount: z.number().int().min(0).max(100000).optional(),
@@ -274,6 +277,30 @@ export const appRouter = router({
           const run = await transitionDiscoveryRun(input.runId, input.nextState, input, actorFromUser(ctx.user));
           if (run === undefined) projectNotFound();
           return run;
+        }),
+    }),
+    discoveryScopes: router({
+      list: protectedProcedure
+        .input(z.object({ projectId: z.number().int().positive(), siteId: z.number().int().positive() }))
+        .query(async ({ ctx, input }) => {
+          const scopes = await listAuthorizedDiscoveryScopes(input.projectId, input.siteId, ctx.user.id);
+          if (scopes === undefined) projectNotFound();
+          return scopes;
+        }),
+      create: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          scopeReference: z.string().trim().min(2).max(200),
+          targetAllowlist: z.string().trim().max(4000),
+          cidrAllowlist: z.string().trim().max(4000),
+          protocolAllowlist: z.string().trim().min(3).max(500),
+          scopeHash: z.string().trim().min(8).max(160),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const scopes = await createAuthorizedDiscoveryScope(input.projectId, input, actorFromUser(ctx.user));
+          if (scopes === undefined) projectNotFound();
+          return scopes;
         }),
     }),
     multiAgentStatus: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
@@ -455,6 +482,18 @@ export const appRouter = router({
         }))
         .mutation(async ({ ctx, input }) => {
           const sites = await createManagedSite(input.projectId, input, actorFromUser(ctx.user));
+          if (sites === undefined) projectNotFound();
+          return sites;
+        }),
+      enrollAgent: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          agentReference: z.string().trim().min(3).max(160),
+          approvedScopeReference: z.string().trim().min(2).max(200),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const sites = await enrollSiteAgent(input.projectId, input.siteId, input, actorFromUser(ctx.user));
           if (sites === undefined) projectNotFound();
           return sites;
         }),

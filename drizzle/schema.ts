@@ -101,6 +101,20 @@ export const managedSites = mysqlTable("managed_sites", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+export const authorizedDiscoveryScopes = mysqlTable("authorized_discovery_scopes", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  siteId: int("site_id").notNull(),
+  scopeReference: varchar("scope_reference", { length: 200 }).notNull(),
+  targetAllowlist: varchar("target_allowlist", { length: 4000 }).notNull(),
+  cidrAllowlist: varchar("cidr_allowlist", { length: 4000 }).notNull(),
+  protocolAllowlist: varchar("protocol_allowlist", { length: 500 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  status: mysqlEnum("status", ["active", "revoked"]).notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
 export const managedDevices = mysqlTable("managed_devices", {
   id: int("id").autoincrement().primaryKey(),
   siteId: int("site_id").notNull(),
@@ -144,6 +158,7 @@ export const deviceCapabilityAssessments = mysqlTable("device_capability_assessm
 export const discoveryRuns = mysqlTable("discovery_runs", {
   id: int("id").autoincrement().primaryKey(),
   siteId: int("site_id").notNull(),
+  discoveryScopeId: int("discovery_scope_id").notNull().default(0),
   mode: mysqlEnum("mode", ["read_only"]).notNull().default("read_only"),
   state: mysqlEnum("state", ["queued", "running", "completed", "partial", "failed", "blocked"])
     .notNull()

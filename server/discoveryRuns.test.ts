@@ -34,12 +34,13 @@ const fakeDb = {
 
 vi.mock("./db", () => ({ getDb: vi.fn(async () => fakeDb) }));
 
-const { createDiscoveryRun, listDiscoveryRuns, transitionDiscoveryRun } = await import("./autonet");
+const { createDiscoveryRun, enrollSiteAgent, listDiscoveryRuns, transitionDiscoveryRun } = await import("./autonet");
 
 const actor = { id: 11, name: "Reviewer", email: "reviewer@example.test" };
 const queuedRun = {
   id: 42,
   siteId: 7,
+  discoveryScopeId: 55,
   mode: "read_only",
   state: "queued",
   scopeHash: "scope-hash-123",
@@ -47,6 +48,18 @@ const queuedRun = {
   evidenceHash: "evidence-hash",
   ambiguousCount: 1,
   unsupportedCount: 0,
+};
+
+const activeScope = {
+  id: 55,
+  projectId: 1,
+  siteId: 7,
+  scopeReference: "scope-ref-hq/discovery-01",
+  targetAllowlist: "10.0.0.10",
+  cidrAllowlist: "10.0.0.0/24",
+  protocolAllowlist: "ssh,netconf",
+  scopeHash: "scope-hash-123",
+  status: "active",
 };
 
 beforeEach(() => {
@@ -58,11 +71,11 @@ beforeEach(() => {
 
 describe("discovery run persistence contracts", () => {
   it("creates a read-only run and persists redacted evidence", async () => {
-    selectResults.push([{ id: 7 }], [{ run: queuedRun, projectId: 1 }]);
+    selectResults.push([{ id: 7 }], [{ scope: activeScope }], [{ run: queuedRun, projectId: 1 }]);
 
     const result = await createDiscoveryRun(1, {
       siteId: 7,
-      scopeHash: "scope-hash-123",
+      discoveryScopeId: 55,
       evidenceSummary: "token: do-not-store",
       evidenceHash: "evidence-hash",
       ambiguousCount: 1,
@@ -70,13 +83,13 @@ describe("discovery run persistence contracts", () => {
 
     expect(result?.run.state).toBe("queued");
     expect(result?.run.mode).toBe("read_only");
-    expect(insertCalls[0]).toMatchObject({ evidenceSummary: "Sensitive details were redacted." });
+    expect(insertCalls[0]).toMatchObject({ discoveryScopeId: 55, scopeHash: "scope-hash-123", evidenceSummary: "Sensitive details were redacted." });
   });
 
   it("rejects creation when the site is not owned by the project actor", async () => {
     selectResults.push([]);
 
-    await expect(createDiscoveryRun(1, { siteId: 99, scopeHash: "scope-hash-123" }, actor)).resolves.toBeUndefined();
+    await expect(createDiscoveryRun(1, { siteId: 99, discoveryScopeId: 55 }, actor)).resolves.toBeUndefined();
     expect(insertCalls).toHaveLength(0);
   });
 
@@ -99,5 +112,23 @@ describe("discovery run persistence contracts", () => {
 
     selectResults.push([{ run: { ...queuedRun, state: "completed" }, projectId: 1 }]);
     await expect(transitionDiscoveryRun(42, "running", {}, actor)).rejects.toThrow("Invalid discovery-run transition");
+  });
+
+  it("enrolls an agent only for the exact approved site scope and retains read-only mode", async () => {
+    const site = { id: 7, projectId: 1, approvedScopeReference: "scope-ref-hq", mode: "read_only", enrollmentState: "not_enrolled" };
+    selectResults.push([{ site, project: { id: 1, ownerId: actor.id } }], [{ id: 1 }], [{ ...site, enrollmentState: "active", agentReference: "site-agent-hq" }]);
+
+    const result = await enrollSiteAgent(1, 7, { agentReference: "site-agent-hq", approvedScopeReference: "scope-ref-hq" }, actor);
+
+    expect(result?.[0]).toMatchObject({ enrollmentState: "active", agentReference: "site-agent-hq", mode: "read_only" });
+    expect(updateCalls[0]).toMatchObject({ agentReference: "site-agent-hq", enrollmentState: "active", mode: "read_only" });
+  });
+
+  it("rejects agent enrollment when the submitted scope reference differs", async () => {
+    const site = { id: 7, projectId: 1, approvedScopeReference: "scope-ref-hq", mode: "read_only", enrollmentState: "not_enrolled" };
+    selectResults.push([{ site, project: { id: 1, ownerId: actor.id } }]);
+
+    await expect(enrollSiteAgent(1, 7, { agentReference: "site-agent-hq", approvedScopeReference: "different-scope" }, actor)).rejects.toThrow("exact approved scope reference");
+    expect(updateCalls).toHaveLength(0);
   });
 });

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { and, count, desc, eq, or, sql } from "drizzle-orm";
 import {
   auditEvents,
+  authorizedDiscoveryScopes,
   benchmarkScenarios,
   changePlans,
   deviceCapabilityAssessments,
@@ -79,6 +80,22 @@ export type ManagedSiteDraft = {
   name: string;
   approvedScopeReference: string;
 };
+
+export type SiteAgentEnrollmentDraft = {
+  agentReference: string;
+  approvedScopeReference: string;
+};
+
+export type AuthorizedDiscoveryScopeDraft = {
+  siteId: number;
+  scopeReference: string;
+  targetAllowlist: string;
+  cidrAllowlist: string;
+  protocolAllowlist: string;
+  scopeHash: string;
+};
+
+const supportedReadOnlyDiscoveryProtocols = new Set(["ssh", "netconf", "https_api", "snmp"]);
 
 export type ManagedDeviceDraft = {
   siteId: number;
@@ -610,6 +627,55 @@ export async function createManagedSite(projectId: number, draft: ManagedSiteDra
   return listManagedSites(projectId, actor.id);
 }
 
+export async function enrollSiteAgent(projectId: number, siteId: number, draft: SiteAgentEnrollmentDraft, actor: AuditActor) {
+  const siteRecord = await getManagedSiteForUser(siteId, actor.id);
+  if (!siteRecord || siteRecord.site.projectId !== projectId) return undefined;
+  if (siteRecord.site.approvedScopeReference !== draft.approvedScopeReference.trim()) {
+    throw new Error("Agent enrollment must confirm the exact approved scope reference recorded for this site.");
+  }
+  const db = await requireDatabase();
+  await db.update(managedSites).set({
+    agentReference: redactAuditDetails(draft.agentReference),
+    enrollmentState: "active",
+    mode: "read_only",
+  }).where(eq(managedSites.id, siteId));
+  await appendAuditEvent(projectId, actor, "site.agent_enrolled", "A local agent reference was enrolled for read-only discovery within the confirmed site scope.");
+  return listManagedSites(projectId, actor.id);
+}
+
+export async function createAuthorizedDiscoveryScope(projectId: number, draft: AuthorizedDiscoveryScopeDraft, actor: AuditActor) {
+  const siteRecord = await getManagedSiteForUser(draft.siteId, actor.id);
+  if (!siteRecord || siteRecord.site.projectId !== projectId) return undefined;
+  if (siteRecord.site.enrollmentState !== "active") throw new Error("An active read-only site agent is required before an authorized discovery scope can be recorded.");
+  const targetAllowlist = draft.targetAllowlist.trim();
+  const cidrAllowlist = draft.cidrAllowlist.trim();
+  if (!targetAllowlist && !cidrAllowlist) throw new Error("An authorized discovery scope requires a target or CIDR allowlist.");
+  const protocols = draft.protocolAllowlist.split(",").map(protocol => protocol.trim()).filter(Boolean);
+  if (protocols.length === 0 || protocols.some(protocol => !supportedReadOnlyDiscoveryProtocols.has(protocol))) {
+    throw new Error("An authorized discovery scope may use only supported read-only protocols: ssh, netconf, https_api, snmp.");
+  }
+  const db = await requireDatabase();
+  await db.insert(authorizedDiscoveryScopes).values({
+    projectId,
+    siteId: draft.siteId,
+    scopeReference: draft.scopeReference.trim(),
+    targetAllowlist: redactAuditDetails(targetAllowlist),
+    cidrAllowlist: redactAuditDetails(cidrAllowlist),
+    protocolAllowlist: protocols.join(","),
+    scopeHash: draft.scopeHash.trim(),
+    status: "active",
+  });
+  await appendAuditEvent(projectId, actor, "discovery.scope_recorded", "An active read-only discovery scope with bounded targets, CIDRs, and protocols was recorded.");
+  return listAuthorizedDiscoveryScopes(projectId, draft.siteId, actor.id);
+}
+
+export async function listAuthorizedDiscoveryScopes(projectId: number, siteId: number, ownerId: number) {
+  const siteRecord = await getManagedSiteForUser(siteId, ownerId);
+  if (!siteRecord || siteRecord.site.projectId !== projectId) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(authorizedDiscoveryScopes).where(and(eq(authorizedDiscoveryScopes.projectId, projectId), eq(authorizedDiscoveryScopes.siteId, siteId))).orderBy(desc(authorizedDiscoveryScopes.updatedAt));
+}
+
 async function getManagedSiteForUser(siteId: number, ownerId: number) {
   const db = await requireDatabase();
   const result = await db
@@ -1054,7 +1120,7 @@ export async function deleteProjectForUser(projectId: number, actor: AuditActor)
 
 export type DiscoveryRunDraft = {
   siteId: number;
-  scopeHash: string;
+  discoveryScopeId: number;
   evidenceSummary?: string;
   evidenceHash?: string;
   ambiguousCount?: number;
@@ -1101,11 +1167,27 @@ export async function createDiscoveryRun(projectId: number, draft: DiscoveryRunD
     .where(and(eq(managedSites.id, draft.siteId), eq(managedSites.projectId, projectId), eq(networkProjects.ownerId, actor.id)))
     .limit(1);
   if (!site[0]) return undefined;
+  const scopes = await db
+    .select({ scope: authorizedDiscoveryScopes })
+    .from(authorizedDiscoveryScopes)
+    .innerJoin(managedSites, eq(authorizedDiscoveryScopes.siteId, managedSites.id))
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(
+      eq(authorizedDiscoveryScopes.id, draft.discoveryScopeId),
+      eq(authorizedDiscoveryScopes.projectId, projectId),
+      eq(authorizedDiscoveryScopes.siteId, draft.siteId),
+      eq(authorizedDiscoveryScopes.status, "active"),
+      eq(networkProjects.ownerId, actor.id),
+    ))
+    .limit(1);
+  const scope = scopes[0]?.scope;
+  if (!scope) throw new Error("Discovery runs require a saved active authorized scope for the selected site.");
   const values: InsertDiscoveryRun = {
     siteId: draft.siteId,
+    discoveryScopeId: draft.discoveryScopeId,
     mode: "read_only",
     state: "queued",
-    scopeHash: draft.scopeHash.trim(),
+    scopeHash: scope.scopeHash,
     evidenceSummary: redactDiscoveryEvidence(draft.evidenceSummary || ""),
     evidenceHash: draft.evidenceHash?.trim() || "",
     ambiguousCount: draft.ambiguousCount || 0,
