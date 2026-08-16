@@ -2,7 +2,7 @@
 # The runtime image exposes the local API boundary. Production network changes
 # remain subject to application governance, approval, backup, verification, and rollback gates.
 
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
@@ -26,7 +26,7 @@ RUN if [ -n "$INSTALL_EXTRAS" ]; then \
         python -m pip install --no-cache-dir --prefix=/install .; \
     fi
 
-FROM python:3.11-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
