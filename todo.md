@@ -22,7 +22,7 @@
 - [x] Define the supported production topology: hosted control plane plus an on-premises agent with outbound-only authenticated control traffic.
 - [x] Define explicit device access, credential-reference, discovery-consent, network-scope, and human-approval policies.
 - [x] Add site, managed-device, discovery-run, and change-plan data models with redacted evidence and state transitions.
-- [ ] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
+- [x] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
 - [ ] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
 - [ ] Integrate supported vendor discovery through read-only SSH, NETCONF, HTTPS API, and SNMP collection only after explicit authorization and credential-reference assignment.
 - [ ] Connect evidence-backed device facts to capability checks and versioned config artifacts without inventing device attributes or commands.
@@ -65,7 +65,7 @@
 - [ ] Require every automated recommendation to expose source facts, uncertainty, rationale, alternatives, affected devices, and required human authority.
 - [ ] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
 - [ ] Define measurable benchmark scenarios and release gates for supported vendor/model/version paths instead of asserting universal network coverage.
-- [ ] Present human accountability separately for review, approval, execution authority, and emergency exception handling.
+- [x] Present human accountability separately for review, approval, execution authority, and emergency exception handling.
 
 - [x] Document bounded official-source references for Cisco, Huawei, Fortinet, and HPE Aruba.
 - [x] Push the vendor-source documentation and Windows scope-guard revisions to the public GitHub `main` branch.
