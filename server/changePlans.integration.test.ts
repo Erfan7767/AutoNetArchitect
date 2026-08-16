@@ -238,8 +238,9 @@ describe("projects.changePlans.create real integration path", () => {
     const planRecord = { id: 58, projectId: 1, deviceId: 10, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash", virtualValidationState: "test_passed", releaseState: "approved", backupVerified: true, maintenanceWindowValid: true };
     const deviceRecord = { device: { id: 10, factState: "observed", factsHash: "facts-hash", capabilityVerified: true, lastObservedAt: now, observedVendor: "cisco", observedPlatform: "ios_xe", observedModel: "C9300-48P", observedVersion: "17.9.4" }, project: projectRecord };
     const virtualTestRecord = { state: "test_passed", observedAt: now, artifactHash: "artifact-hash", targetFactsHash: "facts-hash", scopeHash: "scope-hash" };
+    const backupReceipt = { verificationState: "verified", targetFactsHash: "facts-hash", scopeHash: "scope-hash", automaticCapturePermitted: false, verifiedAt: now };
     const scenario = { scenarioId: "lab-001", vendorFamily: "cisco", platform: "ios_xe", model: "C9300-48P", softwareVersion: "17.9.4", licenseEvidenceReference: "license", configurationPathReference: "path", sectorProfile: "enterprise", measuredRuns: 5, acceptedRuns: 4, rejectedRuns: 1, minimumAcceptanceRatePercent: 80, acceptanceCriteriaReference: "criteria", evidenceReference: "evidence", reviewedAt: now, updatedAt: now };
-    selectResults.push([{ plan: planRecord, project: projectRecord }], [{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord], [scenario]);
+    selectResults.push([{ plan: planRecord, project: projectRecord }], [{ plan: planRecord, project: projectRecord }], [deviceRecord], [virtualTestRecord], [backupReceipt], [scenario]);
     const caller = appRouter.createCaller(context);
 
     const result = await caller.projects.changePlans.prepareDeployment({ changePlanId: 58 });

@@ -232,6 +232,21 @@ export const virtualTestRuns = mysqlTable("virtual_test_runs", {
   observedAt: timestamp("observed_at").defaultNow().notNull(),
 });
 
+/** Receipt for a human-verified external backup; no backup bytes or device credentials are stored here. */
+export const changePlanBackupReceipts = mysqlTable("change_plan_backup_receipts", {
+  id: int("id").autoincrement().primaryKey(),
+  changePlanId: int("change_plan_id").notNull(),
+  backupReference: varchar("backup_reference", { length: 1000 }).notNull(),
+  backupArtifactHash: varchar("backup_artifact_hash", { length: 160 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  verificationState: mysqlEnum("verification_state", ["captured", "verified", "rejected"]).notNull().default("captured"),
+  humanVerifier: varchar("human_verifier", { length: 160 }).notNull(),
+  verifiedAt: timestamp("verified_at").defaultNow().notNull(),
+  automaticCapturePermitted: boolean("automatic_capture_permitted").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 /** Observed post-change verification records; this table never implies an execution action. */
 export const postChangeVerificationRuns = mysqlTable("post_change_verification_runs", {
   id: int("id").autoincrement().primaryKey(),
@@ -268,6 +283,22 @@ export const changePlanRollbackReviews = mysqlTable("change_plan_rollback_review
   humanReviewer: varchar("human_reviewer", { length: 160 }).notNull(),
   reviewedAt: timestamp("reviewed_at").defaultNow().notNull(),
   automaticExecutionPermitted: boolean("automatic_execution_permitted").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+/** Prepared material for a human-controlled external rollback; this platform cannot execute it. */
+export const changePlanRollbackPreparations = mysqlTable("change_plan_rollback_preparations", {
+  id: int("id").autoincrement().primaryKey(),
+  changePlanId: int("change_plan_id").notNull(),
+  rollbackReviewId: int("rollback_review_id").notNull(),
+  rollbackArtifactHash: varchar("rollback_artifact_hash", { length: 160 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  eligibilityState: mysqlEnum("eligibility_state", ["ready_for_human_execution", "blocked"]).notNull(),
+  humanExecutionRequired: boolean("human_execution_required").notNull().default(true),
+  automaticExecutionPermitted: boolean("automatic_execution_permitted").notNull().default(false),
+  preparedBy: varchar("prepared_by", { length: 160 }).notNull(),
+  preparedAt: timestamp("prepared_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -328,10 +359,14 @@ export type ChangePlan = typeof changePlans.$inferSelect;
 export type InsertChangePlan = typeof changePlans.$inferInsert;
 export type VirtualTestRun = typeof virtualTestRuns.$inferSelect;
 export type InsertVirtualTestRun = typeof virtualTestRuns.$inferInsert;
+export type ChangePlanBackupReceipt = typeof changePlanBackupReceipts.$inferSelect;
+export type InsertChangePlanBackupReceipt = typeof changePlanBackupReceipts.$inferInsert;
 export type PostChangeVerificationRun = typeof postChangeVerificationRuns.$inferSelect;
 export type InsertPostChangeVerificationRun = typeof postChangeVerificationRuns.$inferInsert;
 export type ChangePlanRollbackReview = typeof changePlanRollbackReviews.$inferSelect;
 export type InsertChangePlanRollbackReview = typeof changePlanRollbackReviews.$inferInsert;
+export type ChangePlanRollbackPreparation = typeof changePlanRollbackPreparations.$inferSelect;
+export type InsertChangePlanRollbackPreparation = typeof changePlanRollbackPreparations.$inferInsert;
 export type ProjectRestrictedClaim = typeof projectRestrictedClaims.$inferSelect;
 export type InsertProjectRestrictedClaim = typeof projectRestrictedClaims.$inferInsert;
 export type BenchmarkScenario = typeof benchmarkScenarios.$inferSelect;

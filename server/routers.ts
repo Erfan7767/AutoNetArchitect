@@ -29,6 +29,8 @@ import {
   listManagedDevices,
   listManagedSites,
   listSiteBusinessRequirements,
+  listBackupReceipts,
+  listRollbackPreparations,
   listRollbackReviews,
   listPostChangeVerifications,
   listProjectsForUser,
@@ -40,7 +42,9 @@ import {
   recordProjectRestrictedClaim,
   recordVirtualTest,
   recordPostChangeVerification,
+  recordBackupReceipt,
   recordRollbackReview,
+  prepareScopedRollback,
   recordSiteBusinessRequirement,
   registerManagedDevice,
   requestDeploymentApproval,
@@ -623,6 +627,27 @@ export const appRouter = router({
         if (!preparation) projectNotFound();
         return preparation;
       }),
+      backupReceipts: router({
+        list: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+          const receipts = await listBackupReceipts(input.changePlanId, ctx.user.id);
+          if (!receipts) projectNotFound();
+          return receipts;
+        }),
+        record: protectedProcedure
+          .input(z.object({
+            changePlanId: z.number().int().positive(),
+            backupReference: z.string().trim().min(2).max(1000),
+            backupArtifactHash: z.string().trim().min(8).max(160),
+            targetFactsHash: z.string().trim().min(8).max(160),
+            scopeHash: z.string().trim().min(8).max(160),
+            verificationState: z.enum(["captured", "verified", "rejected"]),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const receipts = await recordBackupReceipt(input.changePlanId, input, actorFromUser(ctx.user));
+            if (!receipts) projectNotFound();
+            return receipts;
+          }),
+      }),
       postChangeVerification: router({
         list: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
           const records = await listPostChangeVerifications(input.changePlanId, ctx.user.id);
@@ -666,6 +691,26 @@ export const appRouter = router({
             const records = await recordRollbackReview(input.changePlanId, input, actorFromUser(ctx.user));
             if (!records) projectNotFound();
             return records;
+          }),
+      }),
+      rollbackPreparation: router({
+        list: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+          const preparations = await listRollbackPreparations(input.changePlanId, ctx.user.id);
+          if (!preparations) projectNotFound();
+          return preparations;
+        }),
+        prepare: protectedProcedure
+          .input(z.object({
+            changePlanId: z.number().int().positive(),
+            rollbackReviewId: z.number().int().positive(),
+            rollbackArtifactHash: z.string().trim().min(8).max(160),
+            targetFactsHash: z.string().trim().min(8).max(160),
+            scopeHash: z.string().trim().min(8).max(160),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const preparations = await prepareScopedRollback(input.changePlanId, input, actorFromUser(ctx.user));
+            if (!preparations) projectNotFound();
+            return preparations;
           }),
       }),
       requestApproval: protectedProcedure.input(z.object({ changePlanId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {

@@ -4,6 +4,8 @@ import {
   auditEvents,
   authorizedDiscoveryScopes,
   benchmarkScenarios,
+  changePlanBackupReceipts,
+  changePlanRollbackPreparations,
   changePlanRollbackReviews,
   changePlans,
   deviceCapabilityAssessments,
@@ -87,6 +89,21 @@ export type RollbackReviewDraft = {
   backupEvidenceReference: string;
   trigger: string;
   reviewState: "review_required" | "reviewed" | "blocked";
+};
+
+export type BackupReceiptDraft = {
+  backupReference: string;
+  backupArtifactHash: string;
+  targetFactsHash: string;
+  scopeHash: string;
+  verificationState: "captured" | "verified" | "rejected";
+};
+
+export type ScopedRollbackPreparationDraft = {
+  rollbackReviewId: number;
+  rollbackArtifactHash: string;
+  targetFactsHash: string;
+  scopeHash: string;
 };
 
 export type AgentTeamAuditDraft = {
@@ -995,6 +1012,20 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
     .orderBy(desc(virtualTestRuns.observedAt))
     .limit(1);
   const latestTest = latestTests[0];
+  const latestBackupReceipts = planRecord.plan.backupVerified
+    ? await db
+      .select()
+      .from(changePlanBackupReceipts)
+      .where(eq(changePlanBackupReceipts.changePlanId, changePlanId))
+      .orderBy(desc(changePlanBackupReceipts.verifiedAt))
+      .limit(1)
+    : [];
+  const latestBackupReceipt = latestBackupReceipts[0];
+  const backupReceiptMatches = Boolean(latestBackupReceipt)
+    && latestBackupReceipt.verificationState === "verified"
+    && latestBackupReceipt.targetFactsHash === planRecord.plan.targetFactsHash
+    && latestBackupReceipt.scopeHash === planRecord.plan.scopeHash
+    && latestBackupReceipt.automaticCapturePermitted === false;
   const scenarios = await db
     .select()
     .from(benchmarkScenarios)
@@ -1023,7 +1054,7 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
     virtualValidation: planRecord.plan.virtualValidationState,
     virtualTestScopeMatches,
     virtualTestCurrent,
-    backupVerified: planRecord.plan.backupVerified,
+    backupVerified: planRecord.plan.backupVerified && backupReceiptMatches,
     maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
   });
   const decision = benchmarkCoverageCurrent
@@ -1038,7 +1069,8 @@ export async function getChangePlanApprovalReadiness(changePlanId: number, owner
       deviceCapabilityVerified: deviceRecord.device.capabilityVerified,
       virtualTestScopeMatches,
       virtualTestCurrent,
-      backupVerified: planRecord.plan.backupVerified,
+      backupVerified: planRecord.plan.backupVerified && backupReceiptMatches,
+      backupReceiptMatches,
       maintenanceWindowValid: planRecord.plan.maintenanceWindowValid,
       benchmarkCoverageCurrent,
       latestVirtualTestState: latestTest?.state || planRecord.plan.virtualValidationState,
@@ -1082,6 +1114,57 @@ export async function prepareDeployment(changePlanId: number, actor: AuditActor)
   };
 }
 
+/** List external backup receipts without exposing backup bytes, device credentials, or a capture action. */
+export async function listBackupReceipts(changePlanId: number, ownerId: number) {
+  const planRecord = await getChangePlanForUser(changePlanId, ownerId);
+  if (!planRecord) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select()
+    .from(changePlanBackupReceipts)
+    .where(eq(changePlanBackupReceipts.changePlanId, changePlanId))
+    .orderBy(desc(changePlanBackupReceipts.verifiedAt));
+}
+
+/** Record a human-supplied external backup receipt; verified receipts alone may satisfy the plan backup gate. */
+export async function recordBackupReceipt(changePlanId: number, draft: BackupReceiptDraft, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  if (draft.targetFactsHash !== planRecord.plan.targetFactsHash || draft.scopeHash !== planRecord.plan.scopeHash) {
+    throw new Error("Backup receipt hashes must exactly match the change-plan target facts and approved scope.");
+  }
+  const backupReference = redactAuditDetails(draft.backupReference);
+  if (backupReference === "Sensitive details were redacted.") {
+    throw new Error("Backup receipt reference cannot contain sensitive values.");
+  }
+  const db = await requireDatabase();
+  await db.insert(changePlanBackupReceipts).values({
+    changePlanId,
+    backupReference,
+    backupArtifactHash: draft.backupArtifactHash,
+    targetFactsHash: draft.targetFactsHash,
+    scopeHash: draft.scopeHash,
+    verificationState: draft.verificationState,
+    humanVerifier: actorLabel(actor),
+    automaticCapturePermitted: false,
+  });
+  if (draft.verificationState === "verified") {
+    await db.update(changePlans).set({ backupVerified: true, updatedAt: new Date() }).where(eq(changePlans.id, changePlanId));
+  }
+  if (draft.verificationState === "rejected") {
+    await db.update(changePlans).set({ backupVerified: false, updatedAt: new Date() }).where(eq(changePlans.id, changePlanId));
+  }
+  await appendAuditEvent(
+    planRecord.project.id,
+    actor,
+    "change_plan.backup_receipt_recorded",
+    draft.verificationState === "verified"
+      ? "Human-verified external backup receipt recorded; no backup capture was initiated by the control plane."
+      : `External backup receipt recorded with state ${draft.verificationState}; the control plane did not capture a backup.`,
+  );
+  return listBackupReceipts(changePlanId, actor.id);
+}
+
 /** List bounded rollback-review records; these records never assert a rollback was executed. */
 export async function listRollbackReviews(changePlanId: number, ownerId: number) {
   const planRecord = await getChangePlanForUser(changePlanId, ownerId);
@@ -1119,6 +1202,73 @@ export async function recordRollbackReview(changePlanId: number, draft: Rollback
   });
   await appendAuditEvent(planRecord.project.id, actor, "change_plan.rollback_review_recorded", "Scoped rollback review was recorded; automatic rollback remains prohibited.");
   return listRollbackReviews(changePlanId, actor.id);
+}
+
+/** List prepared external rollback packets; no entry represents an executed rollback. */
+export async function listRollbackPreparations(changePlanId: number, ownerId: number) {
+  const planRecord = await getChangePlanForUser(changePlanId, ownerId);
+  if (!planRecord) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select()
+    .from(changePlanRollbackPreparations)
+    .where(eq(changePlanRollbackPreparations.changePlanId, changePlanId))
+    .orderBy(desc(changePlanRollbackPreparations.preparedAt));
+}
+
+/** Build an eligibility-bound external rollback packet without connecting to or changing a device. */
+export async function prepareScopedRollback(changePlanId: number, draft: ScopedRollbackPreparationDraft, actor: AuditActor) {
+  const planRecord = await getChangePlanForUser(changePlanId, actor.id);
+  if (!planRecord) return undefined;
+  const db = await requireDatabase();
+  const reviewRows = await db
+    .select()
+    .from(changePlanRollbackReviews)
+    .where(and(eq(changePlanRollbackReviews.id, draft.rollbackReviewId), eq(changePlanRollbackReviews.changePlanId, changePlanId)))
+    .limit(1);
+  const review = reviewRows[0];
+  if (!review || review.reviewState !== "reviewed") {
+    throw new Error("A matching human-reviewed rollback review is required before preparing an external rollback packet.");
+  }
+  const verificationRows = await db
+    .select()
+    .from(postChangeVerificationRuns)
+    .where(eq(postChangeVerificationRuns.changePlanId, changePlanId))
+    .orderBy(desc(postChangeVerificationRuns.observedAt));
+  if (!verificationRows.some(record => record.rollbackReviewRequired)) {
+    throw new Error("An observed failed or non-verifiable post-change verification must require rollback review before rollback preparation.");
+  }
+  const backupRows = await db
+    .select()
+    .from(changePlanBackupReceipts)
+    .where(eq(changePlanBackupReceipts.changePlanId, changePlanId))
+    .orderBy(desc(changePlanBackupReceipts.verifiedAt));
+  const matchingBackup = backupRows.find(receipt => receipt.verificationState === "verified"
+    && receipt.targetFactsHash === planRecord.plan.targetFactsHash
+    && receipt.scopeHash === planRecord.plan.scopeHash
+    && receipt.automaticCapturePermitted === false);
+  if (!planRecord.plan.backupVerified || !matchingBackup) {
+    throw new Error("A matching human-verified external backup receipt is required before rollback preparation.");
+  }
+  const hashesMatch = draft.targetFactsHash === planRecord.plan.targetFactsHash
+    && draft.scopeHash === planRecord.plan.scopeHash
+    && draft.rollbackArtifactHash === review.rollbackArtifactHash;
+  if (!hashesMatch) {
+    throw new Error("Rollback preparation must exactly match the reviewed rollback artifact and the change-plan target facts and scope.");
+  }
+  await db.insert(changePlanRollbackPreparations).values({
+    changePlanId,
+    rollbackReviewId: review.id,
+    rollbackArtifactHash: draft.rollbackArtifactHash,
+    targetFactsHash: draft.targetFactsHash,
+    scopeHash: draft.scopeHash,
+    eligibilityState: "ready_for_human_execution",
+    humanExecutionRequired: true,
+    automaticExecutionPermitted: false,
+    preparedBy: actorLabel(actor),
+  });
+  await appendAuditEvent(planRecord.project.id, actor, "change_plan.rollback_external_packet_prepared", "Scoped rollback packet is ready for human-controlled external execution; the control plane cannot execute it.");
+  return listRollbackPreparations(changePlanId, actor.id);
 }
 
 /** Lists observed verification records without inferring that a production action occurred. */

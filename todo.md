@@ -146,4 +146,8 @@
 - [x] Wire the local virtual-test workflow into the Windows app shell with explicit status and safe error handling.
 - [x] Bind the Windows local virtual-test flow to generated artifact references and discovered facts from local state rather than test-only inputs.
 - [x] Surface successful local virtual-test evidence only as a review record for approval-bound preparation; never as production execution authority.
-- [ ] Persist a hash-bound, human-recorded backup-capture receipt before treating a change plan as backup-verified.
+- [x] Persist a hash-bound, human-recorded backup-capture receipt before treating a change plan as backup-verified.
+- [ ] Implement a scoped rollback action model for explicitly eligible device actions, with exact target/scope matching and permanent human-execution gating.
+- [ ] Add protected API and UI flows that surface rollback-ready artifacts for human-controlled external execution, distinct from review-only records.
+- [ ] Add integration tests proving eligible scoped rollback paths are prepared correctly and ineligible or mismatched rollback paths are blocked.
+- [ ] Synchronize the reviewed current project state to the configured GitHub repository after validation and secret review.
