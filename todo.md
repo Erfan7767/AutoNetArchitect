@@ -150,4 +150,4 @@
 - [ ] Implement a scoped rollback action model for explicitly eligible device actions, with exact target/scope matching and permanent human-execution gating.
 - [ ] Add protected API and UI flows that surface rollback-ready artifacts for human-controlled external execution, distinct from review-only records.
 - [ ] Add integration tests proving eligible scoped rollback paths are prepared correctly and ineligible or mismatched rollback paths are blocked.
-- [ ] Synchronize the reviewed current project state to the configured GitHub repository after validation and secret review.
+- [x] Synchronize the reviewed current project state to the configured GitHub repository after validation and secret review.
