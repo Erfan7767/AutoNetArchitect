@@ -76,12 +76,12 @@
 - [x] Add vendor selection and support-status visibility to the Windows application and web review console.
 - [x] Add tests for supported, ambiguous, unsupported, mismatched-version, and missing-license vendor cases.
 - [ ] Package the four-vendor support scope into a reviewed release and publish its measured boundaries.
-- [ ] Add per-vendor version-policy data with bounded release matchers and explicit out-of-bound decisions.
+- [x] Add per-vendor version-policy data with bounded release matchers and explicit out-of-bound decisions.
 - [x] Add an explicit mismatched-version test proving configuration is blocked or requires review.
 - [x] Document vendor-specific platform/version/license combinations as traceable policy data rather than generic evidence gates.
 - [x] Add Windows vendor-support review panel tests covering selector visibility and protocol-bound discovery rejection.
 - [x] Add a dedicated web review-console vendor evidence flow rather than relying only on the Admin summary.
-- [ ] Replace empty version policies with reviewed exact combinations or explicitly reviewed out-of-bound combinations tied to source evidence.
-- [ ] Add tests proving policy data drives per-vendor version and license decisions.
+- [x] Replace empty version policies with reviewed exact combinations or explicitly reviewed out-of-bound combinations tied to source evidence.
+- [x] Add tests proving policy data drives per-vendor version and license decisions.
 - [x] Align root .gitignore with repository CI assertions for Python bytecode, secrets, safe env templates, editor files, and node_modules patterns.
 - [x] Make package-initializer CI discovery ignore frontend dependency trees and retain Python-package enforcement.

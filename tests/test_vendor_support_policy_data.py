@@ -23,7 +23,9 @@ def test_candidate_release_records_are_traceable_but_do_not_authorize_configurat
     assert all(item["supported_version_prefixes"] == [] for item in vendors)
     assert all(item["status"] == "verification_required" for item in vendors)
     for item in vendors:
-        for candidate in item.get("reviewed_candidate_releases", []):
+        candidates = item.get("reviewed_candidate_releases", [])
+        assert candidates
+        for candidate in candidates:
             assert candidate["release_prefix"]
             assert candidate["source_url"].startswith("https://")
             assert candidate["decision"] == "verification_required"
@@ -35,3 +37,14 @@ def test_policy_keeps_license_and_configuration_path_evidence_mandatory() -> Non
     vendors = _policy()["vendors"]
     assert all(item["license_evidence_required"] for item in vendors)
     assert all(item["configuration_path_evidence_required"] for item in vendors)
+
+
+def test_each_vendor_has_explicit_out_of_bound_license_boundary() -> None:
+    """Every family records a concrete blocked boundary for unverified entitlement."""
+
+    vendors = _policy()["vendors"]
+    for item in vendors:
+        entries = item["reviewed_out_of_bound_entries"]
+        assert entries
+        assert any(entry["license_state"] == "unverified" and entry["decision"] == "blocked" for entry in entries)
+        assert all(entry["source_url"].startswith("https://") for entry in entries)
