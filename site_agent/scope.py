@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import ipaddress
+import json
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -53,3 +55,9 @@ class AuthorizedScope(BaseModel):
         if normalized_address not in self.approved_targets:
             return False
         return any(address in ipaddress.ip_network(network, strict=False) for network in self.approved_networks)
+
+    def evidence_hash(self) -> str:
+        """Return a stable hash of the human-approved, secret-free discovery boundary."""
+
+        payload = json.dumps(self.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()

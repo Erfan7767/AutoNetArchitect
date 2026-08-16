@@ -7,7 +7,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 
 from site_agent.local_inventory import WindowsArpInventory, authorized_neighbors
-from site_agent.models import DiscoveryTarget, ManagementProtocol
+from site_agent.models import DiscoveryState, DiscoveryTarget, ManagementProtocol
 from site_agent.scope import AuthorizedScope
 from site_agent.vendor_support import VendorFamily
 
@@ -15,6 +15,7 @@ from .controller import WindowsDiscoveryController
 from .inventory_review import summarize_inventory
 from .probe import ReadOnlyReachabilityProbe
 from .vendor_support_view import contracts_for_display, protocol_allowed
+from .validation_review import LocalValidationReviewDraft, WindowsValidationReviewController
 from .workspace import WindowsWorkspace
 
 
@@ -25,7 +26,9 @@ class AutoNetWindowsApp:
         """Build the local Windows application shell for a chosen workspace directory."""
 
         self._root = root
-        self._controller = WindowsDiscoveryController(WindowsWorkspace(workspace_root), ReadOnlyReachabilityProbe().collect)
+        self._workspace = WindowsWorkspace(workspace_root)
+        self._controller = WindowsDiscoveryController(self._workspace, ReadOnlyReachabilityProbe().collect)
+        self._validation_review = WindowsValidationReviewController(self._workspace)
         self._site_id = tk.StringVar()
         self._networks = tk.StringVar()
         self._targets = tk.StringVar()
@@ -86,7 +89,8 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=vendor_row + 3, column=1, sticky="e", pady=(12, 4))
         ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=vendor_row + 4, column=0, sticky="w", pady=(8, 4))
         ttk.Button(frame, text="Review discovery evidence", command=self._review_discovery_evidence).grid(row=vendor_row + 4, column=1, sticky="e", pady=(8, 4))
-        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        ttk.Button(frame, text="Prepare virtual validation review", command=self._prepare_virtual_validation_review).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(8, 4))
+        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
             ("address", "Address", 150),
@@ -96,8 +100,8 @@ class AutoNetWindowsApp:
         ):
             self._inventory.heading(column, text=label)
             self._inventory.column(column, width=width, stretch=True)
-        self._inventory.grid(row=vendor_row + 6, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
-        frame.rowconfigure(vendor_row + 6, weight=1)
+        self._inventory.grid(row=vendor_row + 7, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(vendor_row + 7, weight=1)
 
     def _update_vendor_status(self) -> None:
         """Show the selected vendor contract and its evidence boundary without claiming support."""
@@ -192,6 +196,65 @@ class AutoNetWindowsApp:
         table.grid(row=1, column=0, sticky="nsew")
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(1, weight=1)
+
+    def _prepare_virtual_validation_review(self) -> None:
+        """Collect non-secret review references and prepare, but never execute, a hash-bound local lab-validation plan."""
+
+        observed = [result for result in self._discovery_results if result.state is DiscoveryState.DISCOVERED and result.facts is not None]
+        if not observed:
+            messagebox.showerror("Virtual validation blocked", "Select an observed discovery result with exact facts before preparing virtual validation.")
+            return
+        review_window = tk.Toplevel(self._root)
+        review_window.title("AutoNetArchitect — Local Virtual Validation Review")
+        review_window.minsize(700, 360)
+        frame = ttk.Frame(review_window, padding=16)
+        frame.grid(sticky="nsew")
+        review_window.columnconfigure(0, weight=1)
+        review_window.rowconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+        selected_address = tk.StringVar(value=observed[0].target.address)
+        artifact_hash = tk.StringVar()
+        platform_family = tk.StringVar()
+        model_reference = tk.StringVar()
+        license_reference = tk.StringVar()
+        configuration_path_reference = tk.StringVar()
+        ttk.Label(frame, text="Prepare a local lab-validation review. This screen queues no device action and cannot substitute for an approved external lab adapter.", wraplength=640).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 12))
+        fields = [
+            ("Observed discovery target", selected_address),
+            ("Generated artifact hash", artifact_hash),
+            ("Exact platform family", platform_family),
+            ("Exact model evidence reference", model_reference),
+            ("License evidence reference", license_reference),
+            ("Configuration-path evidence reference", configuration_path_reference),
+        ]
+        for row, (label, variable) in enumerate(fields, start=1):
+            ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=4)
+            if label == "Observed discovery target":
+                ttk.Combobox(frame, textvariable=variable, state="readonly", values=[result.target.address for result in observed]).grid(row=row, column=1, sticky="ew", pady=4)
+            else:
+                ttk.Entry(frame, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=4)
+
+        def prepare() -> None:
+            """Prepare an evidence-bound plan and preserve the explicit need for a real lab result."""
+
+            try:
+                selected = next(result for result in observed if result.target.address == selected_address.get())
+                plan = self._validation_review.prepare_plan(selected, LocalValidationReviewDraft(
+                    artifact_hash=artifact_hash.get().strip(),
+                    platform_family=platform_family.get().strip(),
+                    exact_model_evidence_reference=model_reference.get().strip(),
+                    license_evidence_reference=license_reference.get().strip(),
+                    configuration_path_evidence_reference=configuration_path_reference.get().strip(),
+                ))
+                self._status.set(
+                    f"Local validation plan queued for review: {plan.adapter_kind} / {plan.fidelity_label.value}. A human-provided external lab adapter must produce evidence before approval preparation."
+                )
+                messagebox.showinfo("Validation plan prepared", "The plan is scope-, fact-, and artifact-hash-bound. It has no production execution authority.")
+                review_window.destroy()
+            except (PermissionError, ValueError) as error:
+                messagebox.showerror("Virtual validation blocked", str(error))
+
+        ttk.Button(frame, text="Prepare hash-bound validation plan", command=prepare).grid(row=len(fields) + 1, column=1, sticky="e", pady=(12, 0))
 
 
 def run() -> None:

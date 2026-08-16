@@ -25,7 +25,7 @@
 - [x] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
 - [ ] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
 - [ ] Integrate supported vendor discovery through read-only SSH, NETCONF, HTTPS API, and SNMP collection only after explicit authorization and credential-reference assignment.
-- [ ] Connect evidence-backed device facts to capability checks and versioned config artifacts without inventing device attributes or commands.
+- [x] Connect evidence-backed device facts to capability checks and versioned config artifacts without inventing device attributes or commands.
 - [ ] Implement dry-run change plans, mandatory backup capture, human sign-off, post-change verification, and scoped rollback for eligible device actions.
 - [ ] Add lab-only integration tests and operational runbooks; do not test against production devices until a human provides written authorization and approved scope.
 - [ ] Publish the expanded architecture only after verifying supported vendor boundaries, agent security controls, and production deployment prerequisites.
@@ -62,15 +62,15 @@
 - [x] Create or validate a public GitHub repository and push the current complete project revision.
 - [x] Verify the remote commit and record the repository URL and commit identifier in the publication handoff.
 - [x] Complete a public-release review that excludes any secret material, customer identifiers, runtime databases, local logs, and environment-specific artifacts before GitHub push.
-- [ ] Require every automated recommendation to expose source facts, uncertainty, rationale, alternatives, affected devices, and required human authority.
-- [ ] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
+- [x] Require every automated recommendation to expose source facts, uncertainty, rationale, alternatives, affected devices, and required human authority.
+- [x] Implement abstention and safe-refusal behavior when device facts, requirements, virtual-test coverage, or capability evidence are insufficient.
 - [ ] Define measurable benchmark scenarios and release gates for supported vendor/model/version paths instead of asserting universal network coverage.
 - [x] Present human accountability separately for review, approval, execution authority, and emergency exception handling.
 
 - [x] Document bounded official-source references for Cisco, Huawei, Fortinet, and HPE Aruba.
 - [x] Push the vendor-source documentation and Windows scope-guard revisions to the public GitHub `main` branch.
 - [x] Implement a vendor-family registry with explicit discovery protocols, evidence requirements, and unsupported status for Cisco, Huawei, Fortinet, and HPE Aruba.
-- [ ] Add exact platform/version/license capability assessment before configuration generation for each supported vendor family.
+- [x] Add exact platform/version/license capability assessment before configuration generation for each supported vendor family.
 - [x] Add vendor-specific read-only discovery adapter contracts without fabricating commands or falling back to generic configuration.
 - [x] Add vendor-specific virtual-validation adapter contracts with fidelity and evidence labels.
 - [x] Add vendor selection and support-status visibility to the Windows application and web review console.
@@ -143,3 +143,6 @@
 - [x] Add a persisted structured authorized-discovery scope definition with target or CIDR allowlist and protocol restrictions; do not rely only on free-text scope references or hashes.
 - [x] Tie inventory evidence review to the authorized site and discovery-run scope, with integration coverage for scoped inventory and evidence-confidence outcomes.
 - [x] Wire saved authorized-discovery scope creation, selection, and discovery-run linking through the protected API, console, and integration tests.
+- [x] Wire the local virtual-test workflow into the Windows app shell with explicit status and safe error handling.
+- [x] Bind the Windows local virtual-test flow to generated artifact references and discovered facts from local state rather than test-only inputs.
+- [ ] Surface successful local virtual-test evidence only as a review record for approval-bound preparation; never as production execution authority.
