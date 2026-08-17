@@ -331,6 +331,24 @@ export const projectRestrictedClaims = mysqlTable("project_restricted_claims", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+/** Persisted multi-specialty review report; this remains advisory and does not authorize release or execution. */
+export const projectEngineeringReviewReports = mysqlTable("project_engineering_review_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  reportReference: varchar("report_reference", { length: 200 }).notNull(),
+  findingsJson: varchar("findings_json", { length: 8000 }).notNull(),
+  passedCount: int("passed_count").notNull(),
+  failedCount: int("failed_count").notNull(),
+  blockedCount: int("blocked_count").notNull(),
+  unresolvedCount: int("unresolved_count").notNull(),
+  assumptions: varchar("assumptions", { length: 4000 }).notNull().default(""),
+  risks: varchar("risks", { length: 4000 }).notNull().default(""),
+  evidenceGaps: varchar("evidence_gaps", { length: 4000 }).notNull().default(""),
+  requiredHumanActions: varchar("required_human_actions", { length: 4000 }).notNull().default(""),
+  recordedBy: varchar("recorded_by", { length: 160 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const benchmarkScenarios = mysqlTable("benchmark_scenarios", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("project_id").notNull(),

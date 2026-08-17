@@ -66,6 +66,14 @@ describe("scoped rollback preparation integration", () => {
     expect(insertCalls).toHaveLength(0);
   });
 
+  it("blocks preparation until a matching externally verified backup receipt exists", async () => {
+    const caller = appRouter.createCaller(context());
+    selectResults.push([{ plan, project }], [review], [verification], []);
+
+    await expect(caller.projects.changePlans.rollbackPreparation.prepare(input)).rejects.toThrow("verified external backup receipt");
+    expect(insertCalls).toHaveLength(0);
+  });
+
   it("blocks a rollback artifact that differs from the reviewed scoped artifact", async () => {
     const caller = appRouter.createCaller(context());
     selectResults.push([{ plan, project }], [review], [verification], [backup], [eligibility]);

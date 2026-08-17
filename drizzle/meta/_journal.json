@@ -190,6 +190,13 @@
       "when": 1786930442684,
       "tag": "0026_late_shockwave",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1786930946520,
+      "tag": "0027_fresh_typhoid_mary",
+      "breakpoints": true
     }
   ]
 }

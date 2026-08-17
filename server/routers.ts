@@ -25,6 +25,7 @@ import {
   listBenchmarkScenarios,
   listDeviceCapabilityAssessments,
   listDeviceRollbackEligibilityAssessments,
+  listEngineeringReviewReports,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -39,6 +40,7 @@ import {
   recordDeviceObservation,
   recordDeviceCapabilityAssessment,
   recordDeviceRollbackEligibilityAssessment,
+  recordEngineeringReviewReport,
   recordAgentTeamAudit,
   recordBenchmarkScenario,
   recordProjectRestrictedClaim,
@@ -195,6 +197,34 @@ export const appRouter = router({
           const records = await recordSiteBusinessRequirement(input.projectId, input, actorFromUser(ctx.user));
           if (records === undefined) projectNotFound();
           return records;
+        }),
+    }),
+    engineeringReviewReports: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        const reports = await listEngineeringReviewReports(input.projectId, ctx.user.id);
+        if (reports === undefined) projectNotFound();
+        return reports;
+      }),
+      record: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          reportReference: z.string().trim().min(2).max(200),
+          findings: z.array(z.object({
+            specialty: z.enum(["architecture", "routing", "security", "addressing", "layer2", "equipment", "configuration", "validation"]),
+            state: z.enum(["passed", "failed", "blocked", "unresolved"]),
+            decisionReference: z.string().trim().min(1).max(1000),
+            rationale: z.string().trim().min(1).max(2000),
+            evidenceReferences: z.array(z.string().trim().min(1).max(1000)).min(1).max(50),
+          })).min(1).max(100),
+          assumptions: z.string().trim().max(4000),
+          risks: z.string().trim().max(4000),
+          evidenceGaps: z.string().trim().max(4000),
+          requiredHumanActions: z.string().trim().max(4000),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const reports = await recordEngineeringReviewReport(input.projectId, input, actorFromUser(ctx.user));
+          if (reports === undefined) projectNotFound();
+          return reports;
         }),
     }),
     sectorReview: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {

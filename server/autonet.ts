@@ -16,6 +16,7 @@ import {
   projectBomItems,
   projectConfigArtifacts,
   projectDesignDetails,
+  projectEngineeringReviewReports,
   projectRestrictedClaims,
   projectSiteBusinessRequirements,
   postChangeVerificationRuns,
@@ -124,6 +125,21 @@ export type AgentTeamAuditDraft = {
     state: "ready" | "waiting" | "blocked" | "abstained" | "completed";
     blockers: string[];
   }>;
+};
+
+export type EngineeringReviewReportDraft = {
+  reportReference: string;
+  findings: Array<{
+    specialty: "architecture" | "routing" | "security" | "addressing" | "layer2" | "equipment" | "configuration" | "validation";
+    state: "passed" | "failed" | "blocked" | "unresolved";
+    decisionReference: string;
+    rationale: string;
+    evidenceReferences: string[];
+  }>;
+  assumptions: string;
+  risks: string;
+  evidenceGaps: string;
+  requiredHumanActions: string;
 };
 
 export type ManagedSiteDraft = {
@@ -630,6 +646,45 @@ export async function recordProjectRestrictedClaim(projectId: number, draft: Res
   });
   await appendAuditEvent(projectId, actor, "restricted_claim.assessed", `Scoped ${draft.claimClass.replaceAll("_", " ")} claim assessment recorded with status ${draft.assessmentStatus}.`);
   return listProjectRestrictedClaims(projectId, actor.id);
+}
+
+/** List advisory engineering-review reports for a project. */
+export async function listEngineeringReviewReports(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(projectEngineeringReviewReports).where(eq(projectEngineeringReviewReports.projectId, projectId)).orderBy(desc(projectEngineeringReviewReports.createdAt));
+}
+
+/** Persist a multi-specialty review summary; it cannot approve, release, or execute a change. */
+export async function recordEngineeringReviewReport(projectId: number, draft: EngineeringReviewReportDraft, actor: AuditActor) {
+  const project = await getProjectForUser(projectId, actor.id);
+  if (!project) return undefined;
+  if (!draft.findings.length) throw new Error("An engineering review report requires at least one specialty finding.");
+  const serializedFindings = JSON.stringify(draft.findings.map(finding => ({
+    specialty: finding.specialty,
+    state: finding.state,
+    decisionReference: redactAuditDetails(finding.decisionReference),
+    rationale: redactAuditDetails(finding.rationale),
+    evidenceReferences: finding.evidenceReferences.map(redactAuditDetails),
+  })));
+  const db = await requireDatabase();
+  await db.insert(projectEngineeringReviewReports).values({
+    projectId,
+    reportReference: draft.reportReference.trim(),
+    findingsJson: serializedFindings,
+    passedCount: draft.findings.filter(finding => finding.state === "passed").length,
+    failedCount: draft.findings.filter(finding => finding.state === "failed").length,
+    blockedCount: draft.findings.filter(finding => finding.state === "blocked").length,
+    unresolvedCount: draft.findings.filter(finding => finding.state === "unresolved").length,
+    assumptions: redactAuditDetails(draft.assumptions),
+    risks: redactAuditDetails(draft.risks),
+    evidenceGaps: redactAuditDetails(draft.evidenceGaps),
+    requiredHumanActions: redactAuditDetails(draft.requiredHumanActions),
+    recordedBy: actorLabel(actor),
+  });
+  await appendAuditEvent(projectId, actor, "engineering_review.recorded", "Multi-specialty engineering review report recorded; human approval remains separately required.");
+  return listEngineeringReviewReports(projectId, actor.id);
 }
 
 export async function recordAgentTeamAudit(projectId: number, draft: AgentTeamAuditDraft, actor: AuditActor) {

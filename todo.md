@@ -152,8 +152,8 @@
 - [x] Add integration tests proving eligible scoped rollback paths are prepared correctly and ineligible or mismatched rollback paths are blocked.
 - [x] Implement an agent-mediated backup-capture handoff that records capture metadata and evidence without storing device credentials in the control plane.
 - [x] Define and enforce rollback eligibility per device action and exact path, beyond hash-matched review records.
-- [ ] Add integration tests proving an implemented backup-capture handoff is required and only action-eligible rollback paths can be prepared.
+- [x] Add integration tests proving an implemented backup-capture handoff is required and only action-eligible rollback paths can be prepared.
 - [ ] Add explicit link and interface inventory evidence, distinguishing observed topology from inference and unknown state.
 - [x] Add cross-specialty peer review outcomes and conflict-resolution evidence for architecture, routing, security, addressing, L2, equipment, configuration, and validation decisions.
-- [ ] Publish an engineering review report that aggregates passed, failed, blocked, unresolved, assumptions, risks, evidence gaps, and required human actions.
+- [x] Publish an engineering review report that aggregates passed, failed, blocked, unresolved, assumptions, risks, evidence gaps, and required human actions.
 - [x] Synchronize the reviewed current project state to the configured GitHub repository after validation and secret review.
