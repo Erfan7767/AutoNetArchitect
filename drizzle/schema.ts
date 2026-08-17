@@ -128,6 +128,21 @@ export const siteAgentHealthReports = mysqlTable("site_agent_health_reports", {
   receivedAt: timestamp("received_at").defaultNow().notNull(),
 });
 
+/** Human-written authorization for a non-production laboratory environment; it cannot authorize a production target. */
+export const projectLabAuthorizations = mysqlTable("project_lab_authorizations", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  siteId: int("site_id").notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  authorizationReference: varchar("authorization_reference", { length: 300 }).notNull(),
+  humanAuthorizer: varchar("human_authorizer", { length: 160 }).notNull(),
+  environmentReference: varchar("environment_reference", { length: 300 }).notNull(),
+  environmentClass: mysqlEnum("environment_class", ["isolated_simulation", "vendor_image_lab", "physical_lab"]).notNull(),
+  approvedAt: timestamp("approved_at").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 /** Human-supplied business context for a future managed site; it does not assert discovered topology or device facts. */
 export const projectSiteBusinessRequirements = mysqlTable("project_site_business_requirements", {
   id: int("id").autoincrement().primaryKey(),
@@ -449,6 +464,8 @@ export type SiteAgentEnrollment = typeof siteAgentEnrollments.$inferSelect;
 export type InsertSiteAgentEnrollment = typeof siteAgentEnrollments.$inferInsert;
 export type SiteAgentHealthReport = typeof siteAgentHealthReports.$inferSelect;
 export type InsertSiteAgentHealthReport = typeof siteAgentHealthReports.$inferInsert;
+export type ProjectLabAuthorization = typeof projectLabAuthorizations.$inferSelect;
+export type InsertProjectLabAuthorization = typeof projectLabAuthorizations.$inferInsert;
 export type ManagedDevice = typeof managedDevices.$inferSelect;
 export type InsertManagedDevice = typeof managedDevices.$inferInsert;
 export type InventoryInterfaceEvidence = typeof inventoryInterfaceEvidence.$inferSelect;

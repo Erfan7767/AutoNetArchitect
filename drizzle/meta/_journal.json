@@ -211,6 +211,13 @@
       "when": 1786932111422,
       "tag": "0029_moaning_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1786933010936,
+      "tag": "0030_absurd_wasp",
+      "breakpoints": true
     }
   ]
 }

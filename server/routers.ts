@@ -28,6 +28,7 @@ import {
   listEngineeringReviewReports,
   listInventoryInterfaceEvidence,
   listInventoryLinkEvidence,
+  listProjectLabAuthorizations,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -48,6 +49,7 @@ import {
   recordAgentTeamAudit,
   recordBenchmarkScenario,
   recordProjectRestrictedClaim,
+  recordProjectLabAuthorization,
   recordVirtualTest,
   recordPostChangeVerification,
   recordBackupReceipt,
@@ -534,8 +536,30 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const result = await recordAgentTeamAudit(input.projectId, input, actorFromUser(ctx.user));
         if (result === undefined) projectNotFound();
-        return result;
+          return result;
+        }),
+    labAuthorizations: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        return listProjectLabAuthorizations(input.projectId, ctx.user.id);
       }),
+      record: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          scopeHash: z.string().trim().min(8).max(160),
+          authorizationReference: z.string().trim().min(3).max(300),
+          humanAuthorizer: z.string().trim().min(2).max(160),
+          environmentReference: z.string().trim().min(3).max(300),
+          environmentClass: z.enum(["isolated_simulation", "vendor_image_lab", "physical_lab"]),
+          approvedAt: z.coerce.date(),
+          expiresAt: z.coerce.date(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const records = await recordProjectLabAuthorization(input.projectId, input, actorFromUser(ctx.user));
+          if (records === undefined) projectNotFound();
+          return records;
+        }),
+    }),
     sites: router({
       list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
         const sites = await listManagedSites(input.projectId, ctx.user.id);
@@ -871,6 +895,7 @@ export const appRouter = router({
           targetFactsHash: z.string().trim().min(8).max(160),
           scopeHash: z.string().trim().min(8).max(160),
           detail: z.string().trim().max(1000),
+          laboratoryAuthorizationId: z.number().int().positive().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           const plan = await recordVirtualTest(input.projectId, input.changePlanId, input, actorFromUser(ctx.user));

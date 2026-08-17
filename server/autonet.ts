@@ -19,6 +19,7 @@ import {
   projectConfigArtifacts,
   projectDesignDetails,
   projectEngineeringReviewReports,
+  projectLabAuthorizations,
   projectRestrictedClaims,
   projectSiteBusinessRequirements,
   postChangeVerificationRuns,
@@ -240,6 +241,18 @@ export type VirtualTestDraft = {
   targetFactsHash: string;
   scopeHash: string;
   detail: string;
+  laboratoryAuthorizationId?: number;
+};
+
+export type LabAuthorizationDraft = {
+  siteId: number;
+  scopeHash: string;
+  authorizationReference: string;
+  humanAuthorizer: string;
+  environmentReference: string;
+  environmentClass: "isolated_simulation" | "vendor_image_lab" | "physical_lab";
+  approvedAt: Date;
+  expiresAt: Date;
 };
 
 export type PostChangeVerificationDraft = {
@@ -1210,6 +1223,40 @@ async function getChangePlanForUser(changePlanId: number, ownerId: number) {
   return result[0];
 }
 
+export async function listProjectLabAuthorizations(projectId: number, ownerId: number) {
+  const db = await requireDatabase();
+  return db
+    .select()
+    .from(projectLabAuthorizations)
+    .innerJoin(networkProjects, eq(projectLabAuthorizations.projectId, networkProjects.id))
+    .where(and(eq(projectLabAuthorizations.projectId, projectId), eq(networkProjects.ownerId, ownerId)))
+    .orderBy(desc(projectLabAuthorizations.createdAt));
+}
+
+export async function recordProjectLabAuthorization(projectId: number, draft: LabAuthorizationDraft, actor: AuditActor) {
+  const db = await requireDatabase();
+  const siteRecord = await db
+    .select({ site: managedSites, project: networkProjects })
+    .from(managedSites)
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(eq(managedSites.id, draft.siteId), eq(networkProjects.id, projectId), eq(networkProjects.ownerId, actor.id)))
+    .limit(1);
+  if (!siteRecord[0]) return undefined;
+  const now = new Date();
+  if (draft.approvedAt > now || draft.expiresAt <= now || draft.expiresAt <= draft.approvedAt) {
+    throw new Error("Laboratory authorization must be currently active with a future expiry after its approval time.");
+  }
+  const scope = await db
+    .select()
+    .from(authorizedDiscoveryScopes)
+    .where(and(eq(authorizedDiscoveryScopes.projectId, projectId), eq(authorizedDiscoveryScopes.siteId, draft.siteId), eq(authorizedDiscoveryScopes.scopeHash, draft.scopeHash), eq(authorizedDiscoveryScopes.status, "active")))
+    .limit(1);
+  if (!scope[0]) throw new Error("Laboratory authorization requires the exact hash of an active authorized discovery scope for the selected site.");
+  await db.insert(projectLabAuthorizations).values({ ...draft, projectId });
+  await appendAuditEvent(projectId, actor, "lab_authorization.recorded", `A written ${draft.environmentClass} laboratory authorization was recorded against the exact approved scope; it grants no production authority.`);
+  return listProjectLabAuthorizations(projectId, actor.id);
+}
+
 export async function recordVirtualTest(projectId: number, changePlanId: number, draft: VirtualTestDraft, actor: AuditActor) {
   const planRecord = await getChangePlanForUser(changePlanId, actor.id);
   if (!planRecord || planRecord.project.id !== projectId) return undefined;
@@ -1218,6 +1265,22 @@ export async function recordVirtualTest(projectId: number, changePlanId: number,
     throw new Error("Virtual-test evidence does not match the change plan artifact, target facts, or scope.");
   }
   const db = await requireDatabase();
+  const requiresLaboratoryAuthorization = ["vendor_image_lab", "physical_lab"].includes(draft.fidelityLabel.trim());
+  if (requiresLaboratoryAuthorization) {
+    if (!draft.laboratoryAuthorizationId) {
+      throw new Error("Vendor-image or physical-lab evidence requires a recorded written laboratory authorization.");
+    }
+    const authorizations = await db
+      .select()
+      .from(projectLabAuthorizations)
+      .where(and(eq(projectLabAuthorizations.id, draft.laboratoryAuthorizationId), eq(projectLabAuthorizations.projectId, projectId), eq(projectLabAuthorizations.scopeHash, plan.scopeHash)))
+      .limit(1);
+    const authorization = authorizations[0];
+    const now = new Date();
+    if (!authorization || authorization.approvedAt > now || authorization.expiresAt <= now) {
+      throw new Error("Laboratory authorization is missing, expired, not yet active, or outside the change-plan scope.");
+    }
+  }
   await db.insert(virtualTestRuns).values({
     changePlanId,
     state: draft.state,
