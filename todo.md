@@ -23,7 +23,7 @@
 - [x] Define explicit device access, credential-reference, discovery-consent, network-scope, and human-approval policies.
 - [x] Add site, managed-device, discovery-run, and change-plan data models with redacted evidence and state transitions.
 - [x] Build console workflows to register a site agent, define authorized discovery scope, inspect discovered inventory, and review evidence confidence.
-- [ ] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
+- [x] Implement an installable on-premises agent skeleton with mutually authenticated enrollment, health reporting, and read-only discovery adapters.
 - [ ] Integrate supported vendor discovery through read-only SSH, NETCONF, HTTPS API, and SNMP collection only after explicit authorization and credential-reference assignment.
 - [x] Connect evidence-backed device facts to capability checks and versioned config artifacts without inventing device attributes or commands.
 - [ ] Implement dry-run change plans, mandatory backup capture, human sign-off, post-change verification, and scoped rollback for eligible device actions.
@@ -153,7 +153,10 @@
 - [x] Implement an agent-mediated backup-capture handoff that records capture metadata and evidence without storing device credentials in the control plane.
 - [x] Define and enforce rollback eligibility per device action and exact path, beyond hash-matched review records.
 - [x] Add integration tests proving an implemented backup-capture handoff is required and only action-eligible rollback paths can be prepared.
-- [ ] Add explicit link and interface inventory evidence, distinguishing observed topology from inference and unknown state.
+- [x] Add explicit link and interface inventory evidence, distinguishing observed topology from inference and unknown state.
 - [x] Add cross-specialty peer review outcomes and conflict-resolution evidence for architecture, routing, security, addressing, L2, equipment, configuration, and validation decisions.
 - [x] Publish an engineering review report that aggregates passed, failed, blocked, unresolved, assumptions, risks, evidence gaps, and required human actions.
 - [x] Synchronize the reviewed current project state to the configured GitHub repository after validation and secret review.
+- [x] Implement a concrete mutual-auth enrollment verifier and pinned trust-material flow for the site agent.
+- [x] Add a secret-free agent health reporting path to the control-plane workspace with success and failure coverage.
+- [x] Add end-to-end enrollment, durable local manifest, and control-plane health-reporting integration tests.

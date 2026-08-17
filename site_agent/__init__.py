@@ -16,10 +16,13 @@ from .discovery_coordination import (
     DiscoveryWorkItem,
     ParallelDiscoveryCoordinator,
 )
+from .enrollment import EnrollmentReceipt, MutualEnrollmentAuthority, PinnedMutualEnrollmentAuthority
 from .evidence_handoff import DesignEvidenceHandoff, EvidenceBoundHandoffCoordinator
 from .exact_capability import ExactCapabilityAssessor, ExactCapabilityEvidence
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
+from .runtime import EnrolledReadOnlyAgent
 from .scope import AuthorizedScope
+from .trust import Ed25519PinnedSignatureVerifier, PinnedTrustStore
 from .team_graph import MultiAgentTeamGraph, TeamGraphEvaluation
 from .validation_policy import ScenarioPolicyDecision, ScenarioValidationPolicy, ValidationScenario
 from .vendor_support import CapabilityAssessment, SupportDecision, VendorCapabilityContract, VendorCapabilityRegistry, VendorFamily
@@ -44,6 +47,12 @@ __all__ = [
     "DiscoveryResult",
     "DiscoveryTarget",
     "ReadOnlyDiscoveryAgent",
+    "EnrolledReadOnlyAgent",
+    "EnrollmentReceipt",
+    "MutualEnrollmentAuthority",
+    "PinnedMutualEnrollmentAuthority",
+    "PinnedTrustStore",
+    "Ed25519PinnedSignatureVerifier",
     "AgentRole",
     "CoordinationStage",
     "AgentResponsibility",

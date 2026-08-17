@@ -8,6 +8,7 @@ from typing import Any
 
 from log_redaction.redacting_filter import RedactingFilter
 from site_agent.backup_handoff import BackupCaptureHandoff
+from site_agent.enrollment import EnrollmentReceipt
 from site_agent.models import VirtualTestResult
 from site_agent.scope import AuthorizedScope
 
@@ -22,6 +23,7 @@ class WindowsWorkspace:
         self._scope_path = root / "authorized_scope.json"
         self._virtual_validation_path = root / "virtual_validation_result.json"
         self._backup_handoff_path = root / "backup_capture_handoff.json"
+        self._enrollment_receipt_path = root / "agent_enrollment_receipt.json"
 
     @property
     def root(self) -> Path:
@@ -99,3 +101,26 @@ class WindowsWorkspace:
         if not isinstance(raw, dict):
             raise ValueError("The local backup handoff record is invalid.")
         return BackupCaptureHandoff.model_validate(raw)
+
+    def save_enrollment_receipt(self, receipt: EnrollmentReceipt) -> EnrollmentReceipt:
+        """Persist a secret-free mutual-enrollment receipt; private keys remain in the OS or hardware keystore."""
+
+        self._root.mkdir(parents=True, exist_ok=True)
+        temporary = self._enrollment_receipt_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(receipt.model_dump(mode="json"), indent=2, sort_keys=True), encoding="utf-8")
+        temporary.replace(self._enrollment_receipt_path)
+        try:
+            self._enrollment_receipt_path.chmod(0o600)
+        except OSError:
+            return receipt
+        return receipt
+
+    def load_enrollment_receipt(self) -> EnrollmentReceipt | None:
+        """Return the saved enrollment receipt without retrieving, storing, or deriving a private key."""
+
+        if not self._enrollment_receipt_path.exists():
+            return None
+        raw: Any = json.loads(self._enrollment_receipt_path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("The local agent enrollment receipt file is invalid.")
+        return EnrollmentReceipt.model_validate(raw)

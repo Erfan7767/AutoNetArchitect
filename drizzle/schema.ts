@@ -101,6 +101,33 @@ export const managedSites = mysqlTable("managed_sites", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 
+/** Public-key enrollment for one local read-only agent. No private key, credential, or device session data is stored. */
+export const siteAgentEnrollments = mysqlTable("site_agent_enrollments", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("project_id").notNull(),
+  siteId: int("site_id").notNull(),
+  agentId: varchar("agent_id", { length: 160 }).notNull(),
+  enrollmentId: varchar("enrollment_id", { length: 160 }).notNull(),
+  agentFingerprint: varchar("agent_fingerprint", { length: 64 }).notNull(),
+  agentPublicKeyPem: text("agent_public_key_pem").notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  status: mysqlEnum("status", ["active", "revoked", "expired"]).notNull().default("active"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+/** Signed secret-free health reports from an enrolled local agent. These reports cannot request or perform device work. */
+export const siteAgentHealthReports = mysqlTable("site_agent_health_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  enrollmentId: int("enrollment_id").notNull(),
+  healthy: boolean("healthy").notNull(),
+  mode: varchar("mode", { length: 80 }).notNull(),
+  detail: varchar("detail", { length: 500 }).notNull(),
+  observedAt: timestamp("observed_at").notNull(),
+  receivedAt: timestamp("received_at").defaultNow().notNull(),
+});
+
 /** Human-supplied business context for a future managed site; it does not assert discovered topology or device facts. */
 export const projectSiteBusinessRequirements = mysqlTable("project_site_business_requirements", {
   id: int("id").autoincrement().primaryKey(),
@@ -155,6 +182,40 @@ export const managedDevices = mysqlTable("managed_devices", {
   lastObservedAt: timestamp("last_observed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+/** Evidence-scoped interface inventory. An interface is never inferred as observed without an authorized discovery record. */
+export const inventoryInterfaceEvidence = mysqlTable("inventory_interface_evidence", {
+  id: int("id").autoincrement().primaryKey(),
+  siteId: int("site_id").notNull(),
+  deviceId: int("device_id").notNull(),
+  discoveryRunId: int("discovery_run_id").notNull(),
+  discoveryScopeId: int("discovery_scope_id").notNull(),
+  interfaceReference: varchar("interface_reference", { length: 300 }).notNull(),
+  state: mysqlEnum("state", ["observed", "inferred", "unknown"]).notNull(),
+  evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
+  evidenceHash: varchar("evidence_hash", { length: 160 }).notNull(),
+  inferenceRationale: varchar("inference_rationale", { length: 2000 }).notNull().default(""),
+  observedAt: timestamp("observed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+/** Evidence-scoped physical or logical link statement. State makes topology certainty explicit and never grants execution authority. */
+export const inventoryLinkEvidence = mysqlTable("inventory_link_evidence", {
+  id: int("id").autoincrement().primaryKey(),
+  siteId: int("site_id").notNull(),
+  discoveryRunId: int("discovery_run_id").notNull(),
+  discoveryScopeId: int("discovery_scope_id").notNull(),
+  endpointADeviceId: int("endpoint_a_device_id").notNull(),
+  endpointAInterfaceReference: varchar("endpoint_a_interface_reference", { length: 300 }).notNull(),
+  endpointBDeviceId: int("endpoint_b_device_id").notNull().default(0),
+  endpointBInterfaceReference: varchar("endpoint_b_interface_reference", { length: 300 }).notNull(),
+  topologyState: mysqlEnum("topology_state", ["observed", "inferred", "unknown"]).notNull(),
+  evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
+  evidenceHash: varchar("evidence_hash", { length: 160 }).notNull(),
+  inferenceRationale: varchar("inference_rationale", { length: 2000 }).notNull().default(""),
+  observedAt: timestamp("observed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 /** Human-reviewed exact capability assessment; it never authorizes device execution. */
@@ -384,8 +445,16 @@ export type ProjectConfigArtifact = typeof projectConfigArtifacts.$inferSelect;
 export type InsertProjectConfigArtifact = typeof projectConfigArtifacts.$inferInsert;
 export type ManagedSite = typeof managedSites.$inferSelect;
 export type InsertManagedSite = typeof managedSites.$inferInsert;
+export type SiteAgentEnrollment = typeof siteAgentEnrollments.$inferSelect;
+export type InsertSiteAgentEnrollment = typeof siteAgentEnrollments.$inferInsert;
+export type SiteAgentHealthReport = typeof siteAgentHealthReports.$inferSelect;
+export type InsertSiteAgentHealthReport = typeof siteAgentHealthReports.$inferInsert;
 export type ManagedDevice = typeof managedDevices.$inferSelect;
 export type InsertManagedDevice = typeof managedDevices.$inferInsert;
+export type InventoryInterfaceEvidence = typeof inventoryInterfaceEvidence.$inferSelect;
+export type InsertInventoryInterfaceEvidence = typeof inventoryInterfaceEvidence.$inferInsert;
+export type InventoryLinkEvidence = typeof inventoryLinkEvidence.$inferSelect;
+export type InsertInventoryLinkEvidence = typeof inventoryLinkEvidence.$inferInsert;
 export type DiscoveryRun = typeof discoveryRuns.$inferSelect;
 export type InsertDiscoveryRun = typeof discoveryRuns.$inferInsert;
 export type ChangePlan = typeof changePlans.$inferSelect;

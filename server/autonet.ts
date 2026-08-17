@@ -10,6 +10,8 @@ import {
   changePlans,
   deviceCapabilityAssessments,
   deviceRollbackEligibilityAssessments,
+  inventoryInterfaceEvidence,
+  inventoryLinkEvidence,
   managedDevices,
   managedSites,
   networkProjects,
@@ -184,6 +186,31 @@ export type DeviceObservationDraft = {
   capabilityEvidenceReference?: string;
   licenseEvidenceReference?: string;
   configurationPathEvidenceReference?: string;
+};
+
+export type InventoryInterfaceEvidenceDraft = {
+  discoveryRunId: number;
+  discoveryScopeId: number;
+  interfaceReference: string;
+  state: "observed" | "inferred" | "unknown";
+  evidenceReference: string;
+  evidenceHash: string;
+  inferenceRationale: string;
+  observedAt: Date;
+};
+
+export type InventoryLinkEvidenceDraft = {
+  discoveryRunId: number;
+  discoveryScopeId: number;
+  endpointADeviceId: number;
+  endpointAInterfaceReference: string;
+  endpointBDeviceId: number;
+  endpointBInterfaceReference: string;
+  topologyState: "observed" | "inferred" | "unknown";
+  evidenceReference: string;
+  evidenceHash: string;
+  inferenceRationale: string;
+  observedAt: Date;
 };
 
 export type DeviceCapabilityAssessmentDraft = {
@@ -873,6 +900,116 @@ async function getManagedDeviceForUser(deviceId: number, ownerId: number) {
     .where(and(eq(managedDevices.id, deviceId), eq(networkProjects.ownerId, ownerId)))
     .limit(1);
   return result[0];
+}
+
+async function validateDiscoveryEvidenceForSite(projectId: number, siteId: number, discoveryRunId: number, discoveryScopeId: number, ownerId: number) {
+  const db = await requireDatabase();
+  const results = await db
+    .select({ run: discoveryRuns, scope: authorizedDiscoveryScopes })
+    .from(discoveryRuns)
+    .innerJoin(authorizedDiscoveryScopes, eq(discoveryRuns.discoveryScopeId, authorizedDiscoveryScopes.id))
+    .innerJoin(managedSites, eq(discoveryRuns.siteId, managedSites.id))
+    .innerJoin(networkProjects, eq(managedSites.projectId, networkProjects.id))
+    .where(and(
+      eq(discoveryRuns.id, discoveryRunId),
+      eq(discoveryRuns.discoveryScopeId, discoveryScopeId),
+      eq(discoveryRuns.siteId, siteId),
+      eq(authorizedDiscoveryScopes.siteId, siteId),
+      eq(authorizedDiscoveryScopes.projectId, projectId),
+      eq(networkProjects.ownerId, ownerId),
+    ))
+    .limit(1);
+  const source = results[0];
+  if (!source) throw new Error("Inventory evidence must reference a discovery run and scope authorized for the same site.");
+  if (source.run.state !== "completed" && source.run.state !== "partial") {
+    throw new Error("Inventory evidence can be recorded only from a completed or partial read-only discovery run.");
+  }
+  return source;
+}
+
+export async function listInventoryInterfaceEvidence(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select({ evidence: inventoryInterfaceEvidence, device: managedDevices, siteName: managedSites.name })
+    .from(inventoryInterfaceEvidence)
+    .innerJoin(managedDevices, eq(inventoryInterfaceEvidence.deviceId, managedDevices.id))
+    .innerJoin(managedSites, eq(inventoryInterfaceEvidence.siteId, managedSites.id))
+    .where(and(eq(managedSites.projectId, projectId), eq(managedDevices.siteId, inventoryInterfaceEvidence.siteId)))
+    .orderBy(desc(inventoryInterfaceEvidence.observedAt));
+}
+
+export async function recordInventoryInterfaceEvidence(projectId: number, deviceId: number, draft: InventoryInterfaceEvidenceDraft, actor: AuditActor) {
+  const deviceRecord = await getManagedDeviceForUser(deviceId, actor.id);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  await validateDiscoveryEvidenceForSite(projectId, deviceRecord.device.siteId, draft.discoveryRunId, draft.discoveryScopeId, actor.id);
+  if (draft.state === "observed" && deviceRecord.device.factState !== "observed") {
+    throw new Error("Observed interface evidence requires an observed device identity.");
+  }
+  if (draft.state === "inferred" && !draft.inferenceRationale.trim()) {
+    throw new Error("Inferred interface evidence requires an explicit inference rationale.");
+  }
+  const db = await requireDatabase();
+  await db.insert(inventoryInterfaceEvidence).values({
+    siteId: deviceRecord.device.siteId,
+    deviceId,
+    discoveryRunId: draft.discoveryRunId,
+    discoveryScopeId: draft.discoveryScopeId,
+    interfaceReference: draft.interfaceReference.trim(),
+    state: draft.state,
+    evidenceReference: redactAuditDetails(draft.evidenceReference),
+    evidenceHash: draft.evidenceHash.trim(),
+    inferenceRationale: redactAuditDetails(draft.inferenceRationale),
+    observedAt: draft.observedAt,
+  });
+  await appendAuditEvent(projectId, actor, "inventory.interface_evidence_recorded", `Interface inventory evidence recorded with explicit state ${draft.state}.`);
+  return listInventoryInterfaceEvidence(projectId, actor.id);
+}
+
+export async function listInventoryLinkEvidence(projectId: number, ownerId: number) {
+  const project = await getProjectForUser(projectId, ownerId);
+  if (!project) return undefined;
+  const db = await requireDatabase();
+  return db
+    .select({ evidence: inventoryLinkEvidence, siteName: managedSites.name })
+    .from(inventoryLinkEvidence)
+    .innerJoin(managedSites, eq(inventoryLinkEvidence.siteId, managedSites.id))
+    .where(eq(managedSites.projectId, projectId))
+    .orderBy(desc(inventoryLinkEvidence.observedAt));
+}
+
+export async function recordInventoryLinkEvidence(projectId: number, draft: InventoryLinkEvidenceDraft, actor: AuditActor) {
+  const endpointA = await getManagedDeviceForUser(draft.endpointADeviceId, actor.id);
+  if (!endpointA || endpointA.project.id !== projectId) return undefined;
+  await validateDiscoveryEvidenceForSite(projectId, endpointA.device.siteId, draft.discoveryRunId, draft.discoveryScopeId, actor.id);
+  const endpointB = draft.endpointBDeviceId > 0 ? await getManagedDeviceForUser(draft.endpointBDeviceId, actor.id) : undefined;
+  if (draft.endpointBDeviceId > 0 && (!endpointB || endpointB.project.id !== projectId || endpointB.device.siteId !== endpointA.device.siteId)) {
+    throw new Error("A known link endpoint must be an owned device at the same authorized site.");
+  }
+  if (draft.topologyState === "observed" && (!endpointB || endpointA.device.factState !== "observed" || endpointB.device.factState !== "observed")) {
+    throw new Error("Observed topology evidence requires two observed endpoint devices; record an inferred or unknown state otherwise.");
+  }
+  if (draft.topologyState === "inferred" && !draft.inferenceRationale.trim()) {
+    throw new Error("Inferred topology evidence requires an explicit inference rationale.");
+  }
+  const db = await requireDatabase();
+  await db.insert(inventoryLinkEvidence).values({
+    siteId: endpointA.device.siteId,
+    discoveryRunId: draft.discoveryRunId,
+    discoveryScopeId: draft.discoveryScopeId,
+    endpointADeviceId: draft.endpointADeviceId,
+    endpointAInterfaceReference: draft.endpointAInterfaceReference.trim(),
+    endpointBDeviceId: draft.endpointBDeviceId,
+    endpointBInterfaceReference: draft.endpointBInterfaceReference.trim(),
+    topologyState: draft.topologyState,
+    evidenceReference: redactAuditDetails(draft.evidenceReference),
+    evidenceHash: draft.evidenceHash.trim(),
+    inferenceRationale: redactAuditDetails(draft.inferenceRationale),
+    observedAt: draft.observedAt,
+  });
+  await appendAuditEvent(projectId, actor, "inventory.link_evidence_recorded", `Topology link evidence recorded with explicit state ${draft.topologyState}.`);
+  return listInventoryLinkEvidence(projectId, actor.id);
 }
 
 export async function recordDeviceObservation(projectId: number, deviceId: number, draft: DeviceObservationDraft, actor: AuditActor) {

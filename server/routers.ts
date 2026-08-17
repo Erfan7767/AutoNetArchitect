@@ -26,6 +26,8 @@ import {
   listDeviceCapabilityAssessments,
   listDeviceRollbackEligibilityAssessments,
   listEngineeringReviewReports,
+  listInventoryInterfaceEvidence,
+  listInventoryLinkEvidence,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -41,6 +43,8 @@ import {
   recordDeviceCapabilityAssessment,
   recordDeviceRollbackEligibilityAssessment,
   recordEngineeringReviewReport,
+  recordInventoryInterfaceEvidence,
+  recordInventoryLinkEvidence,
   recordAgentTeamAudit,
   recordBenchmarkScenario,
   recordProjectRestrictedClaim,
@@ -67,6 +71,7 @@ import { assessBenchmarkCoverage } from "./benchmarkPolicy";
 import { buildRestrictedClaimReport } from "./claimReportPolicy";
 import { assessEndToEndLifecycle } from "./lifecycleContract";
 import { assessMultiAgentWorkflow } from "./multiAgentPolicy";
+import { listSiteAgentEnrollments, listSiteAgentHealthReports, provisionSiteAgentEnrollment } from "./agentHealth";
 
 const projectIdInput = z.object({ projectId: z.number().int().positive() });
 
@@ -561,6 +566,30 @@ export const appRouter = router({
           return sites;
         }),
     }),
+    agentEnrollment: router({
+      list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        return listSiteAgentEnrollments(input.projectId, ctx.user.id);
+      }),
+      provision: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          siteId: z.number().int().positive(),
+          agentId: z.string().trim().min(3).max(160),
+          enrollmentId: z.string().trim().min(16).max(160),
+          agentFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+          agentPublicKeyPem: z.string().trim().min(32).max(4096),
+          scopeHash: z.string().trim().min(8).max(160),
+          expiresAt: z.coerce.date(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const records = await provisionSiteAgentEnrollment(input.projectId, input, actorFromUser(ctx.user));
+          if (records === undefined) projectNotFound();
+          return records;
+        }),
+      healthReports: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+        return listSiteAgentHealthReports(input.projectId, ctx.user.id);
+      }),
+    }),
     devices: router({
       list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
         const devices = await listManagedDevices(input.projectId, ctx.user.id);
@@ -603,6 +632,58 @@ export const appRouter = router({
           if (device === undefined) projectNotFound();
           return device;
         }),
+      interfaceEvidence: router({
+        list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+          const evidence = await listInventoryInterfaceEvidence(input.projectId, ctx.user.id);
+          if (evidence === undefined) projectNotFound();
+          return evidence;
+        }),
+        record: protectedProcedure
+          .input(z.object({
+            projectId: z.number().int().positive(),
+            deviceId: z.number().int().positive(),
+            discoveryRunId: z.number().int().positive(),
+            discoveryScopeId: z.number().int().positive(),
+            interfaceReference: z.string().trim().min(1).max(300),
+            state: z.enum(["observed", "inferred", "unknown"]),
+            evidenceReference: z.string().trim().min(1).max(1000),
+            evidenceHash: z.string().trim().min(8).max(160),
+            inferenceRationale: z.string().trim().max(2000),
+            observedAt: z.coerce.date(),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const evidence = await recordInventoryInterfaceEvidence(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
+            if (evidence === undefined) projectNotFound();
+            return evidence;
+          }),
+      }),
+      linkEvidence: router({
+        list: protectedProcedure.input(projectIdInput).query(async ({ ctx, input }) => {
+          const evidence = await listInventoryLinkEvidence(input.projectId, ctx.user.id);
+          if (evidence === undefined) projectNotFound();
+          return evidence;
+        }),
+        record: protectedProcedure
+          .input(z.object({
+            projectId: z.number().int().positive(),
+            discoveryRunId: z.number().int().positive(),
+            discoveryScopeId: z.number().int().positive(),
+            endpointADeviceId: z.number().int().positive(),
+            endpointAInterfaceReference: z.string().trim().min(1).max(300),
+            endpointBDeviceId: z.number().int().min(0),
+            endpointBInterfaceReference: z.string().trim().min(1).max(300),
+            topologyState: z.enum(["observed", "inferred", "unknown"]),
+            evidenceReference: z.string().trim().min(1).max(1000),
+            evidenceHash: z.string().trim().min(8).max(160),
+            inferenceRationale: z.string().trim().max(2000),
+            observedAt: z.coerce.date(),
+          }))
+          .mutation(async ({ ctx, input }) => {
+            const evidence = await recordInventoryLinkEvidence(input.projectId, input, actorFromUser(ctx.user));
+            if (evidence === undefined) projectNotFound();
+            return evidence;
+          }),
+      }),
       listCapabilityAssessments: protectedProcedure
         .input(z.object({ projectId: z.number().int().positive(), deviceId: z.number().int().positive() }))
         .query(async ({ ctx, input }) => {
