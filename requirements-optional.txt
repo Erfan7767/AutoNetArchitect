@@ -1,8 +1,8 @@
 # Optional integrations. These are not required for the V1 local CLI/API/UI shell.
-arabic-reshaper>=3,<4
-python-bidi>=0.4,<1
-streamlit>=1.35,<2
-weasyprint>=60,<70
-matplotlib>=3.8,<4
-pandas>=2.0,<3
-numpy>=1.26,<3
+arabic-reshaper>=3.0.1,<4
+python-bidi>=0.6.11,<1
+streamlit>=1.61.1,<2
+weasyprint>=69.0,<70
+matplotlib>=3.11.1,<4
+pandas>=3.0.5,<4
+numpy>=2.4.6,<3
