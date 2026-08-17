@@ -37,6 +37,7 @@ const plan = { id: 45, projectId: 6, backupVerified: true, targetFactsHash: "fac
 const review = { id: 17, changePlanId: 45, reviewState: "reviewed", rollbackArtifactHash: "rollback-artifact-hash-789" };
 const verification = { id: 2, changePlanId: 45, rollbackReviewRequired: true, state: "failed" };
 const backup = { id: 5, changePlanId: 45, verificationState: "verified", targetFactsHash: "facts-hash-789", scopeHash: "scope-hash-789", automaticCapturePermitted: false };
+const eligibility = { id: 8, deviceId: 10, rollbackArtifactHash: "rollback-artifact-hash-789", targetFactsHash: "facts-hash-789", scopeHash: "scope-hash-789", decision: "eligible" };
 const input = { changePlanId: 45, rollbackReviewId: 17, rollbackArtifactHash: "rollback-artifact-hash-789", targetFactsHash: "facts-hash-789", scopeHash: "scope-hash-789" };
 
 beforeEach(() => {
@@ -49,7 +50,7 @@ describe("scoped rollback preparation integration", () => {
   it("prepares only a human-controlled external packet after every evidence gate matches", async () => {
     const caller = appRouter.createCaller(context());
     const stored = { id: 9, ...input, eligibilityState: "ready_for_human_execution", humanExecutionRequired: true, automaticExecutionPermitted: false, preparedBy: "External rollback preparer" };
-    selectResults.push([{ plan, project }], [review], [verification], [backup], [{ plan, project }], [stored]);
+    selectResults.push([{ plan, project }], [review], [verification], [backup], [eligibility], [{ plan, project }], [stored]);
 
     const preparations = await caller.projects.changePlans.rollbackPreparation.prepare(input);
 
@@ -67,9 +68,17 @@ describe("scoped rollback preparation integration", () => {
 
   it("blocks a rollback artifact that differs from the reviewed scoped artifact", async () => {
     const caller = appRouter.createCaller(context());
-    selectResults.push([{ plan, project }], [review], [verification], [backup]);
+    selectResults.push([{ plan, project }], [review], [verification], [backup], [eligibility]);
 
-    await expect(caller.projects.changePlans.rollbackPreparation.prepare({ ...input, rollbackArtifactHash: "different-artifact-hash" })).rejects.toThrow("exactly match");
+    await expect(caller.projects.changePlans.rollbackPreparation.prepare({ ...input, rollbackArtifactHash: "different-artifact-hash" })).rejects.toThrow("action-specific rollback eligibility");
+    expect(insertCalls).toHaveLength(0);
+  });
+
+  it("blocks preparation when the device action path has no eligible rollback decision", async () => {
+    const caller = appRouter.createCaller(context());
+    selectResults.push([{ plan, project }], [review], [verification], [backup], [{ ...eligibility, decision: "review_required" }]);
+
+    await expect(caller.projects.changePlans.rollbackPreparation.prepare(input)).rejects.toThrow("action-specific rollback eligibility");
     expect(insertCalls).toHaveLength(0);
   });
 });

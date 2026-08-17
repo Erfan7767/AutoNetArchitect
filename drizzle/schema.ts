@@ -173,6 +173,21 @@ export const deviceCapabilityAssessments = mysqlTable("device_capability_assessm
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/** Human-reviewed eligibility for one exact rollback artifact on one observed device and configuration path. */
+export const deviceRollbackEligibilityAssessments = mysqlTable("device_rollback_eligibility_assessments", {
+  id: int("id").autoincrement().primaryKey(),
+  deviceId: int("device_id").notNull(),
+  rollbackArtifactHash: varchar("rollback_artifact_hash", { length: 160 }).notNull(),
+  configurationPathReference: varchar("configuration_path_reference", { length: 1000 }).notNull(),
+  targetFactsHash: varchar("target_facts_hash", { length: 160 }).notNull(),
+  scopeHash: varchar("scope_hash", { length: 160 }).notNull(),
+  decision: mysqlEnum("decision", ["eligible", "review_required", "ineligible"]).notNull(),
+  evidenceReference: varchar("evidence_reference", { length: 1000 }).notNull(),
+  humanReviewer: varchar("human_reviewer", { length: 160 }).notNull(),
+  assessedAt: timestamp("assessed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const discoveryRuns = mysqlTable("discovery_runs", {
   id: int("id").autoincrement().primaryKey(),
   siteId: int("site_id").notNull(),

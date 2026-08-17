@@ -24,6 +24,7 @@ import {
   listConfigArtifacts,
   listBenchmarkScenarios,
   listDeviceCapabilityAssessments,
+  listDeviceRollbackEligibilityAssessments,
   listProjectRestrictedClaims,
   listAuditEventsForUser,
   listManagedDevices,
@@ -37,6 +38,7 @@ import {
   prepareDeployment,
   recordDeviceObservation,
   recordDeviceCapabilityAssessment,
+  recordDeviceRollbackEligibilityAssessment,
   recordAgentTeamAudit,
   recordBenchmarkScenario,
   recordProjectRestrictedClaim,
@@ -594,6 +596,30 @@ export const appRouter = router({
         }))
         .mutation(async ({ ctx, input }) => {
           const assessments = await recordDeviceCapabilityAssessment(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
+          if (assessments === undefined) projectNotFound();
+          return assessments;
+        }),
+      listRollbackEligibilityAssessments: protectedProcedure
+        .input(z.object({ projectId: z.number().int().positive(), deviceId: z.number().int().positive() }))
+        .query(async ({ ctx, input }) => {
+          const assessments = await listDeviceRollbackEligibilityAssessments(input.projectId, input.deviceId, ctx.user.id);
+          if (assessments === undefined) projectNotFound();
+          return assessments;
+        }),
+      recordRollbackEligibilityAssessment: protectedProcedure
+        .input(z.object({
+          projectId: z.number().int().positive(),
+          deviceId: z.number().int().positive(),
+          rollbackArtifactHash: z.string().trim().min(8).max(160),
+          configurationPathReference: z.string().trim().min(1).max(1000),
+          targetFactsHash: z.string().trim().min(8).max(160),
+          scopeHash: z.string().trim().min(8).max(160),
+          decision: z.enum(["eligible", "review_required", "ineligible"]),
+          evidenceReference: z.string().trim().min(1).max(1000),
+          assessedAt: z.coerce.date(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          const assessments = await recordDeviceRollbackEligibilityAssessment(input.projectId, input.deviceId, input, actorFromUser(ctx.user));
           if (assessments === undefined) projectNotFound();
           return assessments;
         }),

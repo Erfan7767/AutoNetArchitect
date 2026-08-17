@@ -9,6 +9,7 @@ import {
   changePlanRollbackReviews,
   changePlans,
   deviceCapabilityAssessments,
+  deviceRollbackEligibilityAssessments,
   managedDevices,
   managedSites,
   networkProjects,
@@ -104,6 +105,16 @@ export type ScopedRollbackPreparationDraft = {
   rollbackArtifactHash: string;
   targetFactsHash: string;
   scopeHash: string;
+};
+
+export type DeviceRollbackEligibilityDraft = {
+  rollbackArtifactHash: string;
+  configurationPathReference: string;
+  targetFactsHash: string;
+  scopeHash: string;
+  decision: "eligible" | "review_required" | "ineligible";
+  evidenceReference: string;
+  assessedAt: Date;
 };
 
 export type AgentTeamAuditDraft = {
@@ -904,6 +915,48 @@ export async function recordDeviceCapabilityAssessment(projectId: number, device
   return listDeviceCapabilityAssessments(projectId, deviceId, actor.id);
 }
 
+/** List action-specific rollback eligibility assessments for one observed device. */
+export async function listDeviceRollbackEligibilityAssessments(projectId: number, deviceId: number, ownerId: number) {
+  const deviceRecord = await getManagedDeviceForUser(deviceId, ownerId);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  const db = await requireDatabase();
+  return db.select().from(deviceRollbackEligibilityAssessments).where(eq(deviceRollbackEligibilityAssessments.deviceId, deviceId)).orderBy(desc(deviceRollbackEligibilityAssessments.assessedAt));
+}
+
+/** Persist human-reviewed eligibility for exactly one rollback artifact and configuration path. */
+export async function recordDeviceRollbackEligibilityAssessment(projectId: number, deviceId: number, draft: DeviceRollbackEligibilityDraft, actor: AuditActor) {
+  const deviceRecord = await getManagedDeviceForUser(deviceId, actor.id);
+  if (!deviceRecord || deviceRecord.project.id !== projectId) return undefined;
+  const device = deviceRecord.device;
+  if (device.factState !== "observed" || !device.factsHash) {
+    throw new Error("Rollback eligibility requires current observed device facts.");
+  }
+  if (draft.targetFactsHash !== device.factsHash) {
+    throw new Error("Rollback eligibility must exactly match the observed device facts hash.");
+  }
+  if (draft.configurationPathReference.trim() !== device.configurationPathEvidenceReference.trim()) {
+    throw new Error("Rollback eligibility must use the device's persisted configuration-path evidence reference.");
+  }
+  const evidenceReference = redactAuditDetails(draft.evidenceReference);
+  if (evidenceReference === "Sensitive details were redacted.") {
+    throw new Error("Rollback eligibility evidence reference cannot contain sensitive values.");
+  }
+  const db = await requireDatabase();
+  await db.insert(deviceRollbackEligibilityAssessments).values({
+    deviceId,
+    rollbackArtifactHash: draft.rollbackArtifactHash.trim(),
+    configurationPathReference: redactAuditDetails(draft.configurationPathReference),
+    targetFactsHash: draft.targetFactsHash,
+    scopeHash: draft.scopeHash,
+    decision: draft.decision,
+    evidenceReference,
+    humanReviewer: actorLabel(actor),
+    assessedAt: draft.assessedAt,
+  });
+  await appendAuditEvent(projectId, actor, "device.rollback_eligibility_assessed", `Action-specific rollback eligibility recorded with decision ${draft.decision}.`);
+  return listDeviceRollbackEligibilityAssessments(projectId, deviceId, actor.id);
+}
+
 export async function listChangePlans(projectId: number, ownerId: number) {
   const project = await getProjectForUser(projectId, ownerId);
   if (!project) return undefined;
@@ -1249,6 +1302,18 @@ export async function prepareScopedRollback(changePlanId: number, draft: ScopedR
     && receipt.automaticCapturePermitted === false);
   if (!planRecord.plan.backupVerified || !matchingBackup) {
     throw new Error("A matching human-verified external backup receipt is required before rollback preparation.");
+  }
+  const eligibilityRows = await db
+    .select()
+    .from(deviceRollbackEligibilityAssessments)
+    .where(eq(deviceRollbackEligibilityAssessments.deviceId, planRecord.plan.deviceId))
+    .orderBy(desc(deviceRollbackEligibilityAssessments.assessedAt));
+  const matchingEligibility = eligibilityRows.find(assessment => assessment.decision === "eligible"
+    && assessment.rollbackArtifactHash === draft.rollbackArtifactHash
+    && assessment.targetFactsHash === planRecord.plan.targetFactsHash
+    && assessment.scopeHash === planRecord.plan.scopeHash);
+  if (!matchingEligibility) {
+    throw new Error("A matching action-specific rollback eligibility decision is required before external rollback preparation.");
   }
   const hashesMatch = draft.targetFactsHash === planRecord.plan.targetFactsHash
     && draft.scopeHash === planRecord.plan.scopeHash

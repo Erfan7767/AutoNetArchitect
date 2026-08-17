@@ -183,6 +183,13 @@
       "when": 1786911458933,
       "tag": "0025_windy_gorilla_man",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1786930442684,
+      "tag": "0026_late_shockwave",
+      "breakpoints": true
     }
   ]
 }
