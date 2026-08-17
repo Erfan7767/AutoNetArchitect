@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import tkinter as tk
 from pathlib import Path
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
+from operations.backup_manager import BackupManager
+from site_agent.backup_handoff import AgentBackupCaptureHandoff
 from site_agent.local_inventory import WindowsArpInventory, authorized_neighbors
 from site_agent.models import DiscoveryState, DiscoveryTarget, ManagementProtocol
 from site_agent.scope import AuthorizedScope
@@ -14,8 +16,8 @@ from site_agent.vendor_support import VendorFamily
 from .controller import WindowsDiscoveryController
 from .inventory_review import summarize_inventory
 from .probe import ReadOnlyReachabilityProbe
-from .vendor_support_view import contracts_for_display, protocol_allowed
 from .validation_review import LocalValidationReviewDraft, WindowsValidationReviewController
+from .vendor_support_view import contracts_for_display, protocol_allowed
 from .workspace import WindowsWorkspace
 
 
@@ -29,6 +31,7 @@ class AutoNetWindowsApp:
         self._workspace = WindowsWorkspace(workspace_root)
         self._controller = WindowsDiscoveryController(self._workspace, ReadOnlyReachabilityProbe().collect)
         self._validation_review = WindowsValidationReviewController(self._workspace)
+        self._backup_handoff = AgentBackupCaptureHandoff(BackupManager())
         self._site_id = tk.StringVar()
         self._networks = tk.StringVar()
         self._targets = tk.StringVar()
@@ -91,7 +94,8 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Review discovery evidence", command=self._review_discovery_evidence).grid(row=vendor_row + 4, column=1, sticky="e", pady=(8, 4))
         ttk.Button(frame, text="Prepare virtual validation review", command=self._prepare_virtual_validation_review).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(8, 4))
         ttk.Button(frame, text="Review local virtual-test evidence", command=self._review_virtual_validation_evidence).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(4, 4))
-        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 7, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        ttk.Button(frame, text="Record authorized local backup handoff", command=self._record_backup_handoff).grid(row=vendor_row + 7, column=0, columnspan=2, sticky="w", pady=(4, 4))
+        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 8, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
             ("address", "Address", 150),
@@ -101,8 +105,8 @@ class AutoNetWindowsApp:
         ):
             self._inventory.heading(column, text=label)
             self._inventory.column(column, width=width, stretch=True)
-        self._inventory.grid(row=vendor_row + 8, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
-        frame.rowconfigure(vendor_row + 8, weight=1)
+        self._inventory.grid(row=vendor_row + 9, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(vendor_row + 9, weight=1)
 
     def _update_vendor_status(self) -> None:
         """Show the selected vendor contract and its evidence boundary without claiming support."""
@@ -197,6 +201,70 @@ class AutoNetWindowsApp:
         table.grid(row=1, column=0, sticky="nsew")
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(1, weight=1)
+
+    def _record_backup_handoff(self) -> None:
+        """Record a selected local backup file as evidence after scope and observed-identity checks."""
+
+        scope = self._controller.approved_scope()
+        observed = [result for result in self._discovery_results if result.state is DiscoveryState.DISCOVERED and result.facts is not None]
+        if scope is None or not observed:
+            messagebox.showerror("Backup handoff blocked", "Save an approved scope and record an observed discovery result before a local backup handoff.")
+            return
+        review_window = tk.Toplevel(self._root)
+        review_window.title("AutoNetArchitect — Authorized Local Backup Handoff")
+        review_window.minsize(700, 280)
+        frame = ttk.Frame(review_window, padding=16)
+        frame.grid(sticky="nsew")
+        review_window.columnconfigure(0, weight=1)
+        review_window.rowconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+        selected_address = tk.StringVar(value=observed[0].target.address)
+        capture_id = tk.StringVar()
+        authorization_reference = tk.StringVar()
+        source_path = tk.StringVar()
+        ttk.Label(frame, text="Select a human-provided local backup file. This flow stores a redacted local copy, verifies its digest, and displays evidence metadata only. It does not connect to a device or upload a backup.", wraplength=640).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 12))
+        for row, (label, variable) in enumerate((("Observed discovery target", selected_address), ("Capture identifier", capture_id), ("Human capture authorization", authorization_reference), ("Human-provided local backup file", source_path)), start=1):
+            ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=4)
+            if label == "Observed discovery target":
+                ttk.Combobox(frame, textvariable=variable, state="readonly", values=[result.target.address for result in observed]).grid(row=row, column=1, sticky="ew", pady=4)
+            else:
+                ttk.Entry(frame, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=4)
+
+        def browse() -> None:
+            """Select an already captured local file without invoking a device workflow."""
+
+            selected_path = filedialog.askopenfilename(parent=review_window, title="Select locally captured backup evidence")
+            if selected_path:
+                source_path.set(selected_path)
+
+        def record() -> None:
+            """Write redacted local evidence and report only its metadata for human handoff."""
+
+            try:
+                selected = next(result for result in observed if result.target.address == selected_address.get())
+                source = Path(source_path.get().strip())
+                if not source.is_file():
+                    raise ValueError("Select an existing human-provided local backup file.")
+                payload = source.read_bytes()
+                destination = self._workspace.root / "backups" / f"{capture_id.get().strip()}.txt"
+                handoff = self._backup_handoff.record_local_capture(
+                    capture_id=capture_id.get().strip(),
+                    scope=scope,
+                    discovery=selected,
+                    backup_payload=payload,
+                    storage_path=destination,
+                    human_capture_authorization_reference=authorization_reference.get().strip(),
+                    evidence_ids=(f"discovery://{selected.target.address}",),
+                )
+                handoff = self._workspace.save_backup_capture_handoff(handoff)
+                self._status.set(f"Local backup handoff {handoff.capture_state}: {handoff.backup_reference}; digest {handoff.backup_sha256}. Submit metadata for human control-plane review only.")
+                messagebox.showinfo("Local backup handoff recorded", "The local copy was redacted and digest-verified. No backup was uploaded and no device action was run.")
+                review_window.destroy()
+            except (OSError, PermissionError, ValueError) as error:
+                messagebox.showerror("Backup handoff blocked", str(error))
+
+        ttk.Button(frame, text="Browse local file", command=browse).grid(row=5, column=0, sticky="w", pady=(12, 0))
+        ttk.Button(frame, text="Record redacted local handoff", command=record).grid(row=5, column=1, sticky="e", pady=(12, 0))
 
     def _prepare_virtual_validation_review(self) -> None:
         """Collect non-secret review references and prepare, but never execute, a hash-bound local lab-validation plan."""

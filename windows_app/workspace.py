@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from log_redaction.redacting_filter import RedactingFilter
+from site_agent.backup_handoff import BackupCaptureHandoff
 from site_agent.models import VirtualTestResult
 from site_agent.scope import AuthorizedScope
 
@@ -20,6 +21,7 @@ class WindowsWorkspace:
         self._root = root
         self._scope_path = root / "authorized_scope.json"
         self._virtual_validation_path = root / "virtual_validation_result.json"
+        self._backup_handoff_path = root / "backup_capture_handoff.json"
 
     @property
     def root(self) -> Path:
@@ -73,3 +75,27 @@ class WindowsWorkspace:
         if not isinstance(raw, dict):
             raise ValueError("The local virtual validation result file is invalid.")
         return VirtualTestResult.model_validate(raw)
+
+    def save_backup_capture_handoff(self, handoff: BackupCaptureHandoff) -> BackupCaptureHandoff:
+        """Persist secret-free local backup-capture metadata without copying backup content."""
+
+        self._root.mkdir(parents=True, exist_ok=True)
+        sanitized = handoff.model_copy(update={"detail": RedactingFilter.redact_text(handoff.detail)})
+        temporary = self._backup_handoff_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(sanitized.model_dump(mode="json"), indent=2, sort_keys=True), encoding="utf-8")
+        temporary.replace(self._backup_handoff_path)
+        try:
+            self._backup_handoff_path.chmod(0o600)
+        except OSError:
+            return sanitized
+        return sanitized
+
+    def load_backup_capture_handoff(self) -> BackupCaptureHandoff | None:
+        """Return local backup-capture evidence only; never expose backup content or credentials."""
+
+        if not self._backup_handoff_path.exists():
+            return None
+        raw: Any = json.loads(self._backup_handoff_path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("The local backup handoff record is invalid.")
+        return BackupCaptureHandoff.model_validate(raw)
