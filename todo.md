@@ -160,3 +160,6 @@
 - [x] Implement a concrete mutual-auth enrollment verifier and pinned trust-material flow for the site agent.
 - [x] Add a secret-free agent health reporting path to the control-plane workspace with success and failure coverage.
 - [x] Add end-to-end enrollment, durable local manifest, and control-plane health-reporting integration tests.
+- [ ] Add cross-layer lab-only workflow tests through the Windows validation path and control-plane evidence path.
+- [ ] Reject non-lab or production targets without a written human laboratory authorization and matching approved scope.
+- [ ] Enforce the written laboratory authorization precondition in the executable validation workflow and cover it with tests.

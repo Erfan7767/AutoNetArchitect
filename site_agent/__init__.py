@@ -17,6 +17,7 @@ from .discovery_coordination import (
     ParallelDiscoveryCoordinator,
 )
 from .enrollment import EnrollmentReceipt, MutualEnrollmentAuthority, PinnedMutualEnrollmentAuthority
+from .lab_authorization import LaboratoryAuthorization, LaboratoryEnvironmentClass
 from .evidence_handoff import DesignEvidenceHandoff, EvidenceBoundHandoffCoordinator
 from .exact_capability import ExactCapabilityAssessor, ExactCapabilityEvidence
 from .models import AgentHealth, DiscoveryResult, DiscoveryTarget, VirtualTestResult
@@ -53,6 +54,8 @@ __all__ = [
     "PinnedMutualEnrollmentAuthority",
     "PinnedTrustStore",
     "Ed25519PinnedSignatureVerifier",
+    "LaboratoryAuthorization",
+    "LaboratoryEnvironmentClass",
     "AgentRole",
     "CoordinationStage",
     "AgentResponsibility",

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import tkinter as tk
+from datetime import datetime, timezone
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from operations.backup_manager import BackupManager
 from site_agent.backup_handoff import AgentBackupCaptureHandoff
+from site_agent.lab_authorization import LaboratoryAuthorization, LaboratoryEnvironmentClass
 from site_agent.local_inventory import WindowsArpInventory, authorized_neighbors
 from site_agent.models import DiscoveryState, DiscoveryTarget, ManagementProtocol
 from site_agent.scope import AuthorizedScope
@@ -92,10 +94,11 @@ class AutoNetWindowsApp:
         ttk.Button(frame, text="Run read-only discovery", command=self._discover).grid(row=vendor_row + 3, column=1, sticky="e", pady=(12, 4))
         ttk.Button(frame, text="Review local ARP inventory", command=self._review_arp_inventory).grid(row=vendor_row + 4, column=0, sticky="w", pady=(8, 4))
         ttk.Button(frame, text="Review discovery evidence", command=self._review_discovery_evidence).grid(row=vendor_row + 4, column=1, sticky="e", pady=(8, 4))
-        ttk.Button(frame, text="Prepare virtual validation review", command=self._prepare_virtual_validation_review).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(8, 4))
-        ttk.Button(frame, text="Review local virtual-test evidence", command=self._review_virtual_validation_evidence).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(4, 4))
-        ttk.Button(frame, text="Record authorized local backup handoff", command=self._record_backup_handoff).grid(row=vendor_row + 7, column=0, columnspan=2, sticky="w", pady=(4, 4))
-        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 8, column=0, columnspan=2, sticky="w", pady=(12, 0))
+        ttk.Button(frame, text="Record written laboratory authorization", command=self._record_laboratory_authorization).grid(row=vendor_row + 5, column=0, columnspan=2, sticky="w", pady=(8, 4))
+        ttk.Button(frame, text="Prepare virtual validation review", command=self._prepare_virtual_validation_review).grid(row=vendor_row + 6, column=0, columnspan=2, sticky="w", pady=(4, 4))
+        ttk.Button(frame, text="Review local virtual-test evidence", command=self._review_virtual_validation_evidence).grid(row=vendor_row + 7, column=0, columnspan=2, sticky="w", pady=(4, 4))
+        ttk.Button(frame, text="Record authorized local backup handoff", command=self._record_backup_handoff).grid(row=vendor_row + 8, column=0, columnspan=2, sticky="w", pady=(4, 4))
+        ttk.Label(frame, textvariable=self._status, wraplength=680).grid(row=vendor_row + 9, column=0, columnspan=2, sticky="w", pady=(12, 0))
         self._inventory = ttk.Treeview(frame, columns=("address", "mac", "entry", "scope"), show="headings", height=7)
         for column, label, width in (
             ("address", "Address", 150),
@@ -105,8 +108,8 @@ class AutoNetWindowsApp:
         ):
             self._inventory.heading(column, text=label)
             self._inventory.column(column, width=width, stretch=True)
-        self._inventory.grid(row=vendor_row + 9, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
-        frame.rowconfigure(vendor_row + 9, weight=1)
+        self._inventory.grid(row=vendor_row + 10, column=0, columnspan=2, sticky="nsew", pady=(12, 0))
+        frame.rowconfigure(vendor_row + 10, weight=1)
 
     def _update_vendor_status(self) -> None:
         """Show the selected vendor contract and its evidence boundary without claiming support."""
@@ -265,6 +268,68 @@ class AutoNetWindowsApp:
 
         ttk.Button(frame, text="Browse local file", command=browse).grid(row=5, column=0, sticky="w", pady=(12, 0))
         ttk.Button(frame, text="Record redacted local handoff", command=record).grid(row=5, column=1, sticky="e", pady=(12, 0))
+
+    def _record_laboratory_authorization(self) -> None:
+        """Record a written human authorization for one non-production laboratory environment and the exact saved scope."""
+
+        try:
+            scope = self._controller.approved_scope()
+            if scope is None:
+                raise PermissionError("Save a human-approved local discovery scope before recording laboratory authorization.")
+            review_window = tk.Toplevel(self._root)
+            review_window.title("AutoNetArchitect — Written Laboratory Authorization")
+            review_window.minsize(700, 310)
+            frame = ttk.Frame(review_window, padding=16)
+            frame.grid(sticky="nsew")
+            review_window.columnconfigure(0, weight=1)
+            review_window.rowconfigure(0, weight=1)
+            frame.columnconfigure(1, weight=1)
+            authorization_reference = tk.StringVar()
+            human_authorizer = tk.StringVar()
+            environment_reference = tk.StringVar()
+            environment_class = tk.StringVar(value=LaboratoryEnvironmentClass.VENDOR_IMAGE_LAB.value)
+            expires_at = tk.StringVar()
+            ttk.Label(frame, text="Record a written approval for an isolated non-production laboratory only. This record cannot authorize customer production targets, device configuration upload, or execution.", wraplength=640).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 12))
+            fields = [
+                ("Written authorization reference", authorization_reference),
+                ("Named human authorizer", human_authorizer),
+                ("Laboratory environment reference", environment_reference),
+                ("Expires at (ISO-8601 with timezone)", expires_at),
+            ]
+            for row, (label, variable) in enumerate(fields, start=1):
+                ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=4)
+                ttk.Entry(frame, textvariable=variable).grid(row=row, column=1, sticky="ew", pady=4)
+            ttk.Label(frame, text="Laboratory class").grid(row=len(fields) + 1, column=0, sticky="w", pady=4)
+            ttk.Combobox(frame, textvariable=environment_class, state="readonly", values=[item.value for item in LaboratoryEnvironmentClass]).grid(row=len(fields) + 1, column=1, sticky="ew", pady=4)
+
+            def save() -> None:
+                """Persist a scope-bound, future-dated non-production authorization."""
+
+                try:
+                    expiry = datetime.fromisoformat(expires_at.get().strip())
+                    if expiry.tzinfo is None:
+                        raise ValueError("Laboratory authorization expiry must include an explicit timezone.")
+                    authorization = LaboratoryAuthorization(
+                        authorization_reference=authorization_reference.get().strip(),
+                        human_authorizer=human_authorizer.get().strip(),
+                        scope_hash=scope.evidence_hash(),
+                        environment_reference=environment_reference.get().strip(),
+                        environment_class=LaboratoryEnvironmentClass(environment_class.get()),
+                        approved_at=datetime.now(timezone.utc),
+                        expires_at=expiry,
+                    )
+                    if not authorization.active_for(scope.evidence_hash()):
+                        raise ValueError("Laboratory authorization must be currently active and bound to this local scope.")
+                    self._workspace.save_laboratory_authorization(authorization)
+                    self._status.set("Written laboratory authorization saved for the exact local scope. It does not authorize production activity.")
+                    messagebox.showinfo("Laboratory authorization saved", "The non-production laboratory authorization is scope-bound and will be required before local validation planning.")
+                    review_window.destroy()
+                except ValueError as error:
+                    messagebox.showerror("Laboratory authorization blocked", str(error))
+
+            ttk.Button(frame, text="Save written laboratory authorization", command=save).grid(row=len(fields) + 2, column=1, sticky="e", pady=(12, 0))
+        except PermissionError as error:
+            messagebox.showerror("Laboratory authorization blocked", str(error))
 
     def _prepare_virtual_validation_review(self) -> None:
         """Collect non-secret review references and prepare, but never execute, a hash-bound local lab-validation plan."""

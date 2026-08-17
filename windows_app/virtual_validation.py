@@ -68,6 +68,11 @@ class LocalVirtualValidationController:
             raise ValueError("The local approved scope belongs to a different site than the validation handoff.")
         if scope.evidence_hash() != handoff.scope_hash:
             raise ValueError("The validation handoff scope hash does not match the locally approved scope.")
+        authorization = self._workspace.load_laboratory_authorization()
+        if authorization is None:
+            raise PermissionError("Local virtual validation is blocked until a written human laboratory authorization is saved.")
+        if not authorization.active_for(scope.evidence_hash()):
+            raise PermissionError("Written laboratory authorization is expired, outside the approved scope, or not yet active.")
 
         plan = EvidenceBoundHandoffCoordinator().build_validation_plan(discovery_batch, handoff, validation_adapter)
         if plan.production_change_authority:

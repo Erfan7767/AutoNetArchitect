@@ -2,18 +2,28 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
 from site_agent.discovery_coordination import DiscoveryBatchResult
 from site_agent.evidence_handoff import DesignEvidenceHandoff
-from site_agent.models import DiscoveryResult, DiscoveryState, DiscoveryTarget, ManagementProtocol, ObservedDeviceFacts, VirtualTestResult, VirtualTestState
+from site_agent.lab_authorization import LaboratoryAuthorization, LaboratoryEnvironmentClass
+from site_agent.models import (
+    DiscoveryResult,
+    DiscoveryState,
+    DiscoveryTarget,
+    ManagementProtocol,
+    ObservedDeviceFacts,
+    VirtualTestResult,
+    VirtualTestState,
+)
 from site_agent.scope import AuthorizedScope
 from site_agent.vendor_support import CapabilityAssessment, SupportDecision, VendorFamily
 from site_agent.virtual_adapters import LabValidationAdapter
-from windows_app.virtual_validation import LocalVirtualValidationController
 from windows_app.validation_review import LocalValidationReviewDraft, WindowsValidationReviewController
+from windows_app.virtual_validation import LocalVirtualValidationController
 from windows_app.workspace import WindowsWorkspace
 
 
@@ -27,6 +37,20 @@ def approved_scope() -> AuthorizedScope:
         allowed_protocols=("ssh",),
         approval_reference="customer-approval-01",
         operator_acknowledged=True,
+    )
+
+
+def approved_laboratory_authorization(scope: AuthorizedScope) -> LaboratoryAuthorization:
+    """Return an active written authorization for a non-production lab bound to the supplied scope."""
+
+    return LaboratoryAuthorization(
+        authorization_reference="written-lab-authorization-001",
+        human_authorizer="Named lab approver",
+        scope_hash=scope.evidence_hash(),
+        environment_reference="isolated-vendor-image-lab-001",
+        environment_class=LaboratoryEnvironmentClass.VENDOR_IMAGE_LAB,
+        approved_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+        expires_at=datetime(2099, 1, 1, tzinfo=timezone.utc),
     )
 
 
@@ -55,6 +79,7 @@ def test_windows_local_virtual_validation_persists_only_redacted_hash_bound_evid
     workspace = WindowsWorkspace(tmp_path)
     scope = approved_scope()
     workspace.save_scope(scope)
+    workspace.save_laboratory_authorization(approved_laboratory_authorization(scope))
     batch = DiscoveryBatchResult(site_id="site-hq", scope_hash=scope.evidence_hash(), results=())
 
     def result_adapter(artifact_hash: str, target_facts_hash: str, scope_hash: str) -> VirtualTestResult:
@@ -88,6 +113,7 @@ def test_windows_local_virtual_validation_rejects_cross_scope_handoff(tmp_path: 
     workspace = WindowsWorkspace(tmp_path)
     scope = approved_scope()
     workspace.save_scope(scope)
+    workspace.save_laboratory_authorization(approved_laboratory_authorization(scope))
     batch = DiscoveryBatchResult(site_id="site-hq", scope_hash="other-scope-hash", results=())
 
     controller = LocalVirtualValidationController(workspace, lambda artifact_hash, target_facts_hash, scope_hash: VirtualTestResult(
@@ -110,6 +136,7 @@ def test_windows_local_virtual_validation_rejects_adapter_or_fidelity_mismatch(t
     workspace = WindowsWorkspace(tmp_path)
     scope = approved_scope()
     workspace.save_scope(scope)
+    workspace.save_laboratory_authorization(approved_laboratory_authorization(scope))
     batch = DiscoveryBatchResult(site_id="site-hq", scope_hash=scope.evidence_hash(), results=())
     controller = LocalVirtualValidationController(workspace, lambda artifact_hash, target_facts_hash, scope_hash: VirtualTestResult(
         state=VirtualTestState.TEST_PASSED,
@@ -167,6 +194,7 @@ def test_windows_validation_review_prepares_a_plan_from_selected_observed_facts(
     workspace = WindowsWorkspace(tmp_path)
     scope = approved_scope()
     workspace.save_scope(scope)
+    workspace.save_laboratory_authorization(approved_laboratory_authorization(scope))
 
     plan = WindowsValidationReviewController(workspace, SupportedCapabilityAssessor()).prepare_plan(observed_discovery_result(), validation_draft())
 
@@ -189,3 +217,19 @@ def test_windows_validation_review_rejects_unresolved_discovery_result(tmp_path:
 
     with pytest.raises(ValueError, match="observed device facts"):
         WindowsValidationReviewController(workspace, SupportedCapabilityAssessor()).prepare_plan(unresolved, validation_draft())
+
+
+def test_windows_virtual_validation_rejects_missing_or_scope_mismatched_written_lab_authorization(tmp_path: Path) -> None:
+    """No local lab plan is prepared unless a current written authorization matches the exact approved scope hash."""
+
+    workspace = WindowsWorkspace(tmp_path)
+    scope = approved_scope()
+    workspace.save_scope(scope)
+    batch = DiscoveryBatchResult(site_id="site-hq", scope_hash=scope.evidence_hash(), results=())
+
+    with pytest.raises(PermissionError, match="written human laboratory authorization"):
+        LocalVirtualValidationController(workspace).prepare(batch, handoff(scope.evidence_hash()), LabValidationAdapter(VendorFamily.CISCO))
+
+    workspace.save_laboratory_authorization(approved_laboratory_authorization(scope).model_copy(update={"scope_hash": "different-approved-scope"}))
+    with pytest.raises(PermissionError, match="outside the approved scope"):
+        LocalVirtualValidationController(workspace).prepare(batch, handoff(scope.evidence_hash()), LabValidationAdapter(VendorFamily.CISCO))
